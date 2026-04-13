@@ -1,12 +1,13 @@
-# C:\Users\Vinay\Project\Loopline\config\settings.py
-
 import dj_database_url
 from pathlib import Path
 import os
 from dotenv import load_dotenv
 
+# BASE_DIR is C:\nxtturn\Loopline
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(dotenv_path=BASE_DIR / ".env")
+
+# Look for .env in the Project Root (C:\nxtturn\.env)
+load_dotenv(dotenv_path=BASE_DIR.parent / ".env")
 
 IS_PRODUCTION = "DATABASE_URL" in os.environ
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -14,24 +15,18 @@ DEBUG = not IS_PRODUCTION
 if not IS_PRODUCTION and not SECRET_KEY:
     SECRET_KEY = "a-dummy-secret-key-for-local-development-only-do-not-use-in-prod"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "192.168.10.33", "192.168.10.33.nip.io"]
-if IS_PRODUCTION:
-    pass
-else:
-    ALLOWED_HOSTS.extend(["*", "192.168.10.33", "192.168.10.33.nip.io"])
+# --- SMART HOST CONFIGURATION ---
+raw_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+ALLOWED_HOSTS = [host.strip() for host in raw_hosts.split(",") if host.strip()]
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://192.168.10.33.nip.io:5173")
+if not IS_PRODUCTION:
+    ALLOWED_HOSTS.append("*")
 
-# --- ADD THIS BLOCK IMMEDIATELY BELOW IT ---
+# --- SMART FRONTEND URL ---
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://localhost:5173")
+
 if os.getenv("CYPRESS_TESTING", "false").lower() == "true":
-    # Match the new secure Cypress setup
-    FRONTEND_URL = "https://192.168.10.33.nip.io:5173"
-# --------------------------------------------
-
-# This tells dj-rest-auth where to send the user for password resets
-# It will build a link like: http://192.168.10.33:5173/auth/reset-password/UID/TOKEN
-
-# PASSWORD_RESET_CONFIRM_URL = f"{FRONTEND_URL}/auth/reset-password/{{uid}}/{{token}}/"
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "https://localhost:5173")
 
 INSTALLED_APPS = [
     "channels",
@@ -77,6 +72,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -114,6 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
 LANGUAGE_CODE, TIME_ZONE, USE_I18N, USE_TZ = "en-us", "UTC", True, True
 
 STATIC_URL = "/static/"
@@ -122,48 +119,33 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "mediafiles"
 
 STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-# Email Configuration (Brevo)
-# ==============================================================================
-# --- SMART EMAIL CONFIGURATION (Final Version for Tests) ---
+
+# Email Configuration
 EMAIL_MODE = os.getenv("EMAIL_MODE", "console")
 DEFAULT_FROM_EMAIL = "nxtturn <noreply@nxtturn.com>"
 SERVER_EMAIL = "admin@nxtturn.com"
 
-# 1. Check if we are running Cypress tests (This overrides everything else)
-# This handles missing variables and mixed casing (True/true) perfectly
 if os.getenv("CYPRESS_TESTING", "false").lower() == "true":
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
-    # This makes the link match the Cypress browser window:
-
-
-# 2. Otherwise, check our normal dev/prod mode
 elif EMAIL_MODE == "brevo":
     EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
-    ANYMAIL = {
-        "BREVO_API_KEY": os.getenv("BREVO_API_KEY"),
-    }
+    ANYMAIL = {"BREVO_API_KEY": os.getenv("BREVO_API_KEY")}
 else:
-    # Default local console mode
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# This allows users to confirm email just by clicking the link in the email
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.TokenAuthentication"
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly"
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
@@ -180,7 +162,6 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-
 ACCOUNT_ADAPTER = "community.adapters.NxtTurnAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "community.adapters.NxtTurnSocialAccountAdapter"
 
@@ -192,83 +173,78 @@ REST_AUTH = {
     "LOGIN_SERIALIZER": "community.serializers.CustomLoginSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "community.serializers.CustomPasswordResetConfirmSerializer",
     "PASSWORD_RESET_CONFIRM_URL": f"{FRONTEND_URL}/auth/reset-password/{{uid}}/{{token}}/",
-    "SIGNUP_FIELDS": {
-        "username": {"required": True},
-        "email": {"required": True},
-    },
+    "SIGNUP_FIELDS": {"username": {"required": True}, "email": {"required": True}},
 }
 
-# CORS (Cross-Origin Resource Sharing) SETTINGS
-# ==============================================================================
-# This section defines which frontend URLs are allowed to make requests to our API.
+# --- SMART SECURITY ROUTING ---
+CORS_ALLOWED_ORIGINS = []
+CSRF_TRUSTED_ORIGINS = []
 
-# In a production environment, you would use environment variables to populate this.
-# For local development, we explicitly list the allowed origins for simplicity and reliability.
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # For local-only frontend development
-    "https://localhost:5173",
-    "http://127.0.0.1:5173",  # Alternative for local-only
-    "http://192.168.10.33:5173",  # For accessing the frontend from other devices on the network
-    "https://192.168.10.33:5173",
-    "http://192.168.10.33.nip.io:5173",
-    "https://192.168.10.33.nip.io:5173",
-]
+if FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
-# ==============================================================================
-# CSRF (Cross-Site Request Forgery) SETTINGS
-# ==============================================================================
-# This tells Django which origins are trusted for POST/PUT/DELETE requests.
-# It's good practice to keep this in sync with the CORS settings.
-
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "https://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://192.168.10.33:5173",
-    "https://192.168.10.33:5173",
-    "http://192.168.10.33.nip.io:5173",
-    "https://192.168.10.33.nip.io:5173",
-]
+extra_origins = ["https://localhost:5173", "https://127.0.0.1:5173"]
+for origin in extra_origins:
+    if origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(origin)
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")],
-        },
+        "CONFIG": {"hosts": [os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")]},
     },
 }
 
-# --- GOOGLE SOCIAL AUTHENTICATION ---
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APPS": [
             {
                 "client_id": os.getenv("GOOGLE_CLIENT_ID"),
                 "secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-                "key": "",  # Leave as empty string
-            },
+                "key": "",
+            }
         ],
         "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {"access_type": "online"},
-        # Industry Standard: Add leeway specifically for the Google Provider
-        "JWT_LEEWAY": 300,
+        "AUTH_PARAMS": {
+            "access_type": "online",
+            "prompt": "select_account",  # Forces a fresh login window every time
+        },
+        "JWT_LEEWAY": 600,  # Increased to 10 minutes to prevent "Invalid id_token" errors
     }
 }
 
-# This tells Allauth to automatically create the account if the email is new
 SOCIALACCOUNT_AUTO_SIGNUP = True
-
-# --- IDENTITY CONFLICT MANAGEMENT ---
-# 1. Allow logging in with Google if the email matches an existing manual account
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
-
-# 2. Automatically link the Google account to the existing manual account
 SOCIALACCOUNT_QUERY_EMAIL = True
-
-# 3. Trust Google's verification status (prevents double-verification loops)
 SOCIALACCOUNT_EMAIL_VERIFICATION = "optional"
 
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 
-# Allow 5 minutes of clock drift globally for all social accounts
-SOCIALACCOUNT_JWT_LEEWAY = 300
+# ==============================================================================
+# --- INDUSTRY STANDARD SELF-HEALING ARCHITECTURE ---
+# This block ensures the 'Site' record always matches your current laptop IP.
+# ==============================================================================
+from django.db.models.signals import post_migrate
+from django.dispatch import receiver
+
+
+@receiver(post_migrate)
+def sync_production_settings(sender, **kwargs):
+    # Automatically fix the 'Site' domain (so email links point to your current IP)
+    if sender.name == "django.contrib.sites":
+        from django.contrib.sites.models import Site
+
+        new_domain = (
+            FRONTEND_URL.replace("https://", "").replace("http://", "").strip("/")
+        )
+        Site.objects.filter(id=SITE_ID).update(domain=new_domain, name="nxtturn.com")
+
+
+# Force account links to use HTTPS
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+
+# Ensure a 10-minute buffer for all social account tokens
+SOCIALACCOUNT_JWT_LEEWAY = 600
