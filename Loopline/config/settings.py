@@ -7,27 +7,31 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Look for .env in the Project Root (C:\nxtturn\.env)
+# This file is ONLY used locally and is NOT pushed to Git.
 load_dotenv(dotenv_path=BASE_DIR.parent / ".env")
 
-IS_PRODUCTION = "DATABASE_URL" in os.environ
+# --- SMART ENVIRONMENT DETECTION (Crucial for all environments) ---
+ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
+IS_PRODUCTION = ENVIRONMENT == "production"
+IS_DEVELOPMENT = ENVIRONMENT == "development"  # True for local, Dev Cloud, Test/QA
+IS_LOCAL = os.getenv("IS_LOCAL", "False").lower() == "true"  # For entrypoint.sh logic
+
 SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = not IS_PRODUCTION
+DEBUG = not IS_PRODUCTION  # DEBUG is only TRUE if NOT in production
 if not IS_PRODUCTION and not SECRET_KEY:
     SECRET_KEY = "a-dummy-secret-key-for-local-development-only-do-not-use-in-prod"
 
-# --- SMART HOST CONFIGURATION ---
+# --- SMART ALLOWED_HOSTS (Reads from root .env or defaults) ---
 raw_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
 ALLOWED_HOSTS = [host.strip() for host in raw_hosts.split(",") if host.strip()]
-
-if not IS_PRODUCTION:
+if not IS_PRODUCTION:  # Only allow wildcard for local dev/testing
     ALLOWED_HOSTS.append("*")
 
-# --- SMART FRONTEND URL ---
+# --- SMART FRONTEND URL (Reads from root .env or defaults) ---
+# This is the PRIMARY URL the backend uses to build links (emails, password resets)
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://localhost:5173")
 
-if os.getenv("CYPRESS_TESTING", "false").lower() == "true":
-    FRONTEND_URL = os.getenv("FRONTEND_URL", "https://localhost:5173")
-
+# --- INSTALLED APPS (Conditional for test utilities) ---
 INSTALLED_APPS = [
     "channels",
     "django.contrib.admin",
@@ -50,8 +54,9 @@ INSTALLED_APPS = [
     "community.apps.CommunityConfig",
     "allauth.socialaccount.providers.google",
 ]
-
-if DEBUG:
+# Only add e2e_test_utils if we're NOT in production
+# This physically removes test apps from production builds
+if not IS_PRODUCTION:
     INSTALLED_APPS.append("e2e_test_utils")
 
 SITE_ID = 1
@@ -88,9 +93,14 @@ TEMPLATES = [
     }
 ]
 
-if IS_PRODUCTION:
-    DATABASES = {"default": dj_database_url.config(conn_max_age=600, ssl_require=True)}
-else:
+# --- SMART DATABASE CONFIGURATION ---
+if os.getenv("DATABASE_URL"):
+    # If we are in Docker (Local or Cloud)
+    # We ONLY require SSL if the environment is strictly 'production'
+    DATABASES = {
+        "default": dj_database_url.config(conn_max_age=600, ssl_require=IS_PRODUCTION)
+    }
+else:  # Fallback for local Windows-native development (not used with Docker)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -125,11 +135,12 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Email Configuration
+# --- EMAIL CONFIGURATION (Conditional for tests) ---
 EMAIL_MODE = os.getenv("EMAIL_MODE", "console")
 DEFAULT_FROM_EMAIL = "nxtturn <noreply@nxtturn.com>"
 SERVER_EMAIL = "admin@nxtturn.com"
 
+# Force Memory Backend if in Test Mode (CRITICAL for Cypress `get_last_email` calls)
 if os.getenv("CYPRESS_TESTING", "false").lower() == "true":
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 elif EMAIL_MODE == "brevo":
@@ -157,13 +168,16 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
 )
 
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
-ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_ADAPTER = "community.adapters.NxtTurnAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "community.adapters.NxtTurnSocialAccountAdapter"
+
+# --- DJANGO-ALLAUTH Modern Settings ---
+# These are the updated names for settings to remove UserWarnings
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
 
 REST_AUTH = {
     "USE_SESSION_AUTH": False,
@@ -176,7 +190,7 @@ REST_AUTH = {
     "SIGNUP_FIELDS": {"username": {"required": True}, "email": {"required": True}},
 }
 
-# --- SMART SECURITY ROUTING ---
+# --- SMART SECURITY ROUTING (CORS & CSRF) ---
 CORS_ALLOWED_ORIGINS = []
 CSRF_TRUSTED_ORIGINS = []
 
@@ -184,6 +198,7 @@ if FRONTEND_URL:
     CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
+# Always trust standard local addresses for convenience
 extra_origins = ["https://localhost:5173", "https://127.0.0.1:5173"]
 for origin in extra_origins:
     if origin not in CORS_ALLOWED_ORIGINS:
@@ -194,7 +209,7 @@ for origin in extra_origins:
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")]},
+        "CONFIG": {"hosts": [os.getenv("REDIS_URL", "redis://redis:6379/0")]},
     },
 }
 
@@ -208,11 +223,8 @@ SOCIALACCOUNT_PROVIDERS = {
             }
         ],
         "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-            "prompt": "select_account",  # Forces a fresh login window every time
-        },
-        "JWT_LEEWAY": 600,  # Increased to 10 minutes to prevent "Invalid id_token" errors
+        "AUTH_PARAMS": {"access_type": "online", "prompt": "select_account"},
+        "JWT_LEEWAY": 600,
     }
 }
 
@@ -221,7 +233,10 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "optional"
 
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"  # Force HTTPS for email links
+
+# Ensure a 10-minute buffer for all social account tokens
+SOCIALACCOUNT_JWT_LEEWAY = 600
 
 # ==============================================================================
 # --- INDUSTRY STANDARD SELF-HEALING ARCHITECTURE ---
@@ -240,11 +255,6 @@ def sync_production_settings(sender, **kwargs):
         new_domain = (
             FRONTEND_URL.replace("https://", "").replace("http://", "").strip("/")
         )
-        Site.objects.filter(id=SITE_ID).update(domain=new_domain, name="nxtturn.com")
-
-
-# Force account links to use HTTPS
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
-
-# Ensure a 10-minute buffer for all social account tokens
-SOCIALACCOUNT_JWT_LEEWAY = 600
+        Site.objects.update_or_create(
+            id=SITE_ID, defaults={"domain": new_domain, "name": "nxtturn.com"}
+        )

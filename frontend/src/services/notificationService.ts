@@ -1,6 +1,3 @@
-// C:\Users\Vinay\Project\frontend\src/services\notificationService.ts
-// --- FINAL, RESILIENT VERSION ---
-
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'vue-toastification'
 
@@ -29,24 +26,9 @@ class NotificationService {
     }
 
     this.isConnecting = true
-    // const baseUrl = import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:8000/ws/';
-    // const url = `${baseUrl}activity/?token=${authStore.authToken}`;
-
-    // --- URL Normalization Fix ---
-    let baseUrl = import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:8000'
-
-    // 1. Remove trailing slash
-    if (baseUrl.endsWith('/')) {
-      baseUrl = baseUrl.slice(0, -1)
-    }
-
-    // 2. Remove trailing '/ws' (Fixes the GCP double-ws issue)
-    if (baseUrl.endsWith('/ws')) {
-      baseUrl = baseUrl.slice(0, -3)
-    }
-
-    // 3. Construct the final URL
-    const url = `${baseUrl}/ws/activity/?token=${authStore.authToken}`
+    // --- FINAL FIX: baseUrl is guaranteed to be correct from root .env ---
+    let baseUrl = import.meta.env.VITE_WS_BASE_URL
+    const url = `${baseUrl}/activity/?token=${authStore.authToken}`
     console.log(`Service: Attempting to connect to WebSocket at: ${url}`)
 
     this.socket = new WebSocket(url)

@@ -5,7 +5,6 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-community_portal}
       POSTGRES_USER: ${DB_USER:-postgres}
-      # This looks in your .env for DB_PASSWORD. If not found, it uses 'devpass'
       POSTGRES_PASSWORD: ${DB_PASSWORD:-devpass} 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -22,21 +21,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development 
+      target: development # Uses the dev stage with tests and bots
     container_name: nxtturn_backend
     volumes:
-      - ./Loopline:/app
-      - ./mediafiles:/app/mediafiles
-      - ./seed_media:/seed_media
+      - ./Loopline:/app # Live code syncing
+      - ./mediafiles:/app/mediafiles # Persists media
+      - ./seed_media:/seed_media # For activity bots
     environment:
-      - IS_LOCAL=True
-      - CYPRESS_TESTING=true
-      # Docker uses the service name 'db' to find the database
+      - ENVIRONMENT=development # <--- CRITICAL: Tells Django it's not production (no DB SSL)
+      - IS_LOCAL=True # <--- CRITICAL: Triggers SSL cert generation in entrypoint.sh
+      - CYPRESS_TESTING=true # Enables automated testing mode
       - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-devpass}@db:5432/${DB_NAME:-community_portal}
       - REDIS_URL=redis://redis:6379/0
-      - FRONTEND_URL=${FRONTEND_URL:-https://localhost:5173}
+      # FRONTEND_URL is pulled directly from the root .env
     env_file:
-      - .env
+      - .env # Loads ALL variables from the root .env
     ports:
       - "8000:8000"
     depends_on:
@@ -47,15 +46,20 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: develop-stage
+      target: develop-stage # Uses the dev stage for Hot Reload
     container_name: nxtturn_frontend
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend:/app # Live code syncing for Hot Reload
+      - /app/node_modules # Prevents Windows from overwriting Linux node_modules
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://localhost:8000/api/}
+      - ENVIRONMENT=development # For consistency with frontend code (if it ever checks)
+      # Pulls VITE_API_BASE_URL and VITE_WS_BASE_URL from the root .env (CRITICAL)
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL} 
+      - VITE_WS_BASE_URL=${VITE_WS_BASE_URL}
+    env_file:
+      - .env # Loads ALL variables from the root .env
     depends_on:
       - backend
 
