@@ -1,0 +1,34 @@
+# --- Version Control ---
+.git
+.gitignore
+
+# --- Virtual Environments & Local Tools ---
+venv/
+.venv/
+env/
+.vscode/
+.idea/
+.DS_Store
+
+# --- Frontend Dependencies & Builds ---
+frontend/node_modules/
+frontend/dist/
+.npm/
+
+# --- Python System & Test Junk ---
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/.pytest_cache/
+
+# --- Local Data & Logs ---
+Loopline/mediafiles/
+seed_media/
+Loopline/seeded_users.txt
+*.sqlite3
+*.log
+
+# --- Machine-Specific Security ---
+.env
+.env.*
+Loopline/cert.*

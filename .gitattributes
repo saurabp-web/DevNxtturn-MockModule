@@ -1,0 +1,6 @@
+# Force LF (Linux) for all shell scripts so they don't break in Docker
+*.sh text eol=lf
+Dockerfile* text eol=lf
+
+# Force everything else to follow the user's system default
+* text=auto

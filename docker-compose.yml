@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: nxtturn_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-community_portal}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      # This looks in your .env for DB_PASSWORD. If not found, it uses 'devpass'
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpass} 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: nxtturn_redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development 
+    container_name: nxtturn_backend
+    volumes:
+      - ./Loopline:/app
+      - ./mediafiles:/app/mediafiles
+      - ./seed_media:/seed_media
+    environment:
+      - IS_LOCAL=True
+      - CYPRESS_TESTING=true
+      # Docker uses the service name 'db' to find the database
+      - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-devpass}@db:5432/${DB_NAME:-community_portal}
+      - REDIS_URL=redis://redis:6379/0
+      - FRONTEND_URL=${FRONTEND_URL:-https://localhost:5173}
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: develop-stage
+    container_name: nxtturn_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://localhost:8000/api/}
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
