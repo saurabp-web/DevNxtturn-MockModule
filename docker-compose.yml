@@ -21,21 +21,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development # Uses the dev stage with tests and bots
+      target: ${BACKEND_BUILD_TARGET:-development}
     container_name: nxtturn_backend
     volumes:
-      - ./Loopline:/app # Live code syncing
-      - ./mediafiles:/app/mediafiles # Persists media
-      - ./seed_media:/seed_media # For activity bots
+      - ./Loopline:/app
+      - ./mediafiles:/app/mediafiles
+      - ./seed_media:/seed_media
     environment:
-      - ENVIRONMENT=development # <--- CRITICAL: Tells Django it's not production (no DB SSL)
-      - IS_LOCAL=True # <--- CRITICAL: Triggers SSL cert generation in entrypoint.sh
-      - CYPRESS_TESTING=true # Enables automated testing mode
+      - ENVIRONMENT=${ENVIRONMENT:-local}
+      - IS_LOCAL=${IS_LOCAL:-True}
       - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-devpass}@db:5432/${DB_NAME:-community_portal}
       - REDIS_URL=redis://redis:6379/0
-      # FRONTEND_URL is pulled directly from the root .env
     env_file:
-      - .env # Loads ALL variables from the root .env
+      - .env
     ports:
       - "8000:8000"
     depends_on:
@@ -46,22 +44,41 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: develop-stage # Uses the dev stage for Hot Reload
+      target: ${FRONTEND_BUILD_TARGET:-develop-stage}
     container_name: nxtturn_frontend
     volumes:
-      - ./frontend:/app # Live code syncing for Hot Reload
-      - /app/node_modules # Prevents Windows from overwriting Linux node_modules
+      - ./frontend:/app
+      # CRITICAL: This anonymous volume protects Linux node_modules from Windows
+      - /app/node_modules 
     ports:
       - "5173:5173"
     environment:
-      - ENVIRONMENT=development # For consistency with frontend code (if it ever checks)
-      # Pulls VITE_API_BASE_URL and VITE_WS_BASE_URL from the root .env (CRITICAL)
+      - ENVIRONMENT=${ENVIRONMENT:-local}
       - VITE_API_BASE_URL=${VITE_API_BASE_URL} 
       - VITE_WS_BASE_URL=${VITE_WS_BASE_URL}
     env_file:
-      - .env # Loads ALL variables from the root .env
+      - .env
     depends_on:
       - backend
+
+  cypress:
+    image: cypress/included:13.17.0
+    container_name: nxtturn_cypress
+    # This service only runs when you call it with --profile test
+    profiles: ["test"]
+    working_dir: /e2e
+    volumes:
+      - ./frontend:/e2e
+      - /e2e/node_modules # Protects Cypress Linux dependencies
+    environment:
+      # We point Cypress to the 'frontend' container name inside the Docker network
+      - CYPRESS_BASE_URL=https://frontend:5173
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   postgres_data:

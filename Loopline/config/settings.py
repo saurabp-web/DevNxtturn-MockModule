@@ -62,6 +62,7 @@ if not IS_PRODUCTION:
 SITE_ID = 1
 
 MIDDLEWARE = [
+    "community.middleware.CypressTestMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

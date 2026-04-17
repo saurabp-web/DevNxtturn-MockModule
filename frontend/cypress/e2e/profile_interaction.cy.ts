@@ -1,5 +1,4 @@
-// C:\Users\Vinay\Project\frontend\cypress\e2e\profile_interaction.cy.ts
-// --- THIS IS THE FINAL, COMPLETE 6-TEST SUITE ---
+// C:\nxtturn\frontend\cypress\e2e\profile_interaction.cy.ts
 
 describe('User Profile Interaction', () => {
   context('"About" Tab Cards', () => {
@@ -57,13 +56,11 @@ describe('User Profile Interaction', () => {
 
       cy.contains('button', '+ Add another link').click()
 
-      // FIX: Add { force: true } to handle DevTools overlay
       cy.get('#link-type-0').select('github', { force: true })
       cy.get('#link-url-0').type('https://github.com/testuser')
 
       cy.contains('button', '+ Add another link').click()
 
-      // FIX: Add { force: true }
       cy.get('#link-type-1').select('twitter', { force: true })
       cy.get('#link-url-1').type('https://twitter.com/testuser')
 
@@ -137,14 +134,25 @@ describe('User Profile Interaction', () => {
       cy.visit(`/profile/${testUser.username}`)
       cy.get('[data-cy="profile-picture-img"]')
         .should('have.attr', 'src')
-        .and('include', '/media/profile_pics/')
+        .and('include', '/media/profile_pics/') // Ensure it has a media path (original uploaded)
+
       cy.get('[data-cy="profile-picture-container"]').click()
       cy.intercept('PATCH', `/api/profiles/${testUser.username}/`).as('removePicture')
       cy.get('[data-cy="remove-picture-button"]').click()
       cy.wait('@removePicture')
-      cy.get('[data-cy="profile-picture-img"]').should('not.have.attr', 'src', '*/media/*')
-      cy.get('[data-cy="navbar-avatar-main"]').should('not.have.attr', 'src', '*/media/*')
-      cy.get('[data-cy="post-author-avatar"]').should('not.have.attr', 'src', '*/media/*')
+
+      // --- THE FIX: Assert that the default avatar is shown ---
+      // This expects your default avatar to be located at '/src/assets/images/default-avatar.svg'
+      // Adjust this path if your default avatar is elsewhere.
+      cy.get('[data-cy="profile-picture-img"]')
+        .should('have.attr', 'src')
+        .and('include', '/src/assets/images/default-avatar.svg')
+      cy.get('[data-cy="navbar-avatar-main"]')
+        .should('have.attr', 'src')
+        .and('include', '/src/assets/images/default-avatar.svg')
+      cy.get('[data-cy="post-author-avatar"]')
+        .should('have.attr', 'src')
+        .and('include', '/src/assets/images/default-avatar.svg')
     })
   })
 })

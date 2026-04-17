@@ -1,6 +1,3 @@
-# C:\Users\Vinay\Project\Loopline\e2e_test_utils\views.py
-# REVISED VERSION
-
 import time
 from rest_framework.authtoken.models import Token
 from django.conf import settings
@@ -8,11 +5,15 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db.models import Q
+from django.db.models import Q  # Added back for specific queries if needed
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from allauth.account.models import EmailAddress
+
+# Ensure all your models are imported. If any of these are NOT in your community/models.py,
+# you MUST comment them out, or Django will crash.
 from community.models import (
     Follow,
     Group,
@@ -20,169 +21,57 @@ from community.models import (
     Poll,
     PollOption,
     UserProfile,
-    Skill,
-    SkillCategory,
-    Education,
-    Experience,
+    Skill,  # Explicitly keeping Skill for deep cleanup
+    SkillCategory,  # Explicitly keeping SkillCategory for deep cleanup
+    Education,  # Explicitly keeping Education for deep cleanup
+    Experience,  # Explicitly keeping Experience for deep cleanup
     Comment,
-    Like,
+    Like,  # Explicitly keeping Like for potential usage and cleanup
 )
-from allauth.account.models import EmailAddress
 
 User = get_user_model()
 
 
 def create_verified_user(user):
-    """Gets or creates a verified EmailAddress record for a user."""
-    EmailAddress.objects.get_or_create(
-        user=user, defaults={"email": user.email, "primary": True, "verified": True}
+    """
+    Bypasses mandatory email verification for Cypress test users.
+    Ensures an EmailAddress record exists and is marked as verified.
+    """
+    EmailAddress.objects.update_or_create(
+        user=user, email=user.email, defaults={"primary": True, "verified": True}
     )
 
 
 class TestSetupAPIView(APIView):
+    """
+    A secure 'Backdoor' for E2E testing.
+    Allows Cypress to manipulate the database directly in non-production environments.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        if not settings.DEBUG:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        # SECURITY SWITCH: Physically disable this entire view in production
+        if getattr(settings, "ENVIRONMENT", "local") == "production":
+            return Response(
+                {"error": "Test utilities are disabled in production."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         action = request.data.get("action")
         data = request.data.get("data", {})
 
         try:
             with transaction.atomic():
+                # --- ACTION: Create a single verified user (Handles prefix or explicit username) ---
                 if action == "create_user":
                     if "username_prefix" in data:
-                        prefix = data.get("username_prefix")
-                        timestamp = int(time.time())
-                        username = f"{prefix}_{timestamp}"
-                        email = f"{username}@cypresstest.com"
-                        password = "Airtel@123"
-                        user = User.objects.create_user(
-                            username=username, email=email, password=password
-                        )
-
-                        create_verified_user(user)
-
-                        token, _ = Token.objects.get_or_create(user=user)
-                        return Response(
-                            {
-                                "username": user.username,
-                                "token": token.key,
-                            },
-                            status=status.HTTP_201_CREATED,
-                        )
-
-                    elif "username" in data:
-                        username = data.get("username")
-                        password = data.get("password", "password123")
-                        email = data.get("email", f"{username}@cypresstest.com")
-                        user, created = User.objects.get_or_create(
-                            username=username, defaults={"email": email}
-                        )
-                        if created:
-                            user.set_password(password)
-                            user.save()
-
-                        create_verified_user(user)
-
-                        if data.get("with_picture", False):
-                            dummy_image = SimpleUploadedFile(
-                                name="test_avatar.gif",
-                                content=b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b",
-                                content_type="image/gif",
-                            )
-                            profile, _ = UserProfile.objects.get_or_create(user=user)
-                            profile.picture.save(
-                                "test_avatar.gif", dummy_image, save=True
-                            )
-                        return Response(
-                            {"message": f"User '{username}' handled."},
-                            status=status.HTTP_201_CREATED,
-                        )
-
+                        username = f"{data.get('username_prefix')}_{int(time.time())}"
                     else:
-                        return Response(
-                            {
-                                "error": "Action 'create_user' requires either 'username' or 'username_prefix' in data."
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
+                        username = data.get("username")
 
-                # ====================================================================
-                # === START: NEW LOGIC BLOCK ADDED HERE ==============================
-                # ====================================================================
-                elif action == "create_unverified_user":
-                    username = data.get("username")
-                    password = data.get("password")
-                    email = data.get("email")
-
-                    if not all([username, password, email]):
-                        return Response(
-                            {
-                                "error": "Action 'create_unverified_user' requires 'username', 'password', and 'email' in data."
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-
-                    # Create the user but DO NOT call create_verified_user.
-                    # This relies on django-allauth's default behavior of creating an
-                    # unverified EmailAddress object upon user creation.
-                    user = User.objects.create_user(
-                        username=username, email=email, password=password
-                    )
-
-                    return Response(
-                        {"message": f"Unverified user '{username}' created."},
-                        status=status.HTTP_201_CREATED,
-                    )
-                # ====================================================================
-                # === END: NEW LOGIC BLOCK ===========================================
-                # ====================================================================
-
-                elif action == "create_two_users":
-                    user_a_data = data.get("userA", {})
-                    user_b_data = data.get("userB", {})
-
-                    # --- Create User A ---
-                    user_a, _ = User.objects.get_or_create(
-                        username=user_a_data.get("username"),
-                        defaults={
-                            "email": f'{user_a_data.get("username")}@cypresstest.com'
-                        },
-                    )
-                    user_a.set_password(user_a_data.get("password"))
-                    user_a.save()
-                    create_verified_user(user_a)  # Use your helper function
-
-                    # --- Create User B ---
-                    user_b, _ = User.objects.get_or_create(
-                        username=user_b_data.get("username"),
-                        defaults={
-                            "email": f'{user_b_data.get("username")}@cypresstest.com'
-                        },
-                    )
-                    user_b.set_password(user_b_data.get("password"))
-                    user_b.save()
-                    create_verified_user(user_b)  # Use your helper function
-
-                    return Response(
-                        {
-                            "message": "Two users created successfully.",
-                            "user_a_id": user_a.id,
-                            "user_b_id": user_b.id,
-                        },
-                        status=status.HTTP_201_CREATED,
-                    )
-
-                # --- ADD THIS ENTIRE 'elif' BLOCK ---
-                elif action == "create_user_and_post":
-                    user_data = data.get("user", {})
-                    post_data = data.get("post", {})
-
-                    username = user_data.get("username")
-                    password = user_data.get("password", "password123")
-                    email = user_data.get("email", f"{username}@cypresstest.com")
+                    password = data.get("password", "Airtel@123")
+                    email = data.get("email", f"{username}@cypresstest.com")
 
                     user, created = User.objects.get_or_create(
                         username=username, defaults={"email": email}
@@ -191,6 +80,80 @@ class TestSetupAPIView(APIView):
                         user.set_password(password)
                         user.save()
 
+                    create_verified_user(user)
+                    token, _ = Token.objects.get_or_create(user=user)
+
+                    return Response(
+                        {
+                            "username": user.username,
+                            "token": token.key,
+                        },
+                        status=status.HTTP_201_CREATED,
+                    )
+
+                # --- ACTION: Create an unverified user (for specific auth tests) ---
+                elif action == "create_unverified_user":
+                    username = data.get("username")
+                    password = data.get("password")
+                    email = data.get("email")
+
+                    if not all([username, password, email]):
+                        return Response(
+                            {
+                                "error": "Missing username, password, or email for unverified user."
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    user = User.objects.create_user(
+                        username=username, email=email, password=password
+                    )
+                    # Do NOT call create_verified_user here
+                    return Response(
+                        {"message": f"Unverified user '{username}' created."},
+                        status=status.HTTP_201_CREATED,
+                    )
+
+                # --- ACTION: Create two users (e.g., for Follow/Chat tests) ---
+                elif action == "create_two_users":
+                    uA_data, uB_data = data.get("userA", {}), data.get("userB", {})
+
+                    user_a, _ = User.objects.get_or_create(
+                        username=uA_data.get("username"),
+                        defaults={
+                            "email": f'{uA_data.get("username")}@cypresstest.com'
+                        },
+                    )
+                    user_a.set_password(uA_data.get("password", "Airtel@123"))
+                    user_a.save()
+                    create_verified_user(user_a)
+
+                    user_b, _ = User.objects.get_or_create(
+                        username=uB_data.get("username"),
+                        defaults={
+                            "email": f'{uB_data.get("username")}@cypresstest.com'
+                        },
+                    )
+                    user_b.set_password(uB_data.get("password", "Airtel@123"))
+                    user_b.save()
+                    create_verified_user(user_b)
+
+                    return Response(
+                        {"user_a_id": user_a.id, "user_b_id": user_b.id},
+                        status=status.HTTP_201_CREATED,
+                    )
+
+                # --- ACTION: Create a user and a post immediately ---
+                elif action == "create_user_and_post":
+                    user_data, post_data = data.get("user", {}), data.get("post", {})
+                    user, created = User.objects.get_or_create(
+                        username=user_data.get("username"),
+                        defaults={
+                            "email": f'{user_data.get("username")}@cypresstest.com'
+                        },
+                    )
+                    if created:
+                        user.set_password(user_data.get("password", "Airtel@123"))
+                        user.save()
                     create_verified_user(user)
 
                     if user_data.get("with_picture", False):
@@ -202,94 +165,40 @@ class TestSetupAPIView(APIView):
                         profile, _ = UserProfile.objects.get_or_create(user=user)
                         profile.picture.save("test_avatar.gif", dummy_image, save=True)
 
-                    # Create the post authored by this user
                     StatusPost.objects.create(
                         author=user,
-                        content=post_data.get("content", "Default test post content."),
+                        content=post_data.get("content", "Test Post Content"),
                     )
-
                     return Response(
-                        {"message": f"User '{username}' and a post were created."},
+                        {"message": "User and post created"},
                         status=status.HTTP_201_CREATED,
                     )
-                # --- END OF THE NEW BLOCK ---
 
+                # --- ACTION: Create User with Multiple Posts ---
                 elif action == "create_user_with_posts":
                     username = data.get("username")
                     num_posts = data.get("num_posts", 10)
-                    password = "Airtel@123"
-
-                    if not username:
-                        return Response(
-                            {"error": "Username is required"},
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-
                     user, created = User.objects.get_or_create(
                         username=username,
                         defaults={"email": f"{username}@cypresstest.com"},
                     )
-                    user.set_password(password)
+                    user.set_password("Airtel@123")
                     user.save()
-
                     create_verified_user(user)
-
                     UserProfile.objects.update_or_create(
-                        user=user,
-                        defaults={
-                            "bio": "This is a default bio for the scroll tester."
-                        },
+                        user=user, defaults={"bio": "Scroll tester"}
                     )
-
-                    StatusPost.objects.filter(author=user).delete()
-
                     for i in range(num_posts):
                         StatusPost.objects.create(
-                            author=user,
-                            content=f"This is test post number {i+1} for user {username}.",
+                            author=user, content=f"Test post {i+1} for {username}."
                         )
-
                     token, _ = Token.objects.get_or_create(user=user)
                     return Response(
-                        {
-                            "username": user.username,
-                            "token": token.key,
-                        },
+                        {"username": user.username, "token": token.key},
                         status=status.HTTP_201_CREATED,
                     )
 
-                elif action == "create_group":
-                    prefix = data.get("creator_username_prefix")
-                    username = data.get("creator_username")
-                    if not prefix and not username:
-                        return Response(
-                            {
-                                "error": "creator_username_prefix or creator_username is required"
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-                    if prefix:
-                        creator = User.objects.filter(
-                            username__startswith=prefix
-                        ).latest("date_joined")
-                    else:
-                        creator = User.objects.get(username=username)
-                    timestamp = int(time.time())
-                    group_name = data.get("name", "Default Test Group")
-                    final_group_name = f"{group_name}-{timestamp}"
-                    is_private_flag = data.get("is_private", False)
-                    privacy_level_value = "private" if is_private_flag else "public"
-                    group = Group.objects.create(
-                        name=final_group_name,
-                        creator=creator,
-                        privacy_level=privacy_level_value,
-                    )
-                    group.members.add(creator)
-                    return Response(
-                        {"name": group.name, "slug": group.slug},
-                        status=status.HTTP_201_CREATED,
-                    )
-
+                # --- ACTION: Create a Single Post ---
                 elif action == "create_post":
                     author = get_object_or_404(User, username=data.get("username"))
                     post = StatusPost.objects.create(
@@ -300,64 +209,95 @@ class TestSetupAPIView(APIView):
                         status=status.HTTP_201_CREATED,
                     )
 
-                elif action == "create_post_with_poll":
-                    author = get_object_or_404(User, username=data.get("username"))
-                    post_content = data.get("poll_question", "Default Poll Question")
-                    post = StatusPost.objects.create(
-                        author=author, content=post_content
-                    )
-                    poll = Poll.objects.create(
-                        post=post, question=data["poll_question"]
-                    )
-                    for option_text in data["poll_options"]:
-                        PollOption.objects.create(poll=poll, text=option_text)
-                    return Response(
-                        {"message": "Post with poll created."},
-                        status=status.HTTP_201_CREATED,
-                    )
-
+                # --- ACTION: Create Follow Relationship ---
                 elif action == "create_follow":
                     follower = get_object_or_404(User, username=data.get("follower"))
                     following = get_object_or_404(User, username=data.get("following"))
                     Follow.objects.get_or_create(follower=follower, following=following)
                     return Response(
-                        {"message": "Follow relationship created."},
+                        {"message": "Follow created."}, status=status.HTTP_201_CREATED
+                    )
+
+                # --- ACTION: Create a Group ---
+                elif action == "create_group":
+                    # Uses creator_username to link to an already created user
+                    creator = get_object_or_404(
+                        User, username=data.get("creator_username")
+                    )
+                    group = Group.objects.create(
+                        name=f"{data.get('name', 'Default Group')}-{int(time.time())}",  # Ensure default name
+                        creator=creator,
+                        privacy_level=data.get(
+                            "privacy_level", "public"
+                        ),  # Use provided or default to public
+                    )
+                    group.members.add(creator)
+                    return Response(
+                        {"slug": group.slug, "name": group.name},
                         status=status.HTTP_201_CREATED,
                     )
 
-                elif action == "get_last_email":
-                    from django.core import mail
+                # --- ACTION: Create a Post with a Poll ---
+                elif action == "create_post_with_poll":
+                    author = get_object_or_404(User, username=data.get("username"))
+                    post = StatusPost.objects.create(
+                        author=author,
+                        content=data.get("poll_question", "Default Poll Question"),
+                    )
+                    poll = Poll.objects.create(
+                        post=post,
+                        question=data.get("poll_question", "Default Poll Question"),
+                    )
+                    for option_text in data["poll_options"]:
+                        PollOption.objects.create(poll=poll, text=option_text)
+                    return Response(
+                        {"message": "Poll created"}, status=status.HTTP_201_CREATED
+                    )
 
-                    if mail.outbox:
-                        last_email = mail.outbox[-1]  # Get the most recent email
+                # --- ACTION: Instant Password Reset Link (Replaces old 'mail.outbox' method) ---
+                # This action now handles both 'get_password_reset_link' and 'get_last_email' for compatibility
+                elif action in ["get_password_reset_link", "get_last_email"]:
+                    email = data.get("email")
+                    if not email:
                         return Response(
-                            {
-                                "status": "success",
-                                "data": {
-                                    "subject": last_email.subject,
-                                    "body": last_email.body,
-                                    "to": last_email.to[0] if last_email.to else None,
-                                },
-                            },
-                            status=status.HTTP_200_OK,
-                        )
-                    else:
-                        return Response(
-                            {"error": "No emails found in outbox"},
-                            status=status.HTTP_404_NOT_FOUND,
+                            {"error": "Email is required for password reset link"},
+                            status=status.HTTP_400_BAD_REQUEST,
                         )
 
+                    user = get_object_or_404(User, email=email)
+
+                    # Generate the secure token exactly like Django does internally
+                    from django.contrib.auth.tokens import default_token_generator
+                    from django.utils.http import urlsafe_base64_encode
+                    from django.utils.encoding import force_bytes
+
+                    uid = urlsafe_base64_encode(force_bytes(user.pk))
+                    token = default_token_generator.make_token(user)
+
+                    # Construct the URL that the frontend expects
+                    # Use FRONTEND_URL from settings, with a safe fallback
+                    frontend_url = getattr(
+                        settings, "FRONTEND_URL", "https://192.168.10.33.nip.io:5173"
+                    )
+                    reset_link = f"{frontend_url}/auth/reset-password/{uid}/{token}/"
+
+                    return Response({"link": reset_link}, status=status.HTTP_200_OK)
+
+                # --- ACTION: Deep Cleanup (The Janitor) ---
                 elif action == "cleanup":
-                    # --- 1. Identify users by the specific Cypress domain ONLY ---
-                    # We also exclude superusers as a final "emergency brake"
+                    # 1. Identify users by specific Cypress domain ONLY
                     users_to_delete = User.objects.filter(
-                        email__endswith="@cypresstest.com"
-                    ).exclude(is_superuser=True)
+                        Q(email__endswith="@cypresstest.com")
+                        | Q(username__startswith="unverified_user_")
+                    ).exclude(
+                        is_superuser=True
+                    )  # Exclude superusers for safety
 
-                    # --- 2. Targeted cleanup of data belonging ONLY to these users ---
-                    # This ensures "Frontend Magic" is gone for Cypress users,
-                    # but if YOU created "Frontend Magic" on your real account, it stays!
+                    # 2. Explicitly delete associated data to avoid ghost records
+                    # Django's CASCADE will handle StatusPost, Comment, UserProfile for deleted users,
+                    # but explicit deletion is good for related objects that might not cascade perfectly
 
+                    # Delete objects linked to UserProfile
                     SkillCategory.objects.filter(
                         user_profile__user__in=users_to_delete
                     ).delete()
@@ -371,26 +311,32 @@ class TestSetupAPIView(APIView):
                         user_profile__user__in=users_to_delete
                     ).delete()
 
+                    # Delete Comments and StatusPosts directly if they don't cascade (though they usually do)
                     Comment.objects.filter(author__in=users_to_delete).delete()
                     StatusPost.objects.filter(author__in=users_to_delete).delete()
 
-                    # Groups created by these specific test users
-                    groups_deleted_count, _ = Group.objects.filter(
-                        creator__in=users_to_delete
-                    ).delete()
+                    # Delete Groups created by these users
+                    Group.objects.filter(creator__in=users_to_delete).delete()
 
-                    # --- 3. Finally, delete the test users themselves ---
+                    # 3. Finally, delete the test users (Triggers CASCADE for Profiles, Tokens, etc.)
                     users_deleted_count, _ = users_to_delete.delete()
 
                     return Response(
                         {
                             "status": "success",
-                            "message": "Domain-locked cleanup complete. Only @cypresstest.com users removed.",
+                            "message": "Deep cleanup complete. Only test data removed.",
                             "users_deleted": users_deleted_count,
-                            "groups_deleted": groups_deleted_count,
                         },
                         status=status.HTTP_200_OK,
                     )
 
+            return Response(
+                {"error": f"Action '{action}' is unknown or not supported."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            # Enhanced error reporting for debugging Cypress tests
+            return Response(
+                {"error": str(e), "action": action, "data": data},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

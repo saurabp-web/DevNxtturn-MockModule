@@ -1,14 +1,20 @@
 {
-  "extends": "../tsconfig.app.json",
   "compilerOptions": {
-    "types": [
-      "cypress",
-      "node"
-    ]
-    
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM"],
+    "types": ["cypress", "node"],
+    // baseUrl removed to follow modern TS standards
+    "paths": {
+      "@/*": ["../src/*"] // Points to the src folder one level up
+    },
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "ignoreDeprecations": "5.0"
   },
-  "include": [
-    "e2e/**/*.ts",
-    "support/**/*.ts"
-  ]
+  "include": ["**/*.ts", "../support/**/*.ts", "../cypress.config.cjs"]
 }
