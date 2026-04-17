@@ -1,4 +1,4 @@
-// C:\Users\Vinay\Project\frontend\vite.config.ts
+// C:\nxtturn\frontend\vite.config.ts
 
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
@@ -26,8 +26,29 @@ export default defineConfig(({ command, mode }) => {
       host: true,
       port: 5173,
       allowedHosts: true,
-      // Removed the 'https' line to fix the TypeScript error.
-      // The basicSsl() plugin above will handle the SSL setup for us.
+      // --- NEW PROXY LOGIC (The "Senior Architect" Way) ---
+      proxy: {
+        // Any request to /api will be sent to the Django Backend container
+        '/api': {
+          target: 'https://backend:8000',
+          changeOrigin: true,
+          // Ignore self-signed cert errors between Vite and Django
+          secure: false,
+        },
+        // Any request to /ws will be sent to the Daphne WebSocket server
+        '/ws': {
+          target: 'https://backend:8000',
+          changeOrigin: true,
+          secure: false,
+          ws: true, // Crucial for enabling WebSocket proxying
+        },
+
+        '/media': {
+          target: 'https://backend:8000',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
   }
 })

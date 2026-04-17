@@ -19,17 +19,28 @@ class NotificationService {
       return
     }
 
-    // --- IMPROVEMENT: Use the authStore as the single source of truth ---
     if (!authStore.isAuthenticated || !authStore.authToken) {
       console.error('Service: No auth token found in store. Aborting.')
       return
     }
 
     this.isConnecting = true
-    // --- FINAL FIX: baseUrl is guaranteed to be correct from root .env ---
-    let baseUrl = import.meta.env.VITE_WS_BASE_URL
-    const url = `${baseUrl}/activity/?token=${authStore.authToken}`
-    console.log(`Service: Attempting to connect to WebSocket at: ${url}`)
+
+    // --- SMART PROXY URL CONSTRUCTION ---
+    // 1. Get the protocol from the current browser window (wss: or ws:)
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+
+    // 2. Get the current host (e.g., 192.168.10.33.nip.io:5173)
+    const host = window.location.host
+
+    // 3. Get the base path from our .env (/ws/)
+    const wsBase = import.meta.env.VITE_WS_BASE_URL // This is now "/ws/"
+
+    // 4. Combine them to point to the PROXY
+    // Result: wss://192.168.10.33.nip.io:5173/ws/activity/?token=...
+    const url = `${protocol}//${host}${wsBase}activity/?token=${authStore.authToken}`
+
+    console.log(`Service: Connecting via Proxy to: ${url}`)
 
     this.socket = new WebSocket(url)
 

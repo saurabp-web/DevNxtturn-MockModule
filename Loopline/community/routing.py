@@ -1,9 +1,7 @@
-# community/routing.py
-
-from django.urls import path
+from django.urls import re_path
 from . import consumers
 
 websocket_urlpatterns = [
-    path('ws/activity/', consumers.UserActivityConsumer.as_asgi()),
-    
+    # Match the cloud-ready prefix
+    re_path(r"^ws/activity/$", consumers.UserActivityConsumer.as_asgi()),
 ]
