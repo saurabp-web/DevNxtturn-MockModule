@@ -6,14 +6,37 @@ from allauth.account.models import EmailAddress
 
 
 class NxtTurnAccountAdapter(DefaultAccountAdapter):
+    def get_site_domain(self):
+        return (
+            settings.FRONTEND_URL.replace("https://", "")
+            .replace("http://", "")
+            .strip("/")
+        )
+
     def get_email_confirmation_url(self, request, emailconfirmation):
         return f"{settings.FRONTEND_URL}/verify-email/{emailconfirmation.key}"
 
+    def send_mail(self, template_prefix, email, context):
+        """
+        GOD MODE v2: Not only fixes the domain, but also fixes the PATH
+        to match the Vue Router exactly.
+        """
+        context["protocol"] = "https"
+        context["domain"] = self.get_site_domain()
 
-# community/adapters.py
+        # If this is a password reset email, we have 'uid' and 'token' in the context
+        if "password_reset_url" in context:
+            uid = context.get("uid")
+            token = context.get("token")
+            # We force the path to match your Vue route: /auth/reset-password/uid/token/
+            context["password_reset_url"] = (
+                f"{settings.FRONTEND_URL}/auth/reset-password/{uid}/{token}/"
+            )
 
+        return super().send_mail(template_prefix, email, context)
 
-# community/adapters.py
+    def format_email_subject(self, subject):
+        return f"nxtturn - {subject}"
 
 
 class NxtTurnSocialAccountAdapter(DefaultSocialAccountAdapter):

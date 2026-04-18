@@ -256,6 +256,8 @@ class TestSetupAPIView(APIView):
 
                 # --- ACTION: Instant Password Reset Link (Replaces old 'mail.outbox' method) ---
                 # This action now handles both 'get_password_reset_link' and 'get_last_email' for compatibility
+                # --- ACTION: Instant Password Reset Link ---
+                # --- ACTION: Instant Password Reset Link ---
                 elif action in ["get_password_reset_link", "get_last_email"]:
                     email = data.get("email")
                     if not email:
@@ -266,19 +268,17 @@ class TestSetupAPIView(APIView):
 
                     user = get_object_or_404(User, email=email)
 
-                    # Generate the secure token exactly like Django does internally
-                    from django.contrib.auth.tokens import default_token_generator
-                    from django.utils.http import urlsafe_base64_encode
-                    from django.utils.encoding import force_bytes
+                    # ALIGNMENT: Use the exact same generator and encoder as serializers.py
+                    from allauth.account.forms import default_token_generator
+                    from allauth.account.utils import user_pk_to_url_str
 
-                    uid = urlsafe_base64_encode(force_bytes(user.pk))
+                    uid = user_pk_to_url_str(user)
                     token = default_token_generator.make_token(user)
 
-                    # Construct the URL that the frontend expects
-                    # Use FRONTEND_URL from settings, with a safe fallback
-                    frontend_url = getattr(
-                        settings, "FRONTEND_URL", "https://192.168.10.33.nip.io:5173"
-                    )
+                    # Get FRONTEND_URL and ensure it doesn't have a double slash
+                    frontend_url = getattr(settings, "FRONTEND_URL", "").rstrip("/")
+
+                    # Construct the URL to match the Vue Router exactly
                     reset_link = f"{frontend_url}/auth/reset-password/{uid}/{token}/"
 
                     return Response({"link": reset_link}, status=status.HTTP_200_OK)

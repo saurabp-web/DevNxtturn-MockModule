@@ -187,6 +187,7 @@ REST_AUTH = {
     "REGISTER_SERIALIZER": "community.serializers.CustomRegisterSerializer",
     "LOGIN_SERIALIZER": "community.serializers.CustomLoginSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "community.serializers.CustomPasswordResetConfirmSerializer",
+    "PASSWORD_RESET_SERIALIZER": "community.serializers.CustomPasswordResetRequestSerializer",
     "PASSWORD_RESET_CONFIRM_URL": f"{FRONTEND_URL}/auth/reset-password/{{uid}}/{{token}}/",
     "SIGNUP_FIELDS": {"username": {"required": True}, "email": {"required": True}},
 }

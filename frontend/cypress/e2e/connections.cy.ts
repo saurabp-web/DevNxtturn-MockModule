@@ -4,8 +4,16 @@ describe('Icon-Based Connection and Follow System', () => {
   // Use a constant for the API base path as defined by the Vite proxy
   const API_BASE_PATH = '/api'
 
-  const userA = { username: 'userA_follower', password: 'password123', email: 'userA@test.com' }
-  const userB = { username: 'userB_followed', password: 'password123', email: 'userB@test.com' }
+  const userA = {
+    username: 'userA_follower',
+    password: 'password123',
+    email: 'userA@cypresstest.com',
+  }
+  const userB = {
+    username: 'userB_followed',
+    password: 'password123',
+    email: 'userB@cypresstest.com',
+  }
 
   beforeEach(() => {
     // Ensure a clean slate and create users for each test

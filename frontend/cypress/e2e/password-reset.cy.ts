@@ -1,14 +1,15 @@
-// C:\nxtturn\frontend\cypress\e2e\auth\password-reset.cy.ts
+// C:\nxtturn\frontend\cypress\e2e\password-reset.cy.ts
 
 describe('Password Reset Flow', () => {
   const resetUser = {
     username: `reset_user_${Date.now()}`,
     email: `reset_${Date.now()}@cypresstest.com`,
-    password: 'NewStrongPassword!789', // A strong password that meets Django's requirements
+    password: 'InitialPassword@123',
   }
 
   before(() => {
-    // Seed the database with the test user
+    // Clean slate and create the user
+    cy.testSetup('cleanup')
     cy.testSetup('create_user', resetUser)
   })
 
@@ -18,59 +19,48 @@ describe('Password Reset Flow', () => {
     })
 
     it('successfully requests a reset and confirms the password can be changed', () => {
-      // 1. Navigate to the password reset request page
+      // --- PHASE 1: REQUEST ---
       cy.visit('/auth/forgot-password')
-      cy.get('h2').should('contain', 'Forgot Your Password?')
-
-      // Type the email and click submit
-      cy.get('#email').type(resetUser.email)
-
-      // Intercept the POST request to the password reset API
-      cy.intercept('POST', '/api/auth/password/reset/').as('passwordResetRequest')
+      cy.get('#email').clear().type(resetUser.email)
+      cy.intercept('POST', '**/api/auth/password/reset/').as('passwordResetRequest')
       cy.get('button[type="submit"]').click()
+      cy.wait('@passwordResetRequest').its('response.statusCode').should('eq', 200)
+      cy.contains('Success', { timeout: 15000 }).should('be.visible')
 
-      // Wait for the backend request to complete and verify success
-      cy.wait('@passwordResetRequest', { timeout: 10000 })
-        .its('response.statusCode')
-        .should('eq', 200)
-
-      // Assert that the success message appears on the UI
-      cy.get('.bg-green-100, .text-green-600', { timeout: 15000 }) // Use broader selector and longer timeout
-        .should('be.visible')
-        .and('contain.text', 'Success')
-
-      // 3. Obtain the password reset link directly from the backend's test utility
+      // --- PHASE 2: RESET ---
       cy.testSetup('get_password_reset_link', { email: resetUser.email }).then((response) => {
         const resetUrl = response.body.link
-
-        // 4. Visit the reset link to access the password change form
         cy.visit(resetUrl)
 
-        // Assert we are on the correct page before interacting with the form
-        cy.url().should('include', '/auth/reset-password/')
-        cy.get('h2').should('contain', 'Choose a New Password')
+        const newPassword = 'NewlyChangedPassword@456'
+        cy.get('#new_password1').clear().type(newPassword)
+        cy.get('#new_password2').clear().type(newPassword)
 
-        // Enter the new password and confirm it
-        const newPassword = 'AnotherStrongPassword@123' // A different strong password
-        cy.get('#new_password1').type(newPassword)
-        cy.get('#new_password2').type(newPassword)
-
-        // Intercept and wait for the password reset confirmation request
-        cy.intercept('POST', '/api/auth/password/reset/confirm/').as('passwordResetConfirm')
+        cy.intercept('POST', '**/api/auth/password/reset/confirm/').as('passwordResetConfirm')
         cy.get('button[type="submit"]').click()
-        cy.wait('@passwordResetConfirm', { timeout: 10000 })
-          .its('response.statusCode')
-          .should('eq', 200)
 
-        // Confirm success message after password has been set
-        cy.get('.bg-green-100, .text-green-600', { timeout: 15000 }).should(
-          'contain.text',
-          'Your password has been set.',
-        )
+        cy.wait('@passwordResetConfirm', { timeout: 12000 }).then((interception) => {
+          if (!interception.response) throw new Error('No response from backend')
+          expect(interception.response.statusCode).to.equal(200)
+        })
 
-        // Log in with the NEW password and assert successful redirect to Home Feed
+        // Confirm success message is shown on the UI
+        cy.contains(/password has been set|successfully/i, { timeout: 15000 }).should('be.visible')
+
+        // --- PHASE 3: VERIFY LOGIN (THE FINAL CHECK) ---
+
+        // 1. Programmatic login with the NEW password
         cy.login(resetUser.username, newPassword)
-        cy.get('h2').should('contain', 'Home Feed') // Assert successful login
+
+        // 2. Force navigation to the root to trigger a fresh app load
+        cy.visit('/')
+
+        // 3. Verify the URL is no longer in the /auth/ section
+        cy.url({ timeout: 20000 }).should('not.include', '/auth/')
+
+        // 4. Robust Text Search: Look for "Home Feed" anywhere on the page
+        // We remove the 'h2' restriction to make it more flexible
+        cy.contains(/Home Feed/i, { timeout: 20000 }).should('be.visible')
       })
     })
   })

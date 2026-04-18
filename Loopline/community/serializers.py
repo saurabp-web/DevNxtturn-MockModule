@@ -1566,3 +1566,20 @@ class NxtTurnSocialLoginSerializer(SocialLoginSerializer):
         attrs["login"] = login
 
         return attrs
+
+
+from dj_rest_auth.serializers import PasswordResetSerializer
+from django.conf import settings
+
+
+class CustomPasswordResetRequestSerializer(PasswordResetSerializer):
+    def get_email_options(self):
+        opts = super().get_email_options()
+        # Force Django to use the FRONTEND_URL domain instead of "backend:8000"
+        domain = (
+            settings.FRONTEND_URL.replace("https://", "")
+            .replace("http://", "")
+            .strip("/")
+        )
+        opts["domain_override"] = domain
+        return opts
