@@ -93,6 +93,7 @@ urlpatterns = [
     path(
         "search/content/", views.ContentSearchAPIView.as_view(), name="content-search"
     ),
+    path("check-username/", views.UsernameCheckView.as_view(), name="check-username"),
     # --- Posts & Content ---
     path(
         "posts/",

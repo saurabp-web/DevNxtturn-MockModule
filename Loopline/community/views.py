@@ -105,6 +105,44 @@ from .permissions import (
 
 User = get_user_model()
 
+
+class UsernameCheckView(APIView):
+    """
+    Checks if a username is available. If taken, provides 3 alternatives.
+    Used during signup to prevent "Username Taken" errors.
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        username = request.query_params.get("username", "").lower().strip()
+
+        # Rule: Minimum 3 characters to trigger a check
+        if not username or len(username) < 3:
+            return Response({"available": False, "suggestions": []})
+
+        # Check the 'Big Book' (User table) for exact match (case-insensitive)
+        is_taken = User.objects.filter(username__iexact=username).exists()
+
+        if not is_taken:
+            return Response({"available": True, "suggestions": []})
+
+        # If taken, generate 3 suggestions (e.g., username23, username777)
+        suggestions = []
+        attempts = 0
+        while len(suggestions) < 3 and attempts < 50:
+            attempts += 1
+            suffix = random.randint(10, 999)
+            candidate = f"{username}{suffix}"
+
+            # Ensure the suggestion itself isn't already taken
+            if not User.objects.filter(username__iexact=candidate).exists():
+                if candidate not in suggestions:
+                    suggestions.append(candidate)
+
+        return Response({"available": False, "suggestions": suggestions})
+
+
 # ==================================
 # Custom Pagination Classes
 # ==================================

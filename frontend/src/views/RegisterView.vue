@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import type { AxiosError } from 'axios'
@@ -20,12 +21,56 @@ const showPassword1 = ref(false)
 const showPassword2 = ref(false)
 const rememberMe = ref(false)
 
+const usernameStatus = ref<'available' | 'taken' | 'checking' | 'too_short' | null>(null)
+const suggestions = ref<string[]>([])
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
 const passwordsMismatch = computed(() => {
   return password.value && password2.value && password.value !== password2.value
 })
 
+const checkUsername = async (name: string) => {
+  if (name.length < 3) {
+    usernameStatus.value = 'too_short'
+    return
+  }
+  usernameStatus.value = 'checking'
+  try {
+    const response = await axios.get(`/api/check-username/?username=${name}`)
+    if (response.data.available) {
+      usernameStatus.value = 'available'
+      suggestions.value = []
+    } else {
+      usernameStatus.value = 'taken'
+      suggestions.value = response.data.suggestions
+    }
+  } catch (error) {
+    usernameStatus.value = null
+  }
+}
+
+watch(username, (newVal) => {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  if (!newVal) {
+    usernameStatus.value = null
+    return
+  }
+  debounceTimer = setTimeout(() => checkUsername(newVal), 500)
+})
+
+const selectSuggestion = (name: string) => {
+  username.value = name
+  usernameStatus.value = 'available'
+  suggestions.value = []
+}
+
 const isSubmitDisabled = computed(() => {
-  return isLoading.value || passwordsMismatch.value
+  return (
+    isLoading.value ||
+    passwordsMismatch.value ||
+    usernameStatus.value === 'taken' ||
+    usernameStatus.value === 'checking'
+  )
 })
 
 const parseError = (error: unknown): string => {
@@ -125,14 +170,51 @@ const handleGoogleLogin = () => {
             <label for="username" class="block text-xs font-medium text-gray-700 mb-1"
               >Username</label
             >
-            <input
-              type="text"
-              id="username"
-              v-model="username"
-              required
-              placeholder="Enter your username"
-              class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-            />
+            <div class="relative">
+              <input
+                type="text"
+                id="username"
+                v-model="username"
+                required
+                placeholder="Enter your username"
+                class="w-full px-3 py-2 text-xs border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors"
+                :class="{
+                  'border-gray-300 focus:ring-indigo-500': !usernameStatus,
+                  'border-green-500 focus:ring-green-500': usernameStatus === 'available',
+                  'border-red-500 focus:ring-red-500': usernameStatus === 'taken',
+                }"
+              />
+              <!-- Loading Spinner -->
+              <div v-if="usernameStatus === 'checking'" class="absolute right-3 top-2.5">
+                <div
+                  class="animate-spin h-3 w-3 border-2 border-indigo-500 border-t-transparent rounded-full"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Availability Message -->
+            <p
+              v-if="usernameStatus === 'available'"
+              class="mt-1 text-[10px] text-green-600 flex items-center gap-1"
+            >
+              ✓ Username available
+            </p>
+
+            <!-- Suggestions if taken -->
+            <div v-if="usernameStatus === 'taken'" class="mt-1">
+              <p class="text-[10px] text-red-600 mb-1">Username taken. Try these:</p>
+              <div class="flex flex-wrap gap-1">
+                <button
+                  v-for="sug in suggestions"
+                  :key="sug"
+                  type="button"
+                  @click="selectSuggestion(sug)"
+                  class="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-[9px] text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 transition-colors"
+                >
+                  {{ sug }}
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Password -->
