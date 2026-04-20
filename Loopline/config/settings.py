@@ -260,3 +260,7 @@ def sync_production_settings(sender, **kwargs):
         Site.objects.update_or_create(
             id=SITE_ID, defaults={"domain": new_domain, "name": "nxtturn.com"}
         )
+
+
+# Password reset links will now expire after 1 hour (3600 seconds)
+PASSWORD_RESET_TIMEOUT = 3600

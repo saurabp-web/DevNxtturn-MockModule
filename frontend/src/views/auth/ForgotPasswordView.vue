@@ -18,31 +18,36 @@
       </div>
 
       <!-- Form Body -->
+      <!-- Form Body -->
       <div class="px-6 py-5">
-        <form @submit.prevent="handleRequestReset" class="space-y-4">
-          <!-- Success Message -->
-          <div
-            v-if="successMessage"
-            class="bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded-lg text-sm"
-            role="alert"
-          >
-            <p class="font-bold">Success</p>
-            <p>{{ successMessage }}</p>
-          </div>
+        <!-- 1. SUCCESS STATE: Shown ONLY after email is sent -->
+        <div v-if="successMessage" class="text-center py-4 animate-in fade-in duration-500">
+          <div class="text-4xl mb-3">📩</div>
+          <h3 class="text-sm font-bold text-gray-800 mb-2">Check your email</h3>
+          <p class="text-xs text-gray-600 leading-relaxed mb-6">
+            We've sent a reset link to <br />
+            <span class="font-semibold text-indigo-600">{{ email }}</span
+            >. Check your inbox and spam folder.
+          </p>
+          <!-- This link resets the screen so they can try again if they made a typo -->
+          <button @click="successMessage = null" class="text-xs text-indigo-600 hover:underline">
+            Didn't get it? Try another email
+          </button>
+        </div>
 
+        <!-- 2. INPUT STATE: Shown by default, HIDDEN after success -->
+        <form v-else @submit.prevent="handleRequestReset" class="space-y-4">
           <!-- Error Message -->
           <div
             v-if="errorMessage"
-            class="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 rounded-lg text-sm"
-            role="alert"
+            class="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded-lg text-[10px] flex items-center gap-2"
           >
-            <p class="font-bold">Error</p>
-            <p>{{ errorMessage }}</p>
+            <span>⚠️</span> {{ errorMessage }}
           </div>
 
           <!-- Email Input -->
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-1"
+            <label for="email" class="block text-xs font-medium text-gray-700 mb-1"
               >Email Address</label
             >
             <input
@@ -51,18 +56,17 @@
               v-model="email"
               required
               :disabled="isLoading"
-              placeholder="Enter your email address"
-              class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors disabled:bg-gray-50"
+              placeholder="name@example.com"
+              class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
             />
           </div>
 
-          <!-- Submit Button -->
           <button
             type="submit"
             :disabled="Boolean(isLoading)"
-            class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed text-sm"
+            class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors disabled:bg-indigo-300 text-xs"
           >
-            {{ isLoading ? 'Sending...' : 'Send Reset Link' }}
+            {{ isLoading ? 'Sending Link...' : 'Send Reset Link' }}
           </button>
         </form>
 
@@ -109,7 +113,6 @@ const handleRequestReset = async () => {
       response.data.detail +
       ' If an account with this email exists, you will receive instructions shortly.'
     toast.success('Password reset request sent successfully.')
-    email.value = '' // Clear the form on success
   } catch (error: any) {
     errorMessage.value =
       error.response?.data?.detail || 'An unexpected error occurred. Please try again.'

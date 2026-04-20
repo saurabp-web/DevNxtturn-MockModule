@@ -223,6 +223,11 @@ urlpatterns = [
     path("posts/saved/", views.SavedPostListView.as_view(), name="saved-post-list"),
     # --- System ---
     path("health-check/", views.health_check_view, name="health-check"),
+    path(
+        "auth/password/reset/validate/<str:uidb64>/<str:token>/",
+        views.PasswordTokenCheckView.as_view(),
+        name="password-token-check",
+    ),
 ]
 
 # Append the main router urls (connections/requests)

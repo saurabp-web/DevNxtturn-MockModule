@@ -10,6 +10,10 @@ from django.http import Http404
 from django.db.models import Q, Count, Value, CharField, Case, When
 from django.db import transaction
 from django.utils import timezone
+
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
@@ -141,6 +145,40 @@ class UsernameCheckView(APIView):
                     suggestions.append(candidate)
 
         return Response({"available": False, "suggestions": suggestions})
+
+
+from allauth.account.utils import url_str_to_user_pk as uid_decoder
+
+
+class PasswordTokenCheckView(APIView):
+    """
+    Silent Validator: Checks if a password reset link is still alive.
+    Compatible with AllAuth hex-encoded UIDs.
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, uidb64, token):
+        try:
+            # 1. Use the AllAuth decoder (this handles the '1d4' format correctly)
+            uid = uid_decoder(uidb64)
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response(
+                {"valid": False, "detail": "Invalid User"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 2. Check the token using the generator
+        from allauth.account.forms import default_token_generator
+
+        if default_token_generator.check_token(user, token):
+            return Response({"valid": True}, status=status.HTTP_200_OK)
+
+        return Response(
+            {"valid": False, "detail": "Token Expired or Used"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 # ==================================
