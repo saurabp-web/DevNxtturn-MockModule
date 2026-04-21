@@ -59,3 +59,5 @@ tzdata==2025.2
 urllib3==2.3.0
 whitenoise==6.9.0
 zope.interface==7.2
+django-storages[google]==1.14.2
+google-cloud-storage==2.14.0
