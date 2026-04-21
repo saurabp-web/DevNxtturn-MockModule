@@ -1,0 +1,90 @@
+steps:
+  # --- BACKEND SECTION ---
+  # 1. Build the Backend (Using your development stage)
+  - name: "gcr.io/cloud-builders/docker"
+    id: "Build Backend"
+    args:
+      [
+        "build",
+        "--target",
+        "development",
+        "-t",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest",
+        ".",
+      ]
+
+  # 2. Push Backend to Gallery
+  - name: "gcr.io/cloud-builders/docker"
+    id: "Push Backend"
+    args:
+      [
+        "push",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest",
+      ]
+
+  # 3. Deploy Backend to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Deploy Backend"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "nxtturn-backend-dev"
+      - "--image"
+      - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest"
+      - "--region"
+      - "us-central1"
+      - "--service-account"
+      - "nxtturn-dev-cloud-robot@$PROJECT_ID.iam.gserviceaccount.com"
+      - "--network"
+      - "default"
+      - "--subnet"
+      - "default"
+      - "--set-env-vars"
+      - "ENVIRONMENT=development,IS_LOCAL=False,GS_BUCKET_NAME=nxtturn-media-dev-cloud"
+      - "--set-secrets"
+      - "DATABASE_URL=DATABASE_CONNECTION_NAME:latest,SECRET_KEY=SECRET_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest,REDIS_URL=REDIS_URL:latest,BREVO_API_KEY=BREVO_API_KEY:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest"
+      - "--allow-unauthenticated"
+
+  # --- FRONTEND SECTION ---
+  # 4. Build the Frontend (Using your production-stage Nginx version)
+  - name: "gcr.io/cloud-builders/docker"
+    id: "Build Frontend"
+    args:
+      [
+        "build",
+        "--target",
+        "production-stage",
+        "-f",
+        "frontend/Dockerfile",
+        "-t",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest",
+        "./frontend",
+      ]
+
+  # 5. Push Frontend
+  - name: "gcr.io/cloud-builders/docker"
+    id: "Push Frontend"
+    args:
+      [
+        "push",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest",
+      ]
+
+  # 6. Deploy Frontend
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: "Deploy Frontend"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "nxtturn-frontend-dev"
+      - "--image"
+      - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest"
+      - "--region"
+      - "us-central1"
+      - "--allow-unauthenticated"
+
+images:
+  - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest"
+  - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest"
