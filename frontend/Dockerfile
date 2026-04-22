@@ -3,17 +3,15 @@
 # ==========================================
 FROM node:20-slim AS base
 WORKDIR /app
-# Copy only the shopping list first for faster builds
 COPY package*.json ./
 RUN npm install
 
 # ==========================================
-# STAGE 2: The Developer (Local Dev with Hot Reload)
+# STAGE 2: The Developer (Local Dev)
 # ==========================================
 FROM base AS develop-stage
 COPY . .
 EXPOSE 5173
-# This runs the Vite dev server with --host so Docker can see it
 CMD ["npm", "run", "dev", "--", "--host"]
 
 # ==========================================
@@ -21,11 +19,19 @@ CMD ["npm", "run", "dev", "--", "--host"]
 # ==========================================
 FROM base AS production-stage
 COPY . .
-# Turn the code into tiny HTML/JS files
+
+# --- FIX 1: Accept the Backend URL from Google Cloud ---
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
 # Use Nginx for the final high-speed delivery
 FROM nginx:stable-alpine
 COPY --from=production-stage /app/dist /usr/share/nginx/html
-EXPOSE 80
+
+# --- FIX 2: Change Nginx port from 80 to 8080 ---
+RUN sed -i 's/listen\(.*\)80;/listen 8080;/' /etc/nginx/conf.d/default.conf
+
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]

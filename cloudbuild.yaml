@@ -47,13 +47,14 @@ steps:
       - "--allow-unauthenticated"
 
   # --- FRONTEND SECTION ---
-  # 4. Build the Frontend (Using your production-stage Nginx version)
+  # 4. Build the Frontend
   - name: "gcr.io/cloud-builders/docker"
     id: "Build Frontend"
     args:
       [
         "build",
-
+        "--build-arg",
+        "VITE_API_URL=https://nxtturn-backend-dev-656842361738.us-central1.run.app",
         "-f",
         "frontend/Dockerfile",
         "-t",
