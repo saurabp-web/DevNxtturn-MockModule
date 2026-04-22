@@ -88,3 +88,6 @@ steps:
 images:
   - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest"
   - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
