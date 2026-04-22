@@ -53,8 +53,7 @@ steps:
     args:
       [
         "build",
-        "--target",
-        "production-stage",
+
         "-f",
         "frontend/Dockerfile",
         "-t",
