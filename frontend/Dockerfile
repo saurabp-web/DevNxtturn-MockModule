@@ -5,14 +5,13 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-# Pass the Backend URL during build
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
+# --- FIX: Match the variable name in your App Code (VITE_API_BASE_URL) ---
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
-# --- NEW: Pass the Google Client ID during build ---
+# --- FIX: Match the variable name for Google Auth ---
 ARG VITE_GOOGLE_CLIENT_ID
 ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
-# ---------------------------------------------------
 
 RUN npm run build
 

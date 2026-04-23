@@ -50,11 +50,10 @@ steps:
   # 4. Build the Frontend
   - name: "gcr.io/cloud-builders/docker"
     id: "Build Frontend"
-    args:
-      [
+    args: [
         "build",
         "--build-arg",
-        "VITE_API_URL=https://nxtturn-backend-dev-656842361738.us-central1.run.app",
+        "VITE_API_BASE_URL=https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/", # Changed to match code
         "--build-arg",
         "VITE_GOOGLE_CLIENT_ID=821330118168-0p3nsa8a08rr1nahtq51quhdp8q7bfv4.apps.googleusercontent.com",
         "-f",
