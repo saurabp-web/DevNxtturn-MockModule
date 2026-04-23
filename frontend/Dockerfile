@@ -27,9 +27,9 @@ RUN echo 'server { \
     proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 2. AUTH Proxy (The fix for /auth/registration/) \
+    # 2. AUTH REWRITE PROXY (Maps frontend /auth/ to backend /api/auth/) \
     location /auth/ { \
-    proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/auth/; \
+    proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/auth/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
     proxy_set_header X-Real-IP $remote_addr; \
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
