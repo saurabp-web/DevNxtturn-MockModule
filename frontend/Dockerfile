@@ -13,13 +13,16 @@ RUN npm run build
 
 # STAGE 2: Nginx
 FROM nginx:stable-alpine
-# Copy the contents of the 'dist' folder to nginx html folder
+
+# Copy the built files
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# Create the Nginx config to support Vue Router (the 403 fix)
+# --- FIX 1: Ensure Nginx has permission to read the files ---
+RUN chmod -R 755 /usr/share/nginx/html
+
+# --- FIX 2: Clearer Nginx configuration ---
 RUN echo 'server { \
     listen 8080; \
-    server_name localhost; \
     location / { \
     root /usr/share/nginx/html; \
     index index.html; \
