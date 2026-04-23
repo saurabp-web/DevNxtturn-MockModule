@@ -9,18 +9,17 @@ COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
+# --- NEW: Pass the Google Client ID during build ---
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+# ---------------------------------------------------
+
 RUN npm run build
 
 # STAGE 2: Nginx
 FROM nginx:stable-alpine
-
-# Copy the built files
 COPY --from=build-stage /app/dist /usr/share/nginx/html
-
-# --- FIX 1: Ensure Nginx has permission to read the files ---
 RUN chmod -R 755 /usr/share/nginx/html
-
-# --- FIX 2: Clearer Nginx configuration ---
 RUN echo 'server { \
     listen 8080; \
     location / { \

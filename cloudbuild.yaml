@@ -55,6 +55,8 @@ steps:
         "build",
         "--build-arg",
         "VITE_API_URL=https://nxtturn-backend-dev-656842361738.us-central1.run.app",
+        "--build-arg",
+        "VITE_GOOGLE_CLIENT_ID=821330118168-0p3nsa8a08rr1nahtq51quhdp8q7bfv4.apps.googleusercontent.com",
         "-f",
         "frontend/Dockerfile",
         "-t",
