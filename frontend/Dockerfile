@@ -4,23 +4,26 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-
-# --- FIX: Match the variable name in your App Code (VITE_API_BASE_URL) ---
-ARG VITE_API_BASE_URL
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-
-# --- FIX: Match the variable name for Google Auth ---
-ARG VITE_GOOGLE_CLIENT_ID
-ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
-
+# Note: We no longer need to inject VITE_API_URL here. 
+# The Nginx Proxy handles the routing automatically.
 RUN npm run build
 
-# STAGE 2: Nginx
+# STAGE 2: Nginx (The Traffic Cop)
 FROM nginx:stable-alpine
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 RUN chmod -R 755 /usr/share/nginx/html
+
+# --- THE REVERSE PROXY CONFIG ---
+# This tells Nginx: "If a request starts with /api/, send it to the Backend."
 RUN echo 'server { \
     listen 8080; \
+    location /api/ { \
+    proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/; \
+    proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
+    proxy_set_header X-Real-IP $remote_addr; \
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+    proxy_set_header X-Forwarded-Proto $scheme; \
+    } \
     location / { \
     root /usr/share/nginx/html; \
     index index.html; \
