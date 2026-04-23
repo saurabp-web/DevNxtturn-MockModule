@@ -1,37 +1,32 @@
-# STAGE 1: Build (Compiling Vue.js)
+# STAGE 1: Build
 FROM node:20-slim AS build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 
-# --- CRITICAL: Injecting Environment Variables for the Build ---
-# These ARGs must be passed from cloudbuild.yaml. 
-# Vite "bakes" these into the JS files at this exact moment.
+# --- CRITICAL: These catch the values from cloudbuild.yaml ---
 ARG VITE_GOOGLE_CLIENT_ID
 ARG VITE_API_URL
 ARG VITE_WS_URL
 
+# --- CRITICAL: These make them available to 'npm run build' ---
 ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_WS_URL=$VITE_WS_URL
 
-# Compile the Vue app
+# This is when the variables are "burned" into your JS code
 RUN npm run build
 
-# STAGE 2: Nginx (The Smart Gateway)
+# STAGE 2: Nginx
 FROM nginx:stable-alpine
-
-# Copy the compiled static files
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 RUN chmod -R 755 /usr/share/nginx/html
 
-# Write the Nginx Configuration
 RUN echo 'server { \
     listen 8080; \
     \
-    # 1. WEBSOCKET PROXY (Fixes the Feed/Notifications) \
-    # This block allows "Upgrading" the connection from HTTP to WS. \
+    # 1. WebSocket Proxy \
     location /ws/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/ws/; \
     proxy_http_version 1.1; \
@@ -43,7 +38,7 @@ RUN echo 'server { \
     proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 2. API PROXY \
+    # 2. API Proxy \
     location /api/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
@@ -52,7 +47,7 @@ RUN echo 'server { \
     proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 3. AUTH REWRITE PROXY (Maps /auth/ to /api/auth/) \
+    # 3. Auth Proxy (Maps /auth/ to /api/auth/) \
     location /auth/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/auth/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
@@ -61,19 +56,19 @@ RUN echo 'server { \
     proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 4. DJANGO ADMIN PROXY \
+    # 4. Django Admin Proxy \
     location /admin/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/admin/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
     } \
     \
-    # 5. ADMIN STATIC ASSETS \
+    # 5. Admin Static Assets \
     location /static/admin/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/static/admin/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
     } \
     \
-    # 6. FRONTEND VUE APP (SPA Routing) \
+    # 6. Frontend Vue App \
     location / { \
     root /usr/share/nginx/html; \
     index index.html; \
