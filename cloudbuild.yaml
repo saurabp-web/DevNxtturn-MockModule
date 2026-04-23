@@ -42,7 +42,6 @@ steps:
       - "DATABASE_URL=DATABASE_CONNECTION_NAME:latest,SECRET_KEY=SECRET_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest,REDIS_URL=REDIS_URL:latest,BREVO_API_KEY=BREVO_API_KEY:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest"
       - "--allow-unauthenticated"
 
-  # --- FRONTEND SECTION ---
   # 4. Build the Frontend
   - name: "gcr.io/cloud-builders/docker"
     id: "Build Frontend"
@@ -51,6 +50,10 @@ steps:
         "build",
         "--build-arg",
         "VITE_GOOGLE_CLIENT_ID=821330118168-0p3nsa8a08rr1nahtq51quhdp8q7bfv4.apps.googleusercontent.com",
+        "--build-arg",
+        "VITE_API_URL=https://dev.nxtturn.com/api/",
+        "--build-arg",
+        "VITE_WS_URL=wss://dev.nxtturn.com/ws/",
         "-f",
         "frontend/Dockerfile",
         "-t",
