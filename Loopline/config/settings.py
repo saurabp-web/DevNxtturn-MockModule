@@ -162,7 +162,9 @@ if os.getenv("CYPRESS_TESTING", "false").lower() == "true":
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 elif EMAIL_MODE == "brevo":
     EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
-    ANYMAIL = {"BREVO_API_KEY": os.getenv("BREVO_API_KEY")}
+    # Capture the key and immediately remove any invisible spaces or newlines
+    raw_brevo_key = os.getenv("BREVO_API_KEY", "")
+    ANYMAIL = {"BREVO_API_KEY": raw_brevo_key.strip()}
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
