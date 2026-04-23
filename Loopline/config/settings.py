@@ -216,6 +216,11 @@ if FRONTEND_URL:
     CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
+# NEW: Also trust the Backend's own URL for Admin logins
+BACKEND_URL = os.getenv("BACKEND_URL")
+if BACKEND_URL:
+    CSRF_TRUSTED_ORIGINS.append(BACKEND_URL)
+
 # Always trust standard local addresses for convenience
 extra_origins = ["https://localhost:5173", "https://127.0.0.1:5173"]
 for origin in extra_origins:
