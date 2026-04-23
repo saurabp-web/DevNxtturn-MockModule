@@ -4,17 +4,19 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-# Note: We no longer need to inject VITE_API_URL here. 
-# The Nginx Proxy handles the routing automatically.
+
+# --- CRITICAL FIX: Catch the Google ID from the Build Args ---
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+# -----------------------------------------------------------
+
 RUN npm run build
 
-# STAGE 2: Nginx (The Traffic Cop)
+# STAGE 2: Nginx (The Gateway)
 FROM nginx:stable-alpine
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 RUN chmod -R 755 /usr/share/nginx/html
 
-# --- THE REVERSE PROXY CONFIG ---
-# This tells Nginx: "If a request starts with /api/, send it to the Backend."
 RUN echo 'server { \
     listen 8080; \
     location /api/ { \
