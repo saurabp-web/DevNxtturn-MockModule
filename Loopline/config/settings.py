@@ -140,9 +140,19 @@ if IS_LOCAL:
         },
     }
 else:
-    # Use Google Cloud (We will set GS_BUCKET_NAME in the Google Console later)
+    # Use Google Cloud
     GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+
+    # --- ADD THESE THREE LINES ---
+    GS_QUERYSTRING_AUTH = os.getenv("GS_QUERYSTRING_AUTH", "True").lower() == "true"
+    GS_SERVICE_ACCOUNT_EMAIL = os.getenv("GS_SERVICE_ACCOUNT_EMAIL")
+    GS_DEFAULT_ACL = None  # Crucial for private buckets
+    # -----------------------------
+
+    # When using Signed URLs, we let the storage backend handle the URL generation
+    # Instead of a hardcoded URL, we use a simple placeholder or leave it blank
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+
     STORAGES = {
         "default": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"},
         "staticfiles": {

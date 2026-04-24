@@ -1,4 +1,5 @@
 import json
+import traceback
 from rest_framework import serializers, validators
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -50,9 +51,15 @@ class PostMediaSerializer(serializers.ModelSerializer):
         fields = ["id", "media_type", "url"]
 
     def get_url(self, obj):
-        # This safely checks if the file exists before asking for the URL
-        if obj.file and hasattr(obj.file, "url"):
-            return obj.file.url
+        if obj.file:
+            try:
+                # If settings.py is correct, this will now return the signed URL
+                return obj.file.url
+            except Exception as e:
+                # If it still fails, this will tell us EXACTLY why in the Cloud Logs
+                print(f"!!! STORAGE ERROR: {str(e)}")
+                traceback.print_exc()
+                return None
         return None
 
 
