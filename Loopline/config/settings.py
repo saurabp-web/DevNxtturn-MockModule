@@ -143,14 +143,15 @@ else:
     # Use Google Cloud
     GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
-    # --- ADD THESE THREE LINES ---
-    GS_QUERYSTRING_AUTH = os.getenv("GS_QUERYSTRING_AUTH", "True").lower() == "true"
+    # --- PRO INDUSTRY SETTINGS (IAM SIGNING) ---
+    # This block allows signing WITHOUT a JSON key file
+    GS_QUERYSTRING_AUTH = True
+    GS_IAM_SIGN_BLOB = True  # <--- THIS IS THE CRITICAL MISSING LINE
     GS_SERVICE_ACCOUNT_EMAIL = os.getenv("GS_SERVICE_ACCOUNT_EMAIL")
-    GS_DEFAULT_ACL = None  # Crucial for private buckets
-    # -----------------------------
+    GS_DEFAULT_ACL = None  # Keeps the bucket private
+    # -------------------------------------------
 
-    # When using Signed URLs, we let the storage backend handle the URL generation
-    # Instead of a hardcoded URL, we use a simple placeholder or leave it blank
+    # When using Signed URLs, the storage backend handles the URL generation
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 
     STORAGES = {
