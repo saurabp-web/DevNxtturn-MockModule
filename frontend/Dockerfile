@@ -7,15 +7,17 @@ COPY . .
 
 # --- CRITICAL: VARIABLE SYNC ---
 # We catch these from the --build-arg in cloudbuild.yaml
-# We MUST use VITE_WS_BASE_URL because that is what your 
-# notificationService.ts is looking for.
+# VITE_API_BASE_URL is needed for axiosInstance.ts (The Feed)
+# VITE_WS_BASE_URL is needed for notificationService.ts (Real-time updates)
 ARG VITE_GOOGLE_CLIENT_ID
+ARG VITE_API_BASE_URL
 ARG VITE_WS_BASE_URL
 
 ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_WS_BASE_URL=$VITE_WS_BASE_URL
 
-# Compile the app (Vite burns the /ws/ path into the JS files now)
+# Compile the app (Vite burns /api/ and /ws/ into the JS files now)
 RUN npm run build
 
 # STAGE 2: Nginx (The Smart Gateway)
@@ -25,11 +27,11 @@ FROM nginx:stable-alpine
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 RUN chmod -R 755 /usr/share/nginx/html
 
-# Final Nginx Configuration including the WebSocket "Upgrade" Bridge
+# Final Nginx Configuration
 RUN echo 'server { \
     listen 8080; \
     \
-    # 1. WEBSOCKET PROXY (Fixes the Feed and Real-time notifications) \
+    # 1. WEBSOCKET PROXY \
     location /ws/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/ws/; \
     proxy_http_version 1.1; \
@@ -41,7 +43,7 @@ RUN echo 'server { \
     proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 2. API PROXY \
+    # 2. API PROXY (Fixes the Feed loading) \
     location /api/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
@@ -50,7 +52,7 @@ RUN echo 'server { \
     proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 3. AUTH REWRITE PROXY (Maps frontend /auth/ to backend /api/auth/) \
+    # 3. AUTH REWRITE PROXY \
     location /auth/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/auth/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
