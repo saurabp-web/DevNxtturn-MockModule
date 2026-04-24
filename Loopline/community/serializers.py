@@ -43,14 +43,17 @@ User = get_user_model()
 
 
 class PostMediaSerializer(serializers.ModelSerializer):
-    # Change the 'file_url' to be a simple URLField that gets the URL directly.
-    # DRF and Cloudinary will handle generating the full URL automatically.
-    file_url = serializers.URLField(source="file.url", read_only=True)
+    url = serializers.SerializerMethodField()
 
     class Meta:
         model = PostMedia
-        # We only need to expose the final URL, not the raw file object.
-        fields = ["id", "media_type", "file_url"]
+        fields = ["id", "media_type", "url"]
+
+    def get_url(self, obj):
+        # This safely checks if the file exists before asking for the URL
+        if obj.file and hasattr(obj.file, "url"):
+            return obj.file.url
+        return None
 
 
 class PollOptionSerializer(serializers.ModelSerializer):
@@ -1080,9 +1083,7 @@ class LivePostSerializer(serializers.ModelSerializer):
     # ... (all get_* methods remain the same)
 
 
-# --- FeedItemSerializer and other serializers remain unchanged ---
-# ... (rest of your serializers.py file) ...
-# --- CORRECTED FeedItemSerializer with proper indentation ---
+# --- CORRECTED FeedItemSerializer  ---
 class FeedItemSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     author = UserSerializer(read_only=True)
