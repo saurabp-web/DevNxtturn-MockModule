@@ -5,7 +5,6 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-# --- THE FINAL SYNC: Both variables must be here ---
 ARG VITE_GOOGLE_CLIENT_ID
 ARG VITE_API_BASE_URL
 ARG VITE_WS_BASE_URL
@@ -19,15 +18,29 @@ RUN npm run build
 # STAGE 2: Nginx (The Smart Gateway)
 FROM nginx:stable-alpine
 
-# Copy compiled files
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 RUN chmod -R 755 /usr/share/nginx/html
 
-# Final Nginx Configuration
 RUN echo 'server { \
     listen 8080; \
     \
-    # 1. WEBSOCKET PROXY \
+    # 1. THE MAP (index.html): Always check for updates \
+    location / { \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    try_files $uri $uri/ /index.html; \
+    add_header Cache-Control "no-store, no-cache, must-revalidate"; \
+    } \
+    \
+    # 2. THE ASSETS: Cache forever, but 404 if missing \
+    location /assets/ { \
+    root /usr/share/nginx/html; \
+    expires 1y; \
+    add_header Cache-Control "public, immutable"; \
+    try_files $uri =404; \
+    } \
+    \
+    # 3. WEBSOCKET PROXY \
     location /ws/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/ws/; \
     proxy_http_version 1.1; \
@@ -39,7 +52,7 @@ RUN echo 'server { \
     proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 2. API PROXY (Fixes the Feed loading) \
+    # 4. API PROXY \
     location /api/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
@@ -48,32 +61,22 @@ RUN echo 'server { \
     proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 3. AUTH REWRITE PROXY \
+    # 5. AUTH REWRITE PROXY \
     location /auth/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/auth/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
-    proxy_set_header X-Real-IP $remote_addr; \
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
-    proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 4. DJANGO ADMIN PROXY \
+    # 6. DJANGO ADMIN PROXY \
     location /admin/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/admin/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
     } \
     \
-    # 5. ADMIN STATIC ASSETS \
+    # 7. ADMIN STATIC ASSETS \
     location /static/admin/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/static/admin/; \
     proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
-    } \
-    \
-    # 6. FRONTEND VUE APP (SPA Routing) \
-    location / { \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    try_files $uri $uri/ /index.html; \
     } \
     }' > /etc/nginx/conf.d/default.conf
 

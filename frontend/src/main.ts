@@ -11,6 +11,18 @@ import GoogleSignInPlugin from 'vue3-google-signin'
 import App from './App.vue'
 import router from './router'
 
+// --- AUTO-REPAIR LOGIC FOR NEW DEPLOYMENTS ---
+window.onerror = (message) => {
+  const errorMsg = message.toString().toLowerCase()
+  if (
+    errorMsg.includes('failed to fetch dynamically imported module') ||
+    errorMsg.includes("unexpected token '<'")
+  ) {
+    console.warn('New version detected. Auto-refreshing for latest updates...')
+    window.location.reload()
+  }
+}
+
 const app = createApp(App)
 
 const pinia = createPinia()
