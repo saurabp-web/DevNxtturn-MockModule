@@ -142,20 +142,22 @@ if IS_LOCAL:
 else:
     # Use Google Cloud
     GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+    GS_SERVICE_ACCOUNT_EMAIL = os.getenv("GS_SERVICE_ACCOUNT_EMAIL")
 
     # --- PRO INDUSTRY SETTINGS (IAM SIGNING) ---
-    # This block allows signing WITHOUT a JSON key file
     GS_QUERYSTRING_AUTH = True
-    GS_IAM_SIGN_BLOB = True  # <--- THIS IS THE CRITICAL MISSING LINE
-    GS_SERVICE_ACCOUNT_EMAIL = os.getenv("GS_SERVICE_ACCOUNT_EMAIL")
-    GS_DEFAULT_ACL = None  # Keeps the bucket private
+    GS_IAM_SIGN_BLOB = (
+        True  # This tells Django to use the IAM API instead of a local key
+    )
+    GS_DEFAULT_ACL = None
     # -------------------------------------------
 
-    # When using Signed URLs, the storage backend handles the URL generation
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 
     STORAGES = {
-        "default": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"},
+        "default": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
         },
