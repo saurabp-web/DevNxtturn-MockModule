@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { InformationCircleIcon } from '@heroicons/vue/24/outline'
 
-// 1. Detect Environment
-const isProd = import.meta.env.PROD
+// --- ENVIRONMENT DETECTION ---
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const isDevCloud = window.location.hostname === 'dev.nxtturn.com'
+
+// --- THE TOGGLE ---
+// We show REAL ads only if it's NOT local and NOT the dev site.
+// This means once you point "www.nxtturn.com" here, ads turn on automatically!
+const shouldShowRealAds = !isLocal && !isDevCloud
+
 const isLoading = ref(true)
 const currentAd = ref<any>(null)
 
-// --- MOCK DATA (For Development) ---
+// Mock Ads (Your fallback)
 const mockAds = [
   {
     provider: 'Skillshare',
@@ -23,7 +30,6 @@ const mockAds = [
   },
 ]
 
-// --- NEW: Helper function to handle clicks (Fixes the 'window' error) ---
 const handleAdClick = () => {
   if (currentAd.value && currentAd.value.url) {
     window.open(currentAd.value.url, '_blank')
@@ -31,22 +37,26 @@ const handleAdClick = () => {
 }
 
 onMounted(() => {
-  if (isProd) {
-    // 2. PRODUCTION LOGIC: Initialize Google AdSense
-    try {
-      // @ts-ignore
-      const adsbygoogle = (window as any).adsbygoogle || []
-      adsbygoogle.push({})
-      isLoading.value = false
-    } catch (e) {
-      console.error('AdSense failed to load', e)
-    }
+  if (shouldShowRealAds) {
+    // 1. PRODUCTION LOGIC: Initialize Real AdSense
+    nextTick(() => {
+      setTimeout(() => {
+        try {
+          const adsbygoogle = (window as any).adsbygoogle || []
+          adsbygoogle.push({})
+          isLoading.value = false
+        } catch (e) {
+          console.error('AdSense error', e)
+          isLoading.value = false
+        }
+      }, 1000)
+    })
   } else {
-    // 3. DEVELOPMENT LOGIC: Show Mock Ad
+    // 2. DEV/LOCAL LOGIC: Show Mock Ad
     setTimeout(() => {
       currentAd.value = mockAds[Math.floor(Math.random() * mockAds.length)]
       isLoading.value = false
-    }, 1000)
+    }, 800)
   }
 })
 </script>
@@ -55,7 +65,7 @@ onMounted(() => {
   <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex flex-col min-h-[180px]">
     <div class="flex items-center justify-between mb-3">
       <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-        {{ isProd ? 'Advertisement' : 'Dev-Ad Simulator' }}
+        {{ shouldShowRealAds ? 'Advertisement' : 'Sponsor Spotlight' }}
       </span>
       <InformationCircleIcon class="w-3 h-3 text-gray-300 cursor-help" />
     </div>
@@ -65,8 +75,8 @@ onMounted(() => {
       <div class="w-full h-24 bg-gray-200 rounded-xl animate-pulse"></div>
     </div>
 
-    <!-- PRODUCTION: REAL GOOGLE ADSENSE CODE -->
-    <template v-if="isProd">
+    <!-- OPTION A: REAL ADS (Active on Production Domain) -->
+    <template v-if="shouldShowRealAds">
       <ins
         class="adsbygoogle"
         style="display: block"
@@ -77,7 +87,7 @@ onMounted(() => {
       ></ins>
     </template>
 
-    <!-- DEVELOPMENT: MOCK AD CONTENT (Now using handleAdClick) -->
+    <!-- OPTION B: MOCK ADS (Active on Localhost and dev.nxtturn.com) -->
     <div
       v-else-if="currentAd"
       class="flex-1 flex flex-col group cursor-pointer"
