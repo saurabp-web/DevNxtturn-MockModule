@@ -144,40 +144,39 @@ else:
     GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
     GS_SERVICE_ACCOUNT_EMAIL = os.getenv("GS_SERVICE_ACCOUNT_EMAIL")
 
-    # --- PRO INDUSTRY SETTINGS (MANUAL IAM SIGNER PATCH) ---
+    # 1. Basic Security Settings
     GS_QUERYSTRING_AUTH = True
     GS_DEFAULT_ACL = None
 
+    # 2. --- THE ENTERPRISE SIGNER PATCH (The Kill Shot) ---
+    # This manually provides the 'Signer' that the library is complaining about.
     try:
         import google.auth
         from google.auth.transport.requests import Request
         from google.auth import iam
 
-        # 1. Get the default identity of the Cloud Run Robot
+        # Get the default robot identity from the Cloud Run environment
         base_creds, project = google.auth.default()
 
         if GS_SERVICE_ACCOUNT_EMAIL:
-            # 2. Create a "Virtual Pen" using the IAM API
-            # This uses the 'Service Account Token Creator' role we verified earlier
+            # We create a 'Signer' object that uses the IAM API instead of a local file.
+            # This works because you have the 'Service Account Token Creator' role.
             iam_signer = iam.Signer(Request(), base_creds, GS_SERVICE_ACCOUNT_EMAIL)
 
-            # 3. Manually inject the signer into the credentials
-            # This is the "Magic" that stops the AttributeError
+            # We manually inject the signer into the credentials object.
+            # This directly fixes the "AttributeError: you need a private key" error.
             base_creds.signer = iam_signer
-            base_creds.service_account_email = GS_SERVICE_ACCOUNT_EMAIL
 
-            # 4. Tell Django to use this specifically patched identity
+            # Tell Django to use these patched credentials
             GS_CREDENTIALS = base_creds
-
-            # Backup flag for the library
             GS_IAM_SIGN_BLOB = True
 
-            print(
-                f"!!! IAM Signer successfully patched for {GS_SERVICE_ACCOUNT_EMAIL} !!!"
-            )
+            # This is just for your Cloud Run logs to confirm it's active
+            print(f"!!! IAM Signer Patch Active for {GS_SERVICE_ACCOUNT_EMAIL} !!!")
+
     except Exception as e:
-        # Fallback for local or if imports fail
-        print(f"!!! IAM Signer Patch Failed: {str(e)} !!!")
+        # Fallback for local dev if libraries aren't installed
+        print(f"!!! IAM Signer Patch could not be applied: {str(e)} !!!")
     # ------------------------------------------------------
 
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
