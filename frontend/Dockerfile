@@ -1,14 +1,11 @@
-# STAGE 1: Build (Compiling Vue.js)
+# STAGE 1: Build
 FROM node:20-slim AS build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 
-# --- CRITICAL: VARIABLE SYNC ---
-# We catch these from the --build-arg in cloudbuild.yaml
-# VITE_API_BASE_URL is needed for axiosInstance.ts (The Feed)
-# VITE_WS_BASE_URL is needed for notificationService.ts (Real-time updates)
+# --- THE FINAL SYNC: Both variables must be here ---
 ARG VITE_GOOGLE_CLIENT_ID
 ARG VITE_API_BASE_URL
 ARG VITE_WS_BASE_URL
@@ -17,7 +14,6 @@ ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_WS_BASE_URL=$VITE_WS_BASE_URL
 
-# Compile the app (Vite burns /api/ and /ws/ into the JS files now)
 RUN npm run build
 
 # STAGE 2: Nginx (The Smart Gateway)
