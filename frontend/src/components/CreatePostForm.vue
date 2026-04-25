@@ -99,15 +99,10 @@ const videoPreviewUrls = ref<string[]>([])
 const showPollCreator = ref(false)
 const pollQuestion = ref('')
 const pollOptions = ref<string[]>(['', ''])
-const processingMessages = ref<string[]>([])
 
 // Drag and drop state
 const dragOverIndex = ref(-1)
 const isDragging = ref(false)
-
-// Processing state
-const isCompressing = ref(false)
-const compressionProgress = ref(0)
 
 // --- Limits ---
 const MAX_IMAGES = 10
@@ -195,495 +190,6 @@ const isSubmittable = computed(() => {
   return hasContent || hasMedia
 })
 
-// --- Enhanced Image Compression Function ---
-const compressImageFast = (file: File): Promise<ProcessedFile> => {
-  return new Promise((resolve, reject) => {
-    // If image is already small enough, return as-is
-    if (file.size <= MAX_IMAGE_SIZE_BYTES) {
-      const processedFile = file as ProcessedFile
-      processedFile.finalSize = file.size
-      return resolve(processedFile)
-    }
-
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        reject(new Error('Canvas context not available'))
-        return
-      }
-
-      // Calculate dimensions with aggressive reduction for large images
-      let width = img.width
-      let height = img.height
-
-      // More aggressive reduction for images way over limit
-      const sizeRatio = file.size / MAX_IMAGE_SIZE_BYTES
-      let maxDimension = 1200
-
-      if (sizeRatio > 10) maxDimension = 800
-      else if (sizeRatio > 5) maxDimension = 1000
-
-      if (width > maxDimension || height > maxDimension) {
-        const ratio = Math.min(maxDimension / width, maxDimension / height)
-        width = Math.floor(width * ratio)
-        height = Math.floor(height * ratio)
-      }
-
-      canvas.width = width
-      canvas.height = height
-
-      // Draw image
-      ctx.imageSmoothingEnabled = true
-      ctx.imageSmoothingQuality = 'high'
-      ctx.drawImage(img, 0, 0, width, height)
-
-      // Start with lower quality for faster compression
-      let quality = 0.7
-
-      const compressAttempt = (attemptQuality: number): void => {
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('Compression failed'))
-              return
-            }
-
-            if (blob.size > MAX_IMAGE_SIZE_BYTES && attemptQuality > 0.1) {
-              // Try again with even lower quality
-              compressAttempt(attemptQuality - 0.1)
-            } else {
-              // If still too large, reduce dimensions further
-              if (blob.size > MAX_IMAGE_SIZE_BYTES && width > 400 && height > 400) {
-                width = Math.floor(width * 0.8)
-                height = Math.floor(height * 0.8)
-                canvas.width = width
-                canvas.height = height
-                ctx.drawImage(img, 0, 0, width, height)
-                compressAttempt(0.5)
-              } else {
-                const compressedFile = new File([blob], file.name, {
-                  type: 'image/jpeg',
-                  lastModified: Date.now(),
-                }) as ProcessedFile
-
-                compressedFile.compressed = true
-                compressedFile.originalSize = file.size
-                compressedFile.finalSize = blob.size
-                resolve(compressedFile)
-              }
-            }
-          },
-          'image/jpeg',
-          attemptQuality,
-        )
-      }
-
-      compressAttempt(quality)
-    }
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url)
-      reject(new Error('Error loading image'))
-    }
-
-    img.src = url
-  })
-}
-
-// --- Enhanced Video Processing Functions ---
-
-// Get video duration
-const getVideoDuration = (file: File): Promise<number> => {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video')
-    video.preload = 'metadata'
-
-    const timeout = setTimeout(() => {
-      reject(new Error('Video duration check timeout'))
-      URL.revokeObjectURL(video.src)
-    }, 5000)
-
-    video.onloadedmetadata = () => {
-      clearTimeout(timeout)
-      const duration = video.duration
-      URL.revokeObjectURL(video.src)
-      resolve(duration)
-    }
-
-    video.onerror = () => {
-      clearTimeout(timeout)
-      URL.revokeObjectURL(video.src)
-      reject(new Error('Could not get video duration'))
-    }
-
-    video.src = URL.createObjectURL(file)
-  })
-}
-
-// ACTUAL Video trimming using MediaRecorder
-const trimVideoToDuration = (file: File, maxDurationSeconds: number): Promise<ProcessedFile> => {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video')
-    video.src = URL.createObjectURL(file)
-    video.muted = true
-    video.playsInline = true
-
-    video.onloadedmetadata = async () => {
-      const originalDuration = video.duration
-      const targetDuration = Math.min(originalDuration, maxDurationSeconds)
-
-      // If video is already within duration limit, return as-is
-      if (originalDuration <= maxDurationSeconds) {
-        URL.revokeObjectURL(video.src)
-        const unchangedFile = new File([file], file.name, {
-          type: file.type,
-          lastModified: Date.now(),
-        }) as ProcessedFile
-        unchangedFile.originalDuration = originalDuration
-        unchangedFile.finalSize = file.size
-        resolve(unchangedFile)
-        return
-      }
-
-      try {
-        // Create a MediaStream from the video element
-        const stream = await (video as any).captureStream()
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'video/webm; codecs=vp9',
-          videoBitsPerSecond: 2500000, // 2.5 Mbps for compression
-        })
-
-        const chunks: Blob[] = []
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            chunks.push(e.data)
-          }
-        }
-
-        mediaRecorder.onstop = () => {
-          const trimmedBlob = new Blob(chunks, { type: 'video/webm' })
-
-          // Check if the trimmed video is within size limits
-          if (trimmedBlob.size > MAX_VIDEO_SIZE_BYTES) {
-            // If still too large, compress it further
-            compressVideoFile(new File([trimmedBlob], file.name, { type: 'video/webm' }))
-              .then((compressedFile) => {
-                const finalFile = new File([compressedFile], file.name, {
-                  type: compressedFile.type,
-                  lastModified: Date.now(),
-                }) as ProcessedFile
-
-                finalFile.trimmed = true
-                finalFile.originalDuration = originalDuration
-                finalFile.originalSize = file.size
-                finalFile.finalSize = compressedFile.size
-
-                URL.revokeObjectURL(video.src)
-                stream.getTracks().forEach((track: MediaStreamTrack) => track.stop())
-                resolve(finalFile)
-              })
-              .catch((error) => {
-                URL.revokeObjectURL(video.src)
-                stream.getTracks().forEach((track: MediaStreamTrack) => track.stop())
-                reject(error)
-              })
-          } else {
-            const trimmedFile = new File([trimmedBlob], file.name, {
-              type: 'video/webm',
-              lastModified: Date.now(),
-            }) as ProcessedFile
-
-            trimmedFile.trimmed = true
-            trimmedFile.originalDuration = originalDuration
-            trimmedFile.originalSize = file.size
-            trimmedFile.finalSize = trimmedBlob.size
-
-            URL.revokeObjectURL(video.src)
-            stream.getTracks().forEach((track: MediaStreamTrack) => track.stop())
-            resolve(trimmedFile)
-          }
-        }
-
-        mediaRecorder.onerror = (e: any) => {
-          URL.revokeObjectURL(video.src)
-          stream.getTracks().forEach((track: MediaStreamTrack) => track.stop())
-          reject(new Error(`MediaRecorder error: ${e}`))
-        }
-
-        // Start recording
-        mediaRecorder.start()
-
-        // Play video to capture frames
-        video.currentTime = 0
-        await video.play()
-
-        // Stop recording after target duration
-        setTimeout(() => {
-          if (mediaRecorder.state === 'recording') {
-            mediaRecorder.stop()
-            video.pause()
-          }
-        }, targetDuration * 1000)
-      } catch (error) {
-        URL.revokeObjectURL(video.src)
-        reject(new Error(`Video trimming failed: ${getErrorMessage(error)}`))
-      }
-    }
-
-    video.onerror = () => {
-      URL.revokeObjectURL(video.src)
-      reject(new Error('Error loading video for trimming'))
-    }
-  })
-}
-
-// ACTUAL Video compression by reducing quality and resolution
-const compressVideoFile = (file: File): Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video')
-    video.src = URL.createObjectURL(file)
-    video.muted = true
-    video.playsInline = true
-
-    video.onloadedmetadata = () => {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-
-      if (!ctx) {
-        URL.revokeObjectURL(video.src)
-        reject(new Error('Canvas context not available'))
-        return
-      }
-
-      // Reduce resolution for compression (max 720p)
-      let targetWidth = video.videoWidth
-      let targetHeight = video.videoHeight
-
-      if (targetWidth > 1280 || targetHeight > 720) {
-        const ratio = Math.min(1280 / targetWidth, 720 / targetHeight)
-        targetWidth = Math.floor(targetWidth * ratio)
-        targetHeight = Math.floor(targetHeight * ratio)
-      }
-
-      canvas.width = targetWidth
-      canvas.height = targetHeight
-
-      // Use MediaRecorder with canvas for re-encoding
-      const stream = canvas.captureStream(30) // 30 FPS
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm; codecs=vp9',
-        videoBitsPerSecond: 1500000, // 1.5 Mbps for better compression
-      })
-
-      const chunks: Blob[] = []
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunks.push(e.data)
-        }
-      }
-
-      mediaRecorder.onstop = () => {
-        const compressedBlob = new Blob(chunks, { type: 'video/webm' })
-        const compressedFile = new File([compressedBlob], file.name, {
-          type: 'video/webm',
-          lastModified: Date.now(),
-        })
-
-        URL.revokeObjectURL(video.src)
-        stream.getTracks().forEach((track: MediaStreamTrack) => track.stop())
-        resolve(compressedFile)
-      }
-
-      mediaRecorder.onerror = () => {
-        URL.revokeObjectURL(video.src)
-        stream.getTracks().forEach((track: MediaStreamTrack) => track.stop())
-        reject(new Error('Video compression failed'))
-      }
-
-      // Start capturing frames
-      let startTime = Date.now()
-      const captureFrame = () => {
-        if (
-          Date.now() - startTime < MAX_VIDEO_DURATION_SECONDS * 1000 &&
-          video.currentTime < video.duration
-        ) {
-          ctx.drawImage(video, 0, 0, targetWidth, targetHeight)
-          requestAnimationFrame(captureFrame)
-        } else {
-          mediaRecorder.stop()
-          video.pause()
-        }
-      }
-
-      // Start recording
-      mediaRecorder.start()
-
-      // Play and capture video
-      video.currentTime = 0
-      video
-        .play()
-        .then(() => {
-          captureFrame()
-        })
-        .catch((error) => {
-          URL.revokeObjectURL(video.src)
-          reject(new Error(`Video play failed: ${getErrorMessage(error)}`))
-        })
-    }
-
-    video.onerror = () => {
-      URL.revokeObjectURL(video.src)
-      reject(new Error('Error loading video for compression'))
-    }
-  })
-}
-
-// Generate Video Preview
-const generateVideoPreview = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video')
-    video.preload = 'metadata'
-
-    const timeout = setTimeout(() => {
-      URL.revokeObjectURL(video.src)
-      resolve('')
-    }, 2000)
-
-    video.onloadedmetadata = () => {
-      clearTimeout(timeout)
-      video.currentTime = Math.min(1, video.duration / 2)
-
-      video.onseeked = () => {
-        const canvas = document.createElement('canvas')
-        canvas.width = 120
-        canvas.height = 68
-
-        const ctx = canvas.getContext('2d')
-        if (!ctx) {
-          URL.revokeObjectURL(video.src)
-          resolve('')
-          return
-        }
-
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.5)
-        URL.revokeObjectURL(video.src)
-        resolve(dataUrl)
-      }
-    }
-
-    video.onerror = () => {
-      clearTimeout(timeout)
-      URL.revokeObjectURL(video.src)
-      resolve('')
-    }
-
-    video.src = URL.createObjectURL(file)
-  })
-}
-
-// --- Automatic File Processing ---
-
-const processImage = async (file: File): Promise<ProcessedFile> => {
-  try {
-    processingMessages.value.push('Optimizing image...')
-    compressionProgress.value = 30
-
-    const processedFile = await compressImageFast(file)
-
-    compressionProgress.value = 70
-    processingMessages.value.push('✓ Image optimized')
-
-    return processedFile
-  } catch (error) {
-    throw new Error(`Image processing error: ${getErrorMessage(error)}`)
-  }
-}
-
-// ACTUAL Video processing with both trimming and compression
-const processVideo = async (file: File): Promise<ProcessedFile> => {
-  try {
-    // Check duration and size
-    const duration = await getVideoDuration(file)
-    const sizeMB = file.size / (1024 * 1024)
-
-    let processedFile: ProcessedFile = file as ProcessedFile
-    let needsProcessing = false
-
-    processingMessages.value.push(`Video: ${Math.round(duration)}s, ${sizeMB.toFixed(2)}MB`)
-
-    // Check if video needs processing
-    if (duration > MAX_VIDEO_DURATION_SECONDS) {
-      processingMessages.value.push('Trimming video to 30 seconds...')
-      compressionProgress.value = 30
-      needsProcessing = true
-    }
-
-    if (sizeMB > MAX_VIDEO_SIZE_MB) {
-      processingMessages.value.push('Compressing video to under 50MB...')
-      compressionProgress.value = needsProcessing ? 50 : 30
-      needsProcessing = true
-    }
-
-    if (!needsProcessing) {
-      // Video already meets requirements
-      const withinLimitFile = new File([file], file.name, {
-        type: file.type,
-        lastModified: Date.now(),
-      }) as ProcessedFile
-      withinLimitFile.originalDuration = duration
-      withinLimitFile.finalSize = file.size
-      compressionProgress.value = 100
-      return withinLimitFile
-    }
-
-    // First trim if needed
-    if (duration > MAX_VIDEO_DURATION_SECONDS) {
-      compressionProgress.value = 40
-      processedFile = await trimVideoToDuration(file, MAX_VIDEO_DURATION_SECONDS)
-      processingMessages.value.push('✓ Video trimmed to 30 seconds')
-    }
-
-    // Then compress if still needed (or if original was too large)
-    const currentSizeMB = (processedFile as File).size / (1024 * 1024)
-    if (currentSizeMB > MAX_VIDEO_SIZE_MB || sizeMB > MAX_VIDEO_SIZE_MB) {
-      compressionProgress.value = 70
-      const compressedBlob = await compressVideoFile(processedFile as File)
-
-      const finalFile = new File([compressedBlob], file.name, {
-        type: compressedBlob.type,
-        lastModified: Date.now(),
-      }) as ProcessedFile
-
-      finalFile.trimmed = processedFile.trimmed || duration > MAX_VIDEO_DURATION_SECONDS
-      finalFile.compressed = true
-      finalFile.originalDuration = duration
-      finalFile.originalSize = file.size
-      finalFile.finalSize = compressedBlob.size
-
-      processedFile = finalFile
-      processingMessages.value.push('✓ Video compressed')
-    }
-
-    compressionProgress.value = 100
-    processingMessages.value.push(
-      `Final: ${Math.round(processedFile.originalDuration || duration)}s → ${MAX_VIDEO_DURATION_SECONDS}s, ${sizeMB.toFixed(2)}MB → ${((processedFile.finalSize || file.size) / (1024 * 1024)).toFixed(2)}MB`,
-    )
-
-    return processedFile
-  } catch (error) {
-    throw new Error(`Video processing error: ${getErrorMessage(error)}`)
-  }
-}
-
 const handleFileChange = async (event: Event, type: 'image' | 'video') => {
   if (showPollCreator.value) return
 
@@ -695,141 +201,41 @@ const handleFileChange = async (event: Event, type: 'image' | 'video') => {
     feedStore.createPostError = null
   }
 
-  // Calculate potential new counts
+  // 1. Calculate limits
   const currentImages = selectedImageFiles.value.length
   const currentVideos = selectedVideoFiles.value.length
   const filesToAdd = files.length
   const filePoints = type === 'image' ? IMAGE_POINTS : VIDEO_POINTS
   const potentialPoints = currentPoints.value + filesToAdd * filePoints
 
-  // Check individual limits before processing
-  if (type === 'image') {
-    const remainingSlots = MAX_IMAGES - currentImages
-    if (filesToAdd > remainingSlots) {
-      feedStore.createPostError = `You can only upload ${MAX_IMAGES} images maximum.`
-      target.value = ''
-      return
-    }
-  } else {
-    const remainingSlots = MAX_VIDEOS - currentVideos
-    if (filesToAdd > remainingSlots) {
-      feedStore.createPostError = `You can only upload ${MAX_VIDEOS} videos maximum.`
-      target.value = ''
-      return
-    }
+  // 2. Simple Validation (Limits only)
+  if (type === 'image' && currentImages + filesToAdd > MAX_IMAGES) {
+    feedStore.createPostError = `Maximum ${MAX_IMAGES} images allowed.`
+    return
   }
-
-  // Check point limit
+  if (type === 'video' && currentVideos + filesToAdd > MAX_VIDEOS) {
+    feedStore.createPostError = `Maximum ${MAX_VIDEOS} videos allowed.`
+    return
+  }
   if (potentialPoints > MAX_TOTAL_POINTS) {
-    const maxFiles = Math.floor(remainingPoints.value / filePoints)
-    if (maxFiles <= 0) {
-      feedStore.createPostError = `You have reached the maximum upload limit.`
-    } else {
-      feedStore.createPostError = `You can only upload ${maxFiles} more ${type}${maxFiles > 1 ? 's' : ''}.`
-    }
-    target.value = ''
+    feedStore.createPostError = 'Total upload limit reached.'
     return
   }
 
-  const filesToProcess = Array.from(files)
+  // 3. Add files directly to state (Instant loading)
+  for (const file of Array.from(files)) {
+    const previewUrl = URL.createObjectURL(file)
 
-  // Start compression process
-  isCompressing.value = true
-  compressionProgress.value = 10
-  processingMessages.value = [] // Clear previous messages
-
-  try {
-    for (const [index, file] of filesToProcess.entries()) {
-      try {
-        let processedFile: ProcessedFile
-        const originalSizeMB = (file.size / (1024 * 1024)).toFixed(2)
-
-        if (type === 'image') {
-          if (!SUPPORTED_IMAGE_MIME_TYPES.includes(file.type)) {
-            throw new Error(
-              `Unsupported image format: '${file.name}'. Please use JPG, PNG, GIF, WEBP, or AVIF.`,
-            )
-          }
-
-          processingMessages.value.push(
-            `Processing image ${index + 1}/${filesToProcess.length} (${originalSizeMB}MB)`,
-          )
-          processedFile = await processImage(file)
-
-          const finalSizeKB = ((processedFile.finalSize || file.size) / 1024).toFixed(1)
-          processingMessages.value.push(
-            `✓ Image ${index + 1}: ${originalSizeMB}MB → ${finalSizeKB}KB`,
-          )
-
-          selectedImageFiles.value.push(processedFile)
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            if (e.target?.result) {
-              imagePreviewUrls.value.push(e.target.result as string)
-            }
-          }
-          reader.readAsDataURL(processedFile)
-        } else {
-          if (!SUPPORTED_VIDEO_MIME_TYPES.includes(file.type)) {
-            throw new Error(
-              `Unsupported video format: '${file.name}'. Please use MP4, WebM, or MOV.`,
-            )
-          }
-
-          processingMessages.value.push(
-            `Processing video ${index + 1}/${filesToProcess.length} (${originalSizeMB}MB)`,
-          )
-          processedFile = await processVideo(file)
-
-          const finalSizeMB = ((processedFile.finalSize || file.size) / (1024 * 1024)).toFixed(2)
-          const durationInfo = processedFile.originalDuration
-            ? `${Math.round(processedFile.originalDuration)}s → ${MAX_VIDEO_DURATION_SECONDS}s`
-            : 'duration optimized'
-
-          processingMessages.value.push(
-            `✓ Video ${index + 1}: ${originalSizeMB}MB → ${finalSizeMB}MB, ${durationInfo}`,
-          )
-
-          selectedVideoFiles.value.push(processedFile)
-
-          // Generate and add video preview
-          try {
-            const previewUrl = await generateVideoPreview(processedFile)
-            videoPreviewUrls.value.push(previewUrl)
-          } catch (previewError) {
-            console.warn('Failed to generate video preview:', getErrorMessage(previewError))
-            videoPreviewUrls.value.push('')
-          }
-        }
-      } catch (error) {
-        const errorMessage = getErrorMessage(error)
-        feedStore.createPostError = `Failed to process ${type}: ${errorMessage}`
-        target.value = ''
-        isCompressing.value = false
-        compressionProgress.value = 0
-        return
-      }
+    if (type === 'image') {
+      selectedImageFiles.value.push(file as ProcessedFile)
+      imagePreviewUrls.value.push(previewUrl)
+    } else {
+      selectedVideoFiles.value.push(file as ProcessedFile)
+      videoPreviewUrls.value.push(previewUrl)
     }
-
-    // Success message
-    processingMessages.value.push(
-      `✓ All ${filesToProcess.length} ${type}(s) processed successfully`,
-    )
-
-    // Clear messages after 3 seconds
-    setTimeout(() => {
-      processingMessages.value = []
-      isCompressing.value = false
-      compressionProgress.value = 0
-    }, 3000)
-  } catch (error) {
-    feedStore.createPostError = getErrorMessage(error)
-    isCompressing.value = false
-    compressionProgress.value = 0
-    processingMessages.value = []
   }
 
-  target.value = ''
+  target.value = '' // Reset input
 }
 
 // --- Drag and Drop Functions ---
@@ -926,7 +332,6 @@ const clearForm = () => {
   pollQuestion.value = ''
   pollOptions.value = ['', '']
   feedStore.createPostError = null
-  processingMessages.value = []
 }
 
 const handleSubmit = async () => {
@@ -995,55 +400,6 @@ onUnmounted(() => {
 
 <template>
   <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-md">
-    <!-- Compression Progress Overlay -->
-    <div
-      v-if="isCompressing"
-      class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-    >
-      <div class="bg-white rounded-xl p-4 sm:p-6 max-w-sm w-full">
-        <div class="flex items-center gap-3 mb-4">
-          <font-awesome-icon
-            :icon="['fas', 'compress']"
-            class="text-blue-500 text-xl animate-pulse"
-          />
-          <div>
-            <h3 class="font-bold text-gray-800 text-sm sm:text-base">Optimizing Media</h3>
-            <p class="text-xs text-gray-600">Please wait...</p>
-          </div>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-          <div
-            class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-            :style="{ width: `${compressionProgress}%` }"
-          ></div>
-        </div>
-        <p class="text-xs text-gray-500 mt-2 text-center">{{ compressionProgress }}%</p>
-
-        <!-- Processing Messages -->
-        <div v-if="processingMessages.length > 0" class="mt-4 space-y-2 max-h-40 overflow-y-auto">
-          <div
-            v-for="(message, index) in processingMessages"
-            :key="index"
-            class="text-xs p-2 rounded-lg flex items-start gap-2"
-            :class="{
-              'bg-green-50 text-green-700': message.startsWith('✓'),
-              'bg-blue-50 text-blue-700': !message.startsWith('✓'),
-            }"
-          >
-            <font-awesome-icon
-              :icon="message.startsWith('✓') ? ['fas', 'check-circle'] : ['fas', 'spinner']"
-              class="mt-0.5 flex-shrink-0"
-              :class="[
-                message.startsWith('✓') ? 'text-green-500' : 'text-blue-500',
-                { 'animate-spin': !message.startsWith('✓') },
-              ]"
-            />
-            <span class="text-xs">{{ message }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <form @submit.prevent="handleSubmit" novalidate>
       <div class="flex items-start gap-3 sm:gap-4">
         <img
@@ -1452,17 +808,13 @@ onUnmounted(() => {
           <!-- Post Button -->
           <button
             type="submit"
-            :disabled="isCreatingPost || !isSubmittable || isCompressing"
+            :disabled="isCreatingPost || !isSubmittable"
             class="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-5 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:from-blue-300 disabled:to-purple-400 disabled:cursor-not-allowed disabled:shadow-none transform hover:scale-105 disabled:hover:scale-100 min-w-16 sm:min-w-20 text-xs sm:text-sm"
             data-cy="create-post-submit-button"
           >
             <span v-if="isCreatingPost" class="flex items-center gap-1 sm:gap-2">
               <font-awesome-icon :icon="['fas', 'spinner']" class="animate-spin" />
               <span class="hidden sm:inline">Posting...</span>
-            </span>
-            <span v-else-if="isCompressing" class="flex items-center gap-1 sm:gap-2">
-              <font-awesome-icon :icon="['fas', 'compress']" class="animate-pulse" />
-              <span class="hidden sm:inline">Processing...</span>
             </span>
             <span v-else class="flex items-center gap-1 sm:gap-2">
               <font-awesome-icon :icon="['fas', 'paper-plane']" />
