@@ -140,45 +140,16 @@ if IS_LOCAL:
         },
     }
 else:
-    # Use Google Cloud
+    # --- PLAN B: PUBLIC-READ STORAGE (Organization Policy Compatible) ---
     GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
-    GS_SERVICE_ACCOUNT_EMAIL = os.getenv("GS_SERVICE_ACCOUNT_EMAIL")
 
-    # 1. Basic Security Settings
-    GS_QUERYSTRING_AUTH = True
-    GS_DEFAULT_ACL = None
+    # Disable Signed URLs (removes need for private keys/IAM signer)
+    GS_QUERYSTRING_AUTH = False
 
-    # 2. --- THE ENTERPRISE SIGNER PATCH (The Kill Shot) ---
-    # This manually provides the 'Signer' that the library is complaining about.
-    try:
-        import google.auth
-        from google.auth.transport.requests import Request
-        from google.auth import iam
+    # Ensure new uploads are readable (complements the bucket-level permission)
+    GS_DEFAULT_ACL = "publicRead"
 
-        # Get the default robot identity from the Cloud Run environment
-        base_creds, project = google.auth.default()
-
-        if GS_SERVICE_ACCOUNT_EMAIL:
-            # We create a 'Signer' object that uses the IAM API instead of a local file.
-            # This works because you have the 'Service Account Token Creator' role.
-            iam_signer = iam.Signer(Request(), base_creds, GS_SERVICE_ACCOUNT_EMAIL)
-
-            # We manually inject the signer into the credentials object.
-            # This directly fixes the "AttributeError: you need a private key" error.
-            base_creds.signer = iam_signer
-
-            # Tell Django to use these patched credentials
-            GS_CREDENTIALS = base_creds
-            GS_IAM_SIGN_BLOB = True
-
-            # This is just for your Cloud Run logs to confirm it's active
-            print(f"!!! IAM Signer Patch Active for {GS_SERVICE_ACCOUNT_EMAIL} !!!")
-
-    except Exception as e:
-        # Fallback for local dev if libraries aren't installed
-        print(f"!!! IAM Signer Patch could not be applied: {str(e)} !!!")
-    # ------------------------------------------------------
-
+    # Standard Media URL construction
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 
     STORAGES = {
@@ -187,6 +158,9 @@ else:
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
         },
     }
+
+    # Log to Cloud Run console to confirm Plan B is active
+    print(f"!!! GCS Plan B Active: Serving from {GS_BUCKET_NAME} !!!")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- EMAIL CONFIGURATION (Conditional for tests) ---
