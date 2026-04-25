@@ -1,4 +1,5 @@
 import os
+import uuid
 from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
@@ -13,17 +14,30 @@ from django.utils.text import slugify
 User = settings.AUTH_USER_MODEL
 
 
-# --- Helper Function for Dynamic Upload Paths ---
+# --- Helper Functions for Hardened Dynamic Upload Paths ---
+
+
 def get_post_media_path(instance, filename):
-    """
-    Dynamically determine the upload path based on the media type.
-    Images go into 'post_images/' and videos into 'post_videos/'.
-    """
+    """Renames post media to random UUID for security."""
+    ext = filename.split(".")[-1]
+    unique_name = f"{uuid.uuid4()}.{ext}"
     if instance.media_type == "image":
-        return os.path.join("post_images", filename)
+        return os.path.join("post_images", unique_name)
     elif instance.media_type == "video":
-        return os.path.join("post_videos", filename)
-    return os.path.join("post_media_other", filename)
+        return os.path.join("post_videos", unique_name)
+    return os.path.join("post_media_other", unique_name)
+
+
+def get_profile_pic_path(instance, filename):
+    """Renames profile pics to random UUID."""
+    ext = filename.split(".")[-1]
+    return os.path.join("profile_pics", f"{uuid.uuid4()}.{ext}")
+
+
+def get_resume_path(instance, filename):
+    """Renames resumes to random UUID to protect user privacy."""
+    ext = filename.split(".")[-1]
+    return os.path.join("resumes", f"{uuid.uuid4()}.{ext}")
 
 
 # --- End Helper Function ---
@@ -78,7 +92,7 @@ class UserProfile(models.Model):
     # --- END OF NEW STRUCTURE ---
 
     # NEW: Resume file upload field.
-    resume = models.FileField(upload_to="resumes/", null=True, blank=True)
+    resume = models.FileField(upload_to=get_resume_path, null=True, blank=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
 
     # --- PRIVACY SETTINGS ---
@@ -116,7 +130,7 @@ class UserProfile(models.Model):
         models.CharField(max_length=100), blank=True, null=True, default=list
     )
     picture = models.ImageField(
-        upload_to="profile_pics/", null=True, blank=True, max_length=255
+        upload_to=get_profile_pic_path, null=True, blank=True, max_length=255
     )
     updated_at = models.DateTimeField(auto_now=True)
 
