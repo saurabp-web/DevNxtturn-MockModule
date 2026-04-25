@@ -243,7 +243,6 @@ const handleFileChange = async (event: Event, type: 'image' | 'video') => {
   const filePoints = type === 'image' ? IMAGE_POINTS : VIDEO_POINTS
   const potentialPoints = currentPoints.value + filesToAdd * filePoints
 
-  // 2. Simple Validation (Limits only)
   if (type === 'image' && currentImages + filesToAdd > MAX_IMAGES) {
     feedStore.createPostError = `Maximum ${MAX_IMAGES} images allowed.`
     return
@@ -257,33 +256,31 @@ const handleFileChange = async (event: Event, type: 'image' | 'video') => {
     return
   }
 
-  // 3. Add files directly to state (Instant loading)
+  // 2. Process files
   for (const file of Array.from(files)) {
-    const previewUrl = URL.createObjectURL(file)
-
     if (type === 'image') {
+      // For images: Use the raw previewUrl (it works in <img> tags)
+      const previewUrl = URL.createObjectURL(file)
       selectedImageFiles.value.push(file as ProcessedFile)
       imagePreviewUrls.value.push(previewUrl)
     } else {
+      // For videos: Do NOT use the previewUrl. Use the snapshot instead.
       selectedVideoFiles.value.push(file as ProcessedFile)
 
-      // Capture the current index so we update the right preview
       const currentIndex = videoPreviewUrls.value.length
-      videoPreviewUrls.value.push('') // Add empty placeholder first
+      videoPreviewUrls.value.push('') // Placeholder (Shows the "Video Icon")
 
-      // Generate the thumbnail and swap the placeholder when ready
       generateVideoThumbnail(file).then((thumbnail) => {
         if (thumbnail) {
+          // Replace icon with real video frame
           videoPreviewUrls.value[currentIndex] = thumbnail
-        } else {
-          // Fallback to generic preview if capture fails
-          videoPreviewUrls.value[currentIndex] = previewUrl
         }
+        // If it fails, we leave it as '', so it keeps showing the nice icon.
       })
     }
   }
 
-  target.value = '' // Reset input
+  target.value = ''
 }
 
 // --- Drag and Drop Functions ---
