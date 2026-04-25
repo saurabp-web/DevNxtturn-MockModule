@@ -1582,6 +1582,11 @@ function centerPostInViewport() {
   })
 }
 
+// Helper to choose the correct URL (Works for both Local and Cloud)
+const getMediaUrl = (mediaItem: any) => {
+  return mediaItem.url || buildMediaUrl(mediaItem.file_url)
+}
+
 function linkifyContent(text: string | null | undefined): string {
   if (!text) return ''
   const urlRegex =
@@ -2094,7 +2099,7 @@ function fallbackCopyTextToClipboard(text: string) {
           >
             <img
               v-if="post.parent_post.media[0].media_type === 'image'"
-              :src="buildMediaUrl(post.parent_post.media[0].file_url)"
+              :src="getMediaUrl(post.parent_post.media[0])"
               class="w-full h-40 object-cover"
             />
             <div v-else class="w-full h-40 flex flex-col items-center justify-center bg-gray-100">
@@ -2107,18 +2112,19 @@ function fallbackCopyTextToClipboard(text: string) {
         <!-- Media Grid Layout -->
         <div v-if="post.media && post.media.length > 0" class="mt-3 px-3 md:px-4">
           <!-- Single video -->
+
           <div v-if="post.media.length === 1" class="relative overflow-hidden rounded-xl">
             <div class="cursor-pointer" @click="openMediaModal(0)">
               <video
                 v-if="post.media[0].media_type === 'video'"
                 controls
                 class="w-full h-auto max-h-[500px] object-contain rounded-xl mx-auto"
-                :src="buildMediaUrl(post.media[0].file_url)"
+                :src="getMediaUrl(post.media[0])"
                 @play="pauseOtherVideos"
               ></video>
               <img
                 v-else
-                :src="buildMediaUrl(post.media[0].file_url)"
+                :src="getMediaUrl(post.media[0])"
                 class="w-full h-auto object-contain rounded-xl max-h-[300px] mx-auto"
               />
             </div>
@@ -2143,14 +2149,10 @@ function fallbackCopyTextToClipboard(text: string) {
                   v-if="mediaItem.media_type === 'video'"
                   controls
                   class="w-full h-full object-cover"
-                  :src="buildMediaUrl(mediaItem.file_url)"
+                  :src="getMediaUrl(mediaItem)"
                   @play="pauseOtherVideos"
                 ></video>
-                <img
-                  v-else
-                  :src="buildMediaUrl(mediaItem.file_url)"
-                  class="w-full h-full object-cover"
-                />
+                <img v-else :src="getMediaUrl(mediaItem)" class="w-full h-full object-cover" />
               </div>
             </template>
 
@@ -2164,14 +2166,10 @@ function fallbackCopyTextToClipboard(text: string) {
                   v-if="post.media[0].media_type === 'video'"
                   controls
                   class="w-full h-full object-cover"
-                  :src="buildMediaUrl(post.media[0].file_url)"
+                  :src="getMediaUrl(post.media[0])"
                   @play="pauseOtherVideos"
                 ></video>
-                <img
-                  v-else
-                  :src="buildMediaUrl(post.media[0].file_url)"
-                  class="w-full h-full object-cover"
-                />
+                <img v-else :src="getMediaUrl(post.media[0])" class="w-full h-full object-cover" />
               </div>
               <div
                 class="relative bg-gray-100 overflow-hidden rounded-tr-xl cursor-pointer"
@@ -2181,14 +2179,10 @@ function fallbackCopyTextToClipboard(text: string) {
                   v-if="post.media[1].media_type === 'video'"
                   controls
                   class="w-full h-full object-cover"
-                  :src="buildMediaUrl(post.media[1].file_url)"
+                  :src="getMediaUrl(post.media[1])"
                   @play="pauseOtherVideos"
                 ></video>
-                <img
-                  v-else
-                  :src="buildMediaUrl(post.media[1].file_url)"
-                  class="w-full h-full object-cover"
-                />
+                <img v-else :src="getMediaUrl(post.media[1])" class="w-full h-full object-cover" />
               </div>
               <div
                 class="relative bg-gray-100 overflow-hidden rounded-br-xl cursor-pointer"
@@ -2198,14 +2192,10 @@ function fallbackCopyTextToClipboard(text: string) {
                   v-if="post.media[2].media_type === 'video'"
                   controls
                   class="w-full h-full object-cover"
-                  :src="buildMediaUrl(post.media[2].file_url)"
+                  :src="getMediaUrl(post.media[2])"
                   @play="pauseOtherVideos"
                 ></video>
-                <img
-                  v-else
-                  :src="buildMediaUrl(post.media[2].file_url)"
-                  class="w-full h-full object-cover"
-                />
+                <img v-else :src="getMediaUrl(post.media[2])" class="w-full h-full object-cover" />
               </div>
             </template>
 
@@ -2219,14 +2209,10 @@ function fallbackCopyTextToClipboard(text: string) {
                   v-if="post.media[0].media_type === 'video'"
                   controls
                   class="w-full h-full object-cover"
-                  :src="buildMediaUrl(post.media[0].file_url)"
+                  :src="getMediaUrl(post.media[0])"
                   @play="pauseOtherVideos"
                 ></video>
-                <img
-                  v-else
-                  :src="buildMediaUrl(post.media[0].file_url)"
-                  class="w-full h-full object-cover"
-                />
+                <img v-else :src="getMediaUrl(post.media[0])" class="w-full h-full object-cover" />
               </div>
 
               <div
@@ -2237,14 +2223,10 @@ function fallbackCopyTextToClipboard(text: string) {
                   v-if="post.media[1].media_type === 'video'"
                   controls
                   class="w-full h-full object-cover"
-                  :src="buildMediaUrl(post.media[1].file_url)"
+                  :src="getMediaUrl(post.media[1])"
                   @play="pauseOtherVideos"
                 ></video>
-                <img
-                  v-else
-                  :src="buildMediaUrl(post.media[1].file_url)"
-                  class="w-full h-full object-cover"
-                />
+                <img v-else :src="getMediaUrl(post.media[1])" class="w-full h-full object-cover" />
               </div>
 
               <div
@@ -2255,14 +2237,10 @@ function fallbackCopyTextToClipboard(text: string) {
                   v-if="post.media[2].media_type === 'video'"
                   controls
                   class="w-full h-full object-cover"
-                  :src="buildMediaUrl(post.media[2].file_url)"
+                  :src="getMediaUrl(post.media[2])"
                   @play="pauseOtherVideos"
                 ></video>
-                <img
-                  v-else
-                  :src="buildMediaUrl(post.media[2].file_url)"
-                  class="w-full h-full object-cover"
-                />
+                <img v-else :src="getMediaUrl(post.media[2])" class="w-full h-full object-cover" />
 
                 <!-- More overlay for 4+ images -->
                 <div
@@ -3546,7 +3524,7 @@ function fallbackCopyTextToClipboard(text: string) {
               >
                 <img
                   v-if="postToPreview.media[0].media_type === 'image'"
-                  :src="buildMediaUrl(postToPreview.media[0].file_url)"
+                  :src="getMediaUrl(postToPreview.media[0])"
                   class="w-full h-full object-cover"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center">

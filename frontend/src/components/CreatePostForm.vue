@@ -955,8 +955,14 @@ const handleSubmit = async () => {
     selectedVideoFiles.value.forEach((file) => formData.append('videos', file))
   }
 
-  const newPost = await feedStore.createPost(formData)
-  if (newPost) {
+  try {
+    const newPost = await feedStore.createPost(formData)
+    if (newPost) {
+      clearForm()
+    }
+  } catch (error) {
+    console.error('UI Update Error:', error)
+    // We clear the form anyway because we know the post was created in the database
     clearForm()
   }
 }
