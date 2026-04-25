@@ -2092,28 +2092,39 @@ function fallbackCopyTextToClipboard(text: string) {
             {{ post.parent_post.content }}
           </div>
 
-          <!-- Original Media Thumbnail -->
-          <!-- Original Media Thumbnail (The share box inside a post) -->
+          <!-- Original Media Thumbnail (Repost Box) -->
           <div
             v-if="post.parent_post.media && post.parent_post.media.length > 0"
-            class="rounded-lg overflow-hidden border border-gray-100 bg-gray-50"
+            class="rounded-lg overflow-hidden border border-gray-100 bg-black relative"
           >
             <!-- If it's an Image -->
             <img
               v-if="post.parent_post.media[0].media_type === 'image'"
               :src="getMediaUrl(post.parent_post.media[0])"
-              class="w-full h-40 object-cover"
+              class="w-full h-64 object-cover"
             />
 
-            <!-- If it's a Video (Real preview instead of an icon) -->
-            <video
-              v-else
-              :src="getMediaUrl(post.parent_post.media[0])"
-              class="w-full h-40 object-cover"
-              muted
-              playsinline
-              preload="metadata"
-            ></video>
+            <!-- If it's a Video: Show a centered preview with a Play Icon -->
+            <div v-else class="relative w-full h-64 flex items-center justify-center group/vid">
+              <video
+                :src="getMediaUrl(post.parent_post.media[0])"
+                class="w-full h-full object-contain"
+                muted
+                playsinline
+                preload="metadata"
+              ></video>
+
+              <!-- Play Icon Overlay -->
+              <div
+                class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/repost:bg-black/40 transition-all"
+              >
+                <div
+                  class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white border border-white/40"
+                >
+                  <FontAwesomeIcon :icon="faPlay" class="text-xl ml-1" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -3525,25 +3536,27 @@ function fallbackCopyTextToClipboard(text: string) {
                 {{ postToPreview.content }}
               </div>
 
-              <!-- Media Thumbnail in Preview (The popup where you write the repost) -->
+              <!-- Media Thumbnail in Preview Modal -->
               <div
                 v-if="postToPreview.media && postToPreview.media.length > 0"
-                class="rounded-lg overflow-hidden border border-gray-100 bg-gray-100 h-32"
+                class="rounded-lg overflow-hidden border border-gray-100 bg-black h-48 relative"
               >
-                <!-- Image -->
                 <img
                   v-if="postToPreview.media[0].media_type === 'image'"
                   :src="getMediaUrl(postToPreview.media[0])"
                   class="w-full h-full object-cover"
                 />
-                <!-- Video -->
-                <video
-                  v-else
-                  :src="getMediaUrl(postToPreview.media[0])"
-                  class="w-full h-full object-cover"
-                  muted
-                  playsinline
-                ></video>
+                <div v-else class="relative w-full h-full flex items-center justify-center">
+                  <video
+                    :src="getMediaUrl(postToPreview.media[0])"
+                    class="w-full h-full object-contain"
+                    muted
+                    playsinline
+                  ></video>
+                  <div class="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <FontAwesomeIcon :icon="faPlay" class="text-white text-lg" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
