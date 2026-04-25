@@ -140,14 +140,15 @@ if IS_LOCAL:
         },
     }
 else:
-    # --- PLAN B: PUBLIC-READ STORAGE (Organization Policy Compatible) ---
+    # --- PLAN B: PUBLIC-READ STORAGE (Uniform Access Version) ---
     GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
-    # Disable Signed URLs (removes need for private keys/IAM signer)
+    # Disable Signed URLs
     GS_QUERYSTRING_AUTH = False
 
-    # Ensure new uploads are readable (complements the bucket-level permission)
-    GS_DEFAULT_ACL = "publicRead"
+    # IMPORTANT: Set this to None for "Uniform" buckets.
+    # The bucket-level IAM (allUsers) we set in the console handles the rest.
+    GS_DEFAULT_ACL = None
 
     # Standard Media URL construction
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
@@ -159,8 +160,9 @@ else:
         },
     }
 
-    # Log to Cloud Run console to confirm Plan B is active
-    print(f"!!! GCS Plan B Active: Serving from {GS_BUCKET_NAME} !!!")
+    print(f"!!! GCS Plan B Active (Uniform Access Mode) !!!")
+
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- EMAIL CONFIGURATION (Conditional for tests) ---
