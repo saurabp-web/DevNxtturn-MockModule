@@ -2093,19 +2093,27 @@ function fallbackCopyTextToClipboard(text: string) {
           </div>
 
           <!-- Original Media Thumbnail -->
+          <!-- Original Media Thumbnail (The share box inside a post) -->
           <div
             v-if="post.parent_post.media && post.parent_post.media.length > 0"
             class="rounded-lg overflow-hidden border border-gray-100 bg-gray-50"
           >
+            <!-- If it's an Image -->
             <img
               v-if="post.parent_post.media[0].media_type === 'image'"
               :src="getMediaUrl(post.parent_post.media[0])"
               class="w-full h-40 object-cover"
             />
-            <div v-else class="w-full h-40 flex flex-col items-center justify-center bg-gray-100">
-              <FontAwesomeIcon :icon="faVideo" class="text-gray-300 text-xl mb-1" />
-              <span class="text-[10px] font-medium text-gray-400">Video Post</span>
-            </div>
+
+            <!-- If it's a Video (Real preview instead of an icon) -->
+            <video
+              v-else
+              :src="getMediaUrl(post.parent_post.media[0])"
+              class="w-full h-40 object-cover"
+              muted
+              playsinline
+              preload="metadata"
+            ></video>
           </div>
         </div>
 
@@ -3517,19 +3525,25 @@ function fallbackCopyTextToClipboard(text: string) {
                 {{ postToPreview.content }}
               </div>
 
-              <!-- Media Thumbnail in Preview -->
+              <!-- Media Thumbnail in Preview (The popup where you write the repost) -->
               <div
                 v-if="postToPreview.media && postToPreview.media.length > 0"
                 class="rounded-lg overflow-hidden border border-gray-100 bg-gray-100 h-32"
               >
+                <!-- Image -->
                 <img
                   v-if="postToPreview.media[0].media_type === 'image'"
                   :src="getMediaUrl(postToPreview.media[0])"
                   class="w-full h-full object-cover"
                 />
-                <div v-else class="w-full h-full flex items-center justify-center">
-                  <FontAwesomeIcon :icon="faVideo" class="text-gray-300 text-xl" />
-                </div>
+                <!-- Video -->
+                <video
+                  v-else
+                  :src="getMediaUrl(postToPreview.media[0])"
+                  class="w-full h-full object-cover"
+                  muted
+                  playsinline
+                ></video>
               </div>
             </div>
           </div>
