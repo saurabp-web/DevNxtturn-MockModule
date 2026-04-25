@@ -3090,13 +3090,13 @@ function fallbackCopyTextToClipboard(text: string) {
               v-if="post.media[modalMediaIndex].media_type === 'video'"
               controls
               class="max-w-full max-h-[70vh] object-contain rounded-lg portrait-media"
-              :src="buildMediaUrl(post.media[modalMediaIndex].file_url)"
+              :src="getMediaUrl(post.media[modalMediaIndex])"
               autoplay
               @play="pauseOtherVideos"
             ></video>
             <img
               v-else
-              :src="buildMediaUrl(post.media[modalMediaIndex].file_url)"
+              :src="getMediaUrl(post.media[modalMediaIndex])"
               class="max-w-full max-h-[70vh] object-contain rounded-lg portrait-media"
             />
           </div>
