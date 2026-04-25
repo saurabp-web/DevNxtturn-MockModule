@@ -190,6 +190,41 @@ const isSubmittable = computed(() => {
   return hasContent || hasMedia
 })
 
+const generateVideoThumbnail = (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.src = URL.createObjectURL(file)
+    video.muted = true
+    video.playsInline = true
+
+    video.onloadedmetadata = () => {
+      // Seek to 1 second to get a good frame (not just a black screen)
+      video.currentTime = 1
+    }
+
+    video.onseeked = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+        const thumbnail = canvas.toDataURL('image/jpeg', 0.7)
+        URL.revokeObjectURL(video.src)
+        resolve(thumbnail)
+      } else {
+        resolve('')
+      }
+    }
+
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src)
+      resolve('')
+    }
+  })
+}
+
 const handleFileChange = async (event: Event, type: 'image' | 'video') => {
   if (showPollCreator.value) return
 
@@ -231,7 +266,20 @@ const handleFileChange = async (event: Event, type: 'image' | 'video') => {
       imagePreviewUrls.value.push(previewUrl)
     } else {
       selectedVideoFiles.value.push(file as ProcessedFile)
-      videoPreviewUrls.value.push(previewUrl)
+
+      // Capture the current index so we update the right preview
+      const currentIndex = videoPreviewUrls.value.length
+      videoPreviewUrls.value.push('') // Add empty placeholder first
+
+      // Generate the thumbnail and swap the placeholder when ready
+      generateVideoThumbnail(file).then((thumbnail) => {
+        if (thumbnail) {
+          videoPreviewUrls.value[currentIndex] = thumbnail
+        } else {
+          // Fallback to generic preview if capture fails
+          videoPreviewUrls.value[currentIndex] = previewUrl
+        }
+      })
     }
   }
 
