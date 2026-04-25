@@ -23,6 +23,7 @@ RUN chmod -R 755 /usr/share/nginx/html
 
 RUN echo 'server { \
     listen 8080; \
+    client_max_body_size 100M; \
     \
     # 1. THE MAP (index.html): Always check for updates \
     location / { \

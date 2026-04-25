@@ -300,3 +300,9 @@ def sync_production_settings(sender, **kwargs):
 
 # Password reset links will now expire after 1 hour (3600 seconds)
 PASSWORD_RESET_TIMEOUT = 3600
+
+# --- MEDIA UPLOAD LIMITS (Plan B) ---
+# Allow uploads up to 100MB (100 * 1024 * 1024 bytes)
+# This prevents Error 413 and allows for high-quality video uploads.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
