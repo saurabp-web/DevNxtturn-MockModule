@@ -1,6 +1,14 @@
 steps:
+  # STEP 0: Create a URL-safe tag from the branch name (converts / to -)
+  - name: "bash"
+    id: "Create Tag"
+    args:
+      - "-c"
+      - |
+        echo $BRANCH_NAME | sed 's/\//-/g' > _TAG_NAME
+        echo "The secret link for this branch will start with: $(cat _TAG_NAME)"
+
   # --- BACKEND SECTION ---
-  # 1. Build the Backend
   - name: "gcr.io/cloud-builders/docker"
     id: "Build Backend"
     args:
@@ -13,7 +21,6 @@ steps:
         ".",
       ]
 
-  # 2. Push Backend
   - name: "gcr.io/cloud-builders/docker"
     id: "Push Backend"
     args:
@@ -22,29 +29,24 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest",
       ]
 
-  # 3. Deploy Backend to Cloud Run
+  # STEP 3: Modified to use the dynamic branch tag
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     id: "Deploy Backend"
-    entrypoint: gcloud
+    entrypoint: "bash"
     args:
-      - "run"
-      - "deploy"
-      - "nxtturn-backend-dev"
-      - "--image"
-      - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest"
-      - "--region"
-      - "us-central1"
-      - "--no-traffic" # <--- Added: Keeps dev.nxtturn.com safe
-      - "--tag=sandbox" # <--- Added: Creates your secret link
-      - "--service-account"
-      - "nxtturn-dev-cloud-robot@$PROJECT_ID.iam.gserviceaccount.com"
-      - "--set-env-vars"
-      - "ENVIRONMENT=development,IS_LOCAL=False,GS_BUCKET_NAME=nxtturn-media-dev-cloud,FRONTEND_URL=https://dev.nxtturn.com,BACKEND_URL=https://nxtturn-backend-dev-656842361738.us-central1.run.app,EMAIL_MODE=brevo"
-      - "--set-secrets"
-      - "DATABASE_URL=DATABASE_CONNECTION_NAME:latest,SECRET_KEY=SECRET_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest,REDIS_URL=REDIS_URL:latest,BREVO_API_KEY=BREVO_API_KEY:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest"
-      - "--allow-unauthenticated"
+      - "-c"
+      - |
+        gcloud run deploy nxtturn-backend-dev \
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest \
+          --region us-central1 \
+          --no-traffic \
+          --tag=$(cat _TAG_NAME) \
+          --service-account nxtturn-dev-cloud-robot@$PROJECT_ID.iam.gserviceaccount.com \
+          --set-env-vars ENVIRONMENT=development,IS_LOCAL=False,GS_BUCKET_NAME=nxtturn-media-dev-cloud,FRONTEND_URL=https://dev.nxtturn.com,BACKEND_URL=https://nxtturn-backend-dev-656842361738.us-central1.run.app,EMAIL_MODE=brevo \
+          --set-secrets "DATABASE_URL=DATABASE_CONNECTION_NAME:latest,SECRET_KEY=SECRET_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest,REDIS_URL=REDIS_URL:latest,BREVO_API_KEY=BREVO_API_KEY:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest" \
+          --allow-unauthenticated
 
-  # 4. Build the Frontend
+  # --- FRONTEND SECTION ---
   - name: "gcr.io/cloud-builders/docker"
     id: "Build Frontend"
     args:
@@ -65,7 +67,6 @@ steps:
         "./frontend",
       ]
 
-  # 5. Push Frontend
   - name: "gcr.io/cloud-builders/docker"
     id: "Push Frontend"
     args:
@@ -74,21 +75,19 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest",
       ]
 
-  # 6. Deploy Frontend
+  # STEP 6: Modified to use the dynamic branch tag
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     id: "Deploy Frontend"
-    entrypoint: gcloud
+    entrypoint: "bash"
     args:
-      - "run"
-      - "deploy"
-      - "nxtturn-frontend-dev"
-      - "--image"
-      - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest"
-      - "--region"
-      - "us-central1"
-      - "--no-traffic" # <--- Added: Keeps the live frontend safe
-      - "--tag=sandbox" # <--- Added: Creates your secret link
-      - "--allow-unauthenticated"
+      - "-c"
+      - |
+        gcloud run deploy nxtturn-frontend-dev \
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest \
+          --region us-central1 \
+          --no-traffic \
+          --tag=$(cat _TAG_NAME) \
+          --allow-unauthenticated
 
 images:
   - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest"
