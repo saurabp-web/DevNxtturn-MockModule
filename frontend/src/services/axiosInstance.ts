@@ -17,17 +17,14 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    // --- THE ARCHITECT FIX: URL SANITIZER ---
-    // Catch absolute URLs from backend pagination and convert to relative paths
+    // 1. If it's a full URL from the backend, strip the domain
     if (config.url && config.url.startsWith('http')) {
-      try {
-        const url = new URL(config.url)
-        config.url = url.pathname + url.search
-      } catch (e) {
-        console.error('URL Sanitization failed', e)
-      }
+      const url = new URL(config.url)
+      // Keep only the path (e.g. /api/feed/...) and query (?cursor=...)
+      config.url = url.pathname + url.search
     }
 
+    // 2. Add Auth Token
     const authStore = useAuthStore()
     const token = authStore.authToken
     if (token) {
