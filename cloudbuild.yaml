@@ -34,10 +34,11 @@ steps:
     args:
       - "-c"
       - |
-        if [ "$BRANCH_NAME" == "dev" ]; then
-          T_FLAG="--traffic"
-        else
+        # If branch is NOT dev, we use --no-traffic. If it IS dev, we use nothing (default 100%).
+        if [ "$BRANCH_NAME" != "dev" ]; then
           T_FLAG="--no-traffic"
+        else
+          T_FLAG=""
         fi
 
         gcloud run deploy nxtturn-backend-dev \
@@ -85,10 +86,11 @@ steps:
     args:
       - "-c"
       - |
-        if [ "$BRANCH_NAME" == "dev" ]; then
-          T_FLAG="--traffic"
-        else
+        # If branch is NOT dev, we use --no-traffic. If it IS dev, we use nothing (default 100%).
+        if [ "$BRANCH_NAME" != "dev" ]; then
           T_FLAG="--no-traffic"
+        else
+          T_FLAG=""
         fi
 
         gcloud run deploy nxtturn-frontend-dev \
