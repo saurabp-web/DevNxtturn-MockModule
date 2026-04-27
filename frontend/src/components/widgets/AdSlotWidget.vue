@@ -347,9 +347,17 @@ onMounted(() => {
       }, 1000)
     })
   } else {
-    // 2. MOCK LOGIC: Pick one of the 50+ ads at random
+    // 2. MOCK LOGIC: Pick a fresh ad and force the image to refresh
     setTimeout(() => {
-      currentAd.value = mockAds[Math.floor(Math.random() * mockAds.length)]
+      const selected = mockAds[Math.floor(Math.random() * mockAds.length)]
+
+      // We add '?t=' with a timestamp to the image URL.
+      // This "tricks" the browser into showing a brand-new image every time.
+      currentAd.value = {
+        ...selected,
+        image: `${selected.image}?t=${Date.now()}`,
+      }
+
       isLoading.value = false
     }, 800)
   }
