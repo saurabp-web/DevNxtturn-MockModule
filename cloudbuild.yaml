@@ -1,5 +1,5 @@
 steps:
-  # STEP 0: Create a URL-safe tag from the branch name (converts / to -)
+  # 0. Create a URL-safe tag from the branch name (converts / to -)
   - name: "bash"
     id: "Create Tag"
     args:
@@ -29,17 +29,20 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest",
       ]
 
-  # STEP 3: Modified to use the dynamic branch tag
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     id: "Deploy Backend"
     entrypoint: "bash"
     args:
       - "-c"
       - |
+        # If branch is dev, send 100% traffic. If not, send 0% traffic.
+        TRAFFIC_FLAG="--no-traffic"
+        if [ "$BRANCH_NAME" == "dev" ]; then TRAFFIC_FLAG="--to-latest"; fi
+
         gcloud run deploy nxtturn-backend-dev \
           --image us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest \
           --region us-central1 \
-          --no-traffic \
+          $${TRAFFIC_FLAG} \
           --tag=$(cat _TAG_NAME) \
           --service-account nxtturn-dev-cloud-robot@$PROJECT_ID.iam.gserviceaccount.com \
           --set-env-vars ENVIRONMENT=development,IS_LOCAL=False,GS_BUCKET_NAME=nxtturn-media-dev-cloud,FRONTEND_URL=https://dev.nxtturn.com,BACKEND_URL=https://nxtturn-backend-dev-656842361738.us-central1.run.app,EMAIL_MODE=brevo \
@@ -75,17 +78,20 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest",
       ]
 
-  # STEP 6: Modified to use the dynamic branch tag
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     id: "Deploy Frontend"
     entrypoint: "bash"
     args:
       - "-c"
       - |
+        # If branch is dev, send 100% traffic. If not, send 0% traffic.
+        TRAFFIC_FLAG="--no-traffic"
+        if [ "$BRANCH_NAME" == "dev" ]; then TRAFFIC_FLAG="--to-latest"; fi
+
         gcloud run deploy nxtturn-frontend-dev \
           --image us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest \
           --region us-central1 \
-          --no-traffic \
+          $${TRAFFIC_FLAG} \
           --tag=$(cat _TAG_NAME) \
           --allow-unauthenticated
 
