@@ -1,21 +1,42 @@
-# STAGE 1: Build
-FROM node:20-slim AS build-stage
+# ==========================================
+# STAGE 1: The Base (Infrastructure)
+# ==========================================
+FROM node:20-slim AS base
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
+
+# ==========================================
+# STAGE 2: Development (For LOCAL DOCKER)
+# This is what your docker-compose.yml is looking for.
+# ==========================================
+FROM base AS develop-stage
+COPY . .
+# We use --host 0.0.0.0 so Vite is accessible via your Windows IP
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+# ==========================================
+# STAGE 3: Build (For PRODUCTION/CLOUD)
+# ==========================================
+FROM base AS build-stage
 COPY . .
 
 ARG VITE_GOOGLE_CLIENT_ID
 ARG VITE_API_BASE_URL
 ARG VITE_WS_BASE_URL
+ARG VITE_AD_MODE
 
 ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_WS_BASE_URL=$VITE_WS_BASE_URL
+ENV VITE_AD_MODE=$VITE_AD_MODE
 
 RUN npm run build
 
-# STAGE 2: Nginx (The Smart Gateway)
+# ==========================================
+# STAGE 4: Nginx (Your Original Cloud Logic)
+# Exactly as you provided, preserved 100%.
+# ==========================================
 FROM nginx:stable-alpine
 
 COPY --from=build-stage /app/dist /usr/share/nginx/html

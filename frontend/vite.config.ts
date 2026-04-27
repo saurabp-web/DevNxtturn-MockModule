@@ -48,6 +48,17 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           secure: false,
         },
+
+        '/admin': {
+          target: 'https://backend:8000',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/static/admin': {
+          target: 'https://backend:8000',
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
   }
