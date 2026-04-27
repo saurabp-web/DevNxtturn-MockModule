@@ -34,6 +34,8 @@ steps:
       - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest"
       - "--region"
       - "us-central1"
+      - "--no-traffic" # <--- Added: Keeps dev.nxtturn.com safe
+      - "--tag=sandbox" # <--- Added: Creates your secret link
       - "--service-account"
       - "nxtturn-dev-cloud-robot@$PROJECT_ID.iam.gserviceaccount.com"
       - "--set-env-vars"
@@ -45,7 +47,8 @@ steps:
   # 4. Build the Frontend
   - name: "gcr.io/cloud-builders/docker"
     id: "Build Frontend"
-    args: [
+    args:
+      [
         "build",
         "--build-arg",
         "VITE_GOOGLE_CLIENT_ID=821330118168-0p3nsa8a08rr1nahtq51quhdp8q7bfv4.apps.googleusercontent.com",
@@ -54,7 +57,7 @@ steps:
         "--build-arg",
         "VITE_WS_BASE_URL=/ws/",
         "--build-arg",
-        "VITE_AD_MODE=mock", # <--- Added missing quote here
+        "VITE_AD_MODE=mock",
         "-f",
         "frontend/Dockerfile",
         "-t",
@@ -83,6 +86,8 @@ steps:
       - "us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest"
       - "--region"
       - "us-central1"
+      - "--no-traffic" # <--- Added: Keeps the live frontend safe
+      - "--tag=sandbox" # <--- Added: Creates your secret link
       - "--allow-unauthenticated"
 
 images:
