@@ -17,14 +17,24 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    // 1. If it's a full URL from the backend, strip the domain
+    // 1. If the URL is absolute (http...), strip it to a relative path
     if (config.url && config.url.startsWith('http')) {
-      const url = new URL(config.url)
-      // Keep only the path (e.g. /api/feed/...) and query (?cursor=...)
-      config.url = url.pathname + url.search
+      try {
+        const url = new URL(config.url)
+        config.url = url.pathname + url.search
+      } catch (e) {
+        console.error('URL Sanitization failed', e)
+      }
     }
 
-    // 2. Add Auth Token
+    // 2. THE FIX: If the path already starts with /api/, remove the baseURL prefix
+    // to prevent double /api//api/
+    if (config.url && config.url.startsWith('/api/')) {
+      config.baseURL = ''
+    } else {
+      config.baseURL = import.meta.env.VITE_API_BASE_URL
+    }
+
     const authStore = useAuthStore()
     const token = authStore.authToken
     if (token) {
@@ -32,9 +42,7 @@ axiosInstance.interceptors.request.use(
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  },
+  (error) => Promise.reject(error),
 )
 
 axiosInstance.interceptors.response.use(
