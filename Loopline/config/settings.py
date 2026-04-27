@@ -62,9 +62,9 @@ if not IS_PRODUCTION:
 SITE_ID = 1
 
 MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "community.middleware.CypressTestMiddleware",
-    "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -306,3 +306,20 @@ PASSWORD_RESET_TIMEOUT = 3600
 # This prevents Error 413 and allows for high-quality video uploads.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
 FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
+
+
+# --- PROXY & SSL SETTINGS (Fixes Insecure/Mixed Content Errors) ---
+# This tells Django it's behind a secure proxy (Google Cloud or Nginx)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
+# --- DATABASE CONNECTION POOLING (Fixes Ghost Sessions/500 Errors) ---
+# We update the existing DATABASES logic to keep connections alive for 60 seconds
+if os.getenv("DATABASE_URL"):
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=60,  # Keep connections alive to prevent timeouts
+            ssl_require=IS_PRODUCTION,
+        )
+    }
