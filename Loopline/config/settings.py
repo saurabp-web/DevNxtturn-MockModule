@@ -99,7 +99,7 @@ if os.getenv("DATABASE_URL"):
     # If we are in Docker (Local or Cloud)
     # We ONLY require SSL if the environment is strictly 'production'
     DATABASES = {
-        "default": dj_database_url.config(conn_max_age=600, ssl_require=IS_PRODUCTION)
+        "default": dj_database_url.config(conn_max_age=0, ssl_require=IS_PRODUCTION)
     }
 else:  # Fallback for local Windows-native development (not used with Docker)
     DATABASES = {
