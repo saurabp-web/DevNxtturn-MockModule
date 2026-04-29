@@ -83,12 +83,6 @@ RUN echo 'server { \
     proxy_set_header X-Forwarded-Proto $scheme; \
     } \
     \
-    # 5. AUTH REWRITE PROXY \
-    location /auth/ { \
-    proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/api/auth/; \
-    proxy_set_header Host nxtturn-backend-dev-656842361738.us-central1.run.app; \
-    } \
-    \
     # 6. DJANGO ADMIN PROXY \
     location /admin/ { \
     proxy_pass https://nxtturn-backend-dev-656842361738.us-central1.run.app/admin/; \
