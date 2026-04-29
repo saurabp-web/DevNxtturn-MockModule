@@ -51,22 +51,21 @@ const toast = useToast()
 
 // This handles the secure handshake with Google's servers
 const { login: triggerGoogleLogin } = useCodeClient({
+  redirect_uri: window.location.origin,
+  // -------------------
   onSuccess: async (codeResponse) => {
-    // 1. Google gives us a one-time code
+    console.log('DEBUG: Google Success! Code:', codeResponse.code)
     try {
-      // 2. We send that code to our Auth Store (and then to Django)
       await authStore.loginWithGoogle(codeResponse.code)
-
-      toast.success('Successfully signed in with Google!')
       router.push({ name: 'feed' })
     } catch (error) {
-      console.error('Google Auth Error:', error)
-      toast.error('Failed to authenticate with Google. Please try again.')
+      console.error('DEBUG: Backend Handshake Failed:', error)
+      toast.error('Failed to authenticate with NxtTurn servers.')
     }
   },
   onError: (error) => {
-    console.error('Google Popup Error:', error)
-    toast.error('Google Sign-In was cancelled or failed.')
+    console.error('DEBUG: Google Popup Error:', error)
+    toast.error('Google Sign-In failed.')
   },
 })
 
