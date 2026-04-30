@@ -1899,6 +1899,6 @@ class CustomGoogleOAuth2Adapter(GoogleOAuth2Adapter):
 # At the bottom of community/views.py
 class GoogleLogin(SocialLoginView):
     adapter_class = CustomGoogleOAuth2Adapter
-    callback_url = "postmessage"
+    callback_url = settings.FRONTEND_URL
     client_class = FixedOAuth2Client
     serializer_class = NxtTurnSocialLoginSerializer  # <-- THE FIX
