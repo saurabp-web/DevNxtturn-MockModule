@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
-
-import { useCodeClient } from 'vue3-google-signin'
+import { useRouter, useRoute } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
+// 1. FORM STATE
 const username = ref('')
 const password = ref('')
 const errorMessage = ref<string | null>(null)
@@ -15,11 +14,46 @@ const rememberMe = ref(false)
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
+const toast = useToast()
 
-const togglePasswordVisibility = () => {
-  showPassword.value = !showPassword.value
+// 2. THE REDIRECT HANDLER (ON MOUNT)
+// This runs when the user comes BACK from Google with a code in the URL
+onMounted(async () => {
+  const code = route.query.code as string
+  if (code) {
+    console.log('GOLD STANDARD: Auth code detected. Finalizing login...')
+    try {
+      await authStore.loginWithGoogle(code)
+      router.push({ name: 'feed' })
+    } catch (err: any) {
+      console.error('BACKEND ERROR:', err.response?.data || err)
+      errorMessage.value = 'Social login failed. Your account might not be linked.'
+    }
+  }
+})
+
+// 3. THE GOOGLE REDIRECT TRIGGER
+// This runs when the user clicks the Google "G" button
+const handleGoogleLogin = () => {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  const redirectUri = `${window.location.origin}/login`
+  const scope = 'email profile openid'
+
+  const googleAuthUrl =
+    `https://accounts.google.com/o/oauth2/v2/auth?` +
+    `client_id=${clientId}&` +
+    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+    `response_type=code&` +
+    `scope=${encodeURIComponent(scope)}&` +
+    `access_type=offline&` +
+    `prompt=consent`
+
+  console.log('GOLD STANDARD: Redirecting to Google...')
+  window.location.assign(googleAuthUrl)
 }
 
+// 4. STANDARD LOGIN (USERNAME/PASSWORD)
 const handleLogin = async () => {
   errorMessage.value = null
   messageType.value = 'error'
@@ -33,45 +67,17 @@ const handleLogin = async () => {
     const errors = error?.response?.data?.non_field_errors
     if (errors && Array.isArray(errors)) {
       const errorString = errors.join(' ')
-
-      if (errorString.includes('E-mail is not verified.')) {
-        errorMessage.value =
-          'Your account is not verified. A new verification link has been sent to your email.'
-        messageType.value = 'info'
-      } else {
-        errorMessage.value = errorString
-      }
+      errorMessage.value = errorString.includes('E-mail is not verified.')
+        ? 'Account not verified. Check your email.'
+        : errorString
     } else {
-      errorMessage.value = 'Login failed. Please check your credentials or network connection.'
+      errorMessage.value = 'Login failed. Please check credentials.'
     }
   }
 }
 
-const toast = useToast()
-
-// This handles the secure handshake with Google's servers
-const { login: triggerGoogleLogin } = useCodeClient({
-  redirect_uri: 'postmessage', // MANDATORY for popup code flow on production HTTPS
-  onSuccess: async (codeResponse) => {
-    console.log('HANDSHAKE SUCCESS: Code received from Google:', codeResponse.code)
-    try {
-      await authStore.loginWithGoogle(codeResponse.code)
-      console.log('BACKEND SUCCESS: User authenticated, redirecting to feed.')
-      router.push({ name: 'feed' })
-    } catch (err: any) {
-      console.error('BACKEND ERROR:', err.response?.data || err)
-      errorMessage.value = 'Login failed: Your Google account is not linked to an active profile.'
-    }
-  },
-  onError: (error: any) => {
-    console.error('GOOGLE POPUP ERROR:', error)
-  },
-})
-// -------------------------
-
-// This function now starts the real process
-const handleGoogleLogin = () => {
-  triggerGoogleLogin()
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value
 }
 </script>
 
