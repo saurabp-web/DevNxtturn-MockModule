@@ -1,6 +1,23 @@
 <!-- C:\Users\Vinay\Project\frontend\src\App.vue -->
 <!-- FIXED AUTH INITIALIZATION -->
 <script setup lang="ts">
+window.addEventListener(
+  'message',
+  (event) => {
+    console.log('DEBUG [Window Message]:', event.origin, event.data)
+  },
+  true,
+)
+
+window.addEventListener(
+  'error',
+  (event) => {
+    console.error('DEBUG [Global Exception]:', event.message, event.filename, event.lineno)
+  },
+  true,
+)
+// ----------------------------------------
+
 import { watch, onMounted, onUnmounted } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import { notificationService } from '@/services/notificationService'
@@ -41,6 +58,7 @@ onMounted(() => {
   // authStore.initializeAuth(); <-- REMOVE THIS LINE
 
   window.addEventListener('storage', handleStorageChange)
+  console.log('DEBUG: Forensic listeners and app initialized.')
 })
 
 onUnmounted(() => {
