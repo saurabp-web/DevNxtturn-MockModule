@@ -52,20 +52,19 @@ const toast = useToast()
 // This handles the secure handshake with Google's servers
 const { login: triggerGoogleLogin } = useCodeClient({
   redirect_uri: window.location.origin,
-  // -------------------
   onSuccess: async (codeResponse) => {
-    console.log('DEBUG: Google Success! Code:', codeResponse.code)
+    alert('DEBUG: Google Success! Code is: ' + codeResponse.code)
     try {
       await authStore.loginWithGoogle(codeResponse.code)
       router.push({ name: 'feed' })
-    } catch (error) {
-      console.error('DEBUG: Backend Handshake Failed:', error)
-      toast.error('Failed to authenticate with NxtTurn servers.')
+    } catch (err: any) {
+      // Changed 'error' to 'err' and added ': any'
+      alert('DEBUG: Backend Error: ' + JSON.stringify(err.response?.data || err))
     }
   },
-  onError: (error) => {
-    console.error('DEBUG: Google Popup Error:', error)
-    toast.error('Google Sign-In failed.')
+  onError: (error: any) => {
+    // Added ': any' here
+    alert('DEBUG: Google Popup Error: ' + JSON.stringify(error))
   },
 })
 
