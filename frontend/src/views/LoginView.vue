@@ -51,22 +51,23 @@ const toast = useToast()
 
 // This handles the secure handshake with Google's servers
 const { login: triggerGoogleLogin } = useCodeClient({
-  redirect_uri: window.location.origin,
+  redirect_uri: 'postmessage', // MANDATORY for popup code flow on production HTTPS
   onSuccess: async (codeResponse) => {
-    alert('DEBUG: Google Success! Code is: ' + codeResponse.code)
+    console.log('HANDSHAKE SUCCESS: Code received from Google:', codeResponse.code)
     try {
       await authStore.loginWithGoogle(codeResponse.code)
+      console.log('BACKEND SUCCESS: User authenticated, redirecting to feed.')
       router.push({ name: 'feed' })
     } catch (err: any) {
-      // Changed 'error' to 'err' and added ': any'
-      alert('DEBUG: Backend Error: ' + JSON.stringify(err.response?.data || err))
+      console.error('BACKEND ERROR:', err.response?.data || err)
+      errorMessage.value = 'Login failed: Your Google account is not linked to an active profile.'
     }
   },
   onError: (error: any) => {
-    // Added ': any' here
-    alert('DEBUG: Google Popup Error: ' + JSON.stringify(error))
+    console.error('GOOGLE POPUP ERROR:', error)
   },
 })
+// -------------------------
 
 // This function now starts the real process
 const handleGoogleLogin = () => {
