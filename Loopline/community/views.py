@@ -1896,9 +1896,16 @@ class CustomGoogleOAuth2Adapter(GoogleOAuth2Adapter):
         return super().get_app(request, **kwargs)
 
 
-# At the bottom of community/views.py
 class GoogleLogin(SocialLoginView):
     adapter_class = CustomGoogleOAuth2Adapter
-    callback_url = settings.FRONTEND_URL
     client_class = FixedOAuth2Client
-    serializer_class = NxtTurnSocialLoginSerializer  # <-- THE FIX
+    serializer_class = NxtTurnSocialLoginSerializer
+
+    @property
+    def callback_url(self):
+        """
+        The Gold Standard: This must match the Frontend's redirect_uri EXACTLY.
+        Since our new flow uses /login, we append it here dynamically.
+        """
+        # .rstrip('/') ensures we don't end up with //login if the env var has a slash
+        return f"{settings.FRONTEND_URL.rstrip('/')}/login"

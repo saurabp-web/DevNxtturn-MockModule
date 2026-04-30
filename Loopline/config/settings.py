@@ -261,7 +261,10 @@ SOCIALACCOUNT_PROVIDERS = {
             }
         ],
         "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {"access_type": "online", "prompt": "select_account"},
+        "AUTH_PARAMS": {
+            "access_type": "offline",  # Changed from 'online' to 'offline'
+            "prompt": "select_account",
+        },
         "JWT_LEEWAY": 600,
     }
 }
@@ -313,13 +316,3 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
-
-# --- DATABASE CONNECTION POOLING (Fixes Ghost Sessions/500 Errors) ---
-# We update the existing DATABASES logic to keep connections alive for 60 seconds
-if os.getenv("DATABASE_URL"):
-    DATABASES = {
-        "default": dj_database_url.config(
-            conn_max_age=60,  # Keep connections alive to prevent timeouts
-            ssl_require=IS_PRODUCTION,
-        )
-    }
