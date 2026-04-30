@@ -63,10 +63,10 @@ steps:
       - "-c"
       - |
         docker build \
-          --build-arg "VITE_GOOGLE_CLIENT_ID=$$VITE_GOOGLE_CLIENT_ID" \
-          --build-arg "VITE_API_BASE_URL=/api/" \
-          --build-arg "VITE_WS_BASE_URL=/ws/" \
-          --build-arg "VITE_AD_MODE=mock" \
+          --build-arg VITE_GOOGLE_CLIENT_ID=$$VITE_GOOGLE_CLIENT_ID \
+          --build-arg VITE_API_BASE_URL=/api/ \
+          --build-arg VITE_WS_BASE_URL=/ws/ \
+          --build-arg VITE_AD_MODE=mock \
           -f frontend/Dockerfile \
           -t us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/frontend-dev:latest \
           ./frontend
