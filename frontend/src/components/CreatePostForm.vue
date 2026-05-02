@@ -847,7 +847,7 @@ onUnmounted(() => {
             class="text-xs sm:text-sm text-gray-500 bg-gray-100 px-2 py-1 sm:px-3 sm:py-2 rounded-lg"
           >
             <span :class="{ 'text-orange-500 font-semibold': postContent.length > 250 }">
-              {{ postContent.length }}/280
+              {{ postContent.length }}/1000
             </span>
           </div>
           <!-- Post Button -->
