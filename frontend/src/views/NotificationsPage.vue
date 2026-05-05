@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, computed, nextTick } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
+
+import axiosInstance from '@/services/axiosInstance'
+import { useToast } from 'vue-toastification'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { formatDistanceToNowStrict } from 'date-fns'
 import { getAvatarUrl } from '@/utils/avatars'
@@ -15,6 +18,7 @@ import {
   CheckBadgeIcon,
   BellIcon,
   CheckCircleIcon,
+  LinkIcon,
 } from '@heroicons/vue/24/solid'
 import eventBus from '@/services/eventBus'
 
@@ -50,6 +54,40 @@ const markOneAsRead = async (notificationId: number) => {
   await notificationStore.markNotificationsAsRead([notificationId])
 }
 
+const toast = useToast()
+
+const handleConnectionAction = async (notification: Notification, action: 'accept' | 'reject') => {
+  // 1. We need the ID of the connection request.
+  // Based on your backend, this is stored in action_object.id
+  const requestId = notification.action_object?.id
+  if (!requestId) {
+    toast.error('Could not find request ID.')
+    return
+  }
+
+  try {
+    // 2. Call your Django API
+    await axiosInstance.post(`/connection-requests/${requestId}/${action}/`)
+
+    // 3. Mark the notification as read in DB and update local state
+    await markOneAsRead(notification.id)
+    notification.is_read = true
+
+    // 4. [NEW] Decrease the unread count in the store immediately
+    // This ensures the red bubble on the Bell Icon updates instantly
+    if (notificationStore.unreadCount > 0) {
+      notificationStore.unreadCount--
+    }
+
+    // 5. Show success message
+    const msg = action === 'accept' ? 'Connection established!' : 'Request declined.'
+    toast.success(msg)
+  } catch (error) {
+    console.error(`Failed to ${action} connection:`, error)
+    toast.error(`Error processing ${action}.`)
+  }
+}
+
 async function handleMarkAllAsRead() {
   if (isMarkingAllRead.value) return
   isMarkingAllRead.value = true
@@ -59,19 +97,17 @@ async function handleMarkAllAsRead() {
 
 // Function to get background color based on notification type and read status
 const getNotificationBgColor = (notificationType: string, isRead: boolean) => {
-  // For read notifications - very light gray
-  if (isRead) {
-    return 'bg-gray-50'
-  }
+  if (isRead) return 'bg-gray-50'
 
-  // For unread notifications - very light colors based on type
   switch (notificationType) {
     case 'like':
       return 'bg-pink-50'
     case 'comment':
       return 'bg-blue-50'
-    case 'reply':
-      return 'bg-gray-50'
+    case 'connection_request':
+      return 'bg-blue-50' // Added
+    case 'connection_accepted':
+      return 'bg-emerald-50' // Added
     case 'follow':
       return 'bg-green-50'
     case 'mention':
@@ -85,21 +121,18 @@ const getNotificationBgColor = (notificationType: string, isRead: boolean) => {
   }
 }
 
-// Function to get hover background color based on notification type and read status
 const getHoverBgColor = (notificationType: string, isRead: boolean) => {
-  // For read notifications - slightly darker gray
-  if (isRead) {
-    return 'hover:bg-gray-100'
-  }
+  if (isRead) return 'hover:bg-gray-100'
 
-  // For unread notifications - slightly darker version of their color
   switch (notificationType) {
     case 'like':
       return 'hover:bg-pink-100'
     case 'comment':
       return 'hover:bg-blue-100'
-    case 'reply':
-      return 'hover:bg-gray-100'
+    case 'connection_request':
+      return 'hover:bg-blue-100' // Added
+    case 'connection_accepted':
+      return 'hover:bg-emerald-100' // Added
     case 'follow':
       return 'hover:bg-green-100'
     case 'mention':
@@ -225,38 +258,67 @@ onUnmounted(() => {
                   class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-sm flex items-center justify-center"
                   :class="{
                     'bg-pink-500': notification.notification_type === 'like',
-                    'bg-blue-500': notification.notification_type === 'comment',
+                    'bg-blue-500': ['comment', 'connection_request'].includes(
+                      notification.notification_type,
+                    ),
                     'bg-gray-500': notification.notification_type === 'reply',
                     'bg-green-500': notification.notification_type === 'follow',
                     'bg-indigo-500': notification.notification_type === 'mention',
                     'bg-purple-500': notification.notification_type === 'group_join_request',
-                    'bg-emerald-500': notification.notification_type === 'group_join_approved',
+                    'bg-emerald-500': ['group_join_approved', 'connection_accepted'].includes(
+                      notification.notification_type,
+                    ),
                   }"
                 >
+                  <!-- 1. Like -->
                   <HeartIcon
                     v-if="notification.notification_type === 'like'"
                     class="w-3 h-3 text-white"
                   />
+
+                  <!-- 2. Comment -->
                   <ChatBubbleOvalLeftEllipsisIcon
                     v-else-if="notification.notification_type === 'comment'"
                     class="w-3 h-3 text-white"
                   />
+
+                  <!-- 3. Reply -->
                   <ArrowUturnLeftIcon
                     v-else-if="notification.notification_type === 'reply'"
                     class="w-3 h-3 text-white"
                   />
+
+                  <!-- 4. Follow (Standard) -->
                   <UserPlusIcon
                     v-else-if="notification.notification_type === 'follow'"
                     class="w-3 h-3 text-white"
                   />
+
+                  <!-- 5. Connection Request (New - Link) -->
+                  <LinkIcon
+                    v-else-if="notification.notification_type === 'connection_request'"
+                    class="w-3 h-3 text-white"
+                  />
+
+                  <!-- 6. Connection Accepted (New - Verified Circle) -->
+                  <CheckCircleIcon
+                    v-else-if="notification.notification_type === 'connection_accepted'"
+                    class="w-3 h-3 text-white"
+                  />
+
+                  <!-- 7. Mention -->
                   <AtSymbolIcon
                     v-else-if="notification.notification_type === 'mention'"
                     class="w-3 h-3 text-white"
                   />
+
+                  <!-- 8. Group Request -->
                   <UserGroupIcon
                     v-else-if="notification.notification_type === 'group_join_request'"
                     class="w-3 h-3 text-white"
                   />
+
+                  <!-- 9. Group Approved -->
                   <CheckBadgeIcon
                     v-else-if="notification.notification_type === 'group_join_approved'"
                     class="w-3 h-3 text-white"
@@ -320,7 +382,28 @@ onUnmounted(() => {
                     </span>
                   </div>
 
-                  <!-- Fallback for all other types -->
+                  <!-- Case 3: Connection Request -->
+                  <div v-else-if="notification.notification_type === 'connection_request'">
+                    <span>
+                      <strong class="font-semibold text-gray-800">{{
+                        notification.actor.username
+                      }}</strong>
+                      sent you a connection request.
+                    </span>
+                  </div>
+
+                  <!-- Case 4: Connection Accepted -->
+                  <div v-else-if="notification.notification_type === 'connection_accepted'">
+                    <span>
+                      You are now connected with
+                      <strong class="font-semibold text-gray-800">{{
+                        notification.actor.username
+                      }}</strong
+                      >.
+                    </span>
+                  </div>
+
+                  <!-- Fallback for simple Follows and others -->
                   <div v-else>
                     <span>{{ notification.verb }}</span>
                   </div>
@@ -332,6 +415,37 @@ onUnmounted(() => {
                 >
                   {{ notification.context_snippet }}
                 </p>
+
+                <!-- COMMAND CENTER: Action Buttons -->
+                <div
+                  v-if="
+                    notification.notification_type === 'connection_request' && !notification.is_read
+                  "
+                  class="mt-3 flex gap-2"
+                >
+                  <button
+                    @click.stop.prevent="handleConnectionAction(notification, 'accept')"
+                    class="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition shadow-sm"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    @click.stop.prevent="handleConnectionAction(notification, 'reject')"
+                    class="px-4 py-1.5 bg-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-300 transition"
+                  >
+                    Decline
+                  </button>
+                </div>
+
+                <div v-if="notification.notification_type === 'follow'" class="mt-3">
+                  <router-link
+                    :to="{ name: 'profile', params: { username: notification.actor.username } }"
+                    @click.stop
+                    class="inline-block px-4 py-1.5 border border-green-500 text-green-600 text-xs font-bold rounded-lg hover:bg-green-50 transition"
+                  >
+                    View Profile
+                  </router-link>
+                </div>
               </div>
 
               <!-- Unread indicator - more subtle -->
