@@ -67,7 +67,7 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
 
   try {
     // 2. Call your Django API
-    await axiosInstance.post(`/connection-requests/${requestId}/${action}/`)
+    await axiosInstance.post(`/connections/requests/${requestId}/${action}/`)
 
     // 3. Mark the notification as read in DB and update local state
     await markOneAsRead(notification.id)
