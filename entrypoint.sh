@@ -13,6 +13,9 @@ if [ "$IS_LOCAL" = "True" ]; then
     exec daphne -e ssl:8000:privateKey=cert.key:certKey=cert.crt config.asgi:application
 else
     echo "--- STARTING IN CLOUD MODE ---"
+
+    echo "Running Database Migrations..."
+    python manage.py migrate --noinput
     # Cloud Run provides the port via $PORT. We use plain HTTP here.
     exec daphne -b 0.0.0.0 -p ${PORT:-8000} config.asgi:application
 fi

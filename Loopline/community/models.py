@@ -523,12 +523,17 @@ class Notification(models.Model):
     GROUP_JOIN_REQUEST = "group_join_request"
     GROUP_JOIN_APPROVED = "group_join_approved"
 
+    CONNECTION_REQUEST = "connection_request"
+    CONNECTION_ACCEPTED = "connection_accepted"
+
     NOTIFICATION_TYPE_CHOICES = [
         (LIKE, "Like on your Post"),
         (COMMENT, "Comment on your Post"),
         (REPLY, "Reply to your Comment"),
         (MENTION, "Mention in a Post/Comment"),
         (FOLLOW, "New Follower"),
+        (CONNECTION_REQUEST, "Connection Request"),
+        (CONNECTION_ACCEPTED, "Connection Accepted"),
         (GROUP_JOIN_REQUEST, "Group Join Request"),
         (GROUP_JOIN_APPROVED, "Group Join Approved"),
     ]

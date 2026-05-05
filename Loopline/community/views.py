@@ -439,15 +439,17 @@ class FollowToggleView(APIView):
                     follower=user_to_follow, following=current_user
                 )
 
-                # Find and accept any pending request between these two users, in either direction.
-                # This covers all scenarios gracefully.
-                ConnectionRequest.objects.filter(
+                # Trigger real-time notifications by using .save() instead of .update()
+                pending_reqs = ConnectionRequest.objects.filter(
                     (
                         Q(sender=current_user, receiver=user_to_follow)
                         | Q(sender=user_to_follow, receiver=current_user)
                     ),
                     status="pending",
-                ).update(status="accepted")
+                )
+                for req in pending_reqs:
+                    req.status = "accepted"
+                    req.save()  # This "wakes up" the signal to send the notification
 
                 return Response({"status": "connected"}, status=status.HTTP_200_OK)
 
@@ -498,15 +500,17 @@ class FollowToggleView(APIView):
                     follower=user_to_unfollow, following=current_user
                 ).delete()
 
-                # Reset any 'accepted' ConnectionRequest between them to 'rejected'.
-                # This allows them to send new requests in the future.
-                ConnectionRequest.objects.filter(
+                # Reset connection requests using .save() to ensure database consistency
+                accepted_reqs = ConnectionRequest.objects.filter(
                     (
                         Q(sender=current_user, receiver=user_to_unfollow)
                         | Q(sender=user_to_unfollow, receiver=current_user)
                     ),
                     status="accepted",
-                ).update(status="rejected")
+                )
+                for req in accepted_reqs:
+                    req.status = "rejected"
+                    req.save()
 
                 return Response({"status": "disconnected"}, status=status.HTTP_200_OK)
 
