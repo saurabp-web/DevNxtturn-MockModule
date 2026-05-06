@@ -160,7 +160,7 @@ watch(showDropdown, (isOpen) => {
       @keydown="handleKeydown"
       :placeholder="placeholder"
       :rows="rows || 3"
-      maxlength="1000"
+      maxlength="2000"
       class="w-full p-3 text-base text-gray-800 bg-gray-100 border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none min-h-[120px] max-h-[450px] overflow-y-auto"
     ></textarea>
 

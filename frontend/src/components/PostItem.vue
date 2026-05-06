@@ -2654,6 +2654,14 @@ function fallbackCopyTextToClipboard(text: string) {
                 :rows="2"
                 class="text-sm md:text-base w-full border-0 focus:ring-0 p-0 resize-none word-break-fix"
               />
+              <div class="flex justify-end mt-1 px-1">
+                <span
+                  class="text-[10px] text-gray-400"
+                  :class="{ 'text-orange-500 font-semibold': editContent.length > 1800 }"
+                >
+                  {{ editContent.length }}/2000
+                </span>
+              </div>
             </div>
 
             <!-- Media Preview Section with Drag & Drop -->
