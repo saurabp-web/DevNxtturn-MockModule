@@ -69,7 +69,11 @@ axiosInstance.interceptors.response.use(
   },
   // Handles ALL errors
   (error) => {
-    if (error.code === 'ERR_NETWORK' || !error.response) {
+    // 1. Identify if this request should be "Silent" (like a health check)
+    const isHealthCheck = error.config?.url?.includes('health-check')
+
+    // 2. Only show the error if it's a real network failure AND it's NOT a silent check
+    if ((error.code === 'ERR_NETWORK' || !error.response) && !isHealthCheck) {
       if (!isOffline) {
         isOffline = true
         const toast = useToast()
@@ -78,8 +82,6 @@ axiosInstance.interceptors.response.use(
           {
             timeout: false,
             onClose: () => {
-              // This ensures that if the user manually closes the toast,
-              // we are ready to show another one on the next network error.
               isOffline = false
               offlineToastId = null
             },

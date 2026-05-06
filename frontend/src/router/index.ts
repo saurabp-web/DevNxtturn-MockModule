@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import CommunityLayout from '@/layouts/CommunityLayout.vue'
 import ProfileLayout from '@/layouts/ProfileLayout.vue'
 import ExploreLayout from '@/layouts/ExploreLayout.vue'
-import axiosInstance from '@/services/axiosInstance'
+
 import CheckEmailView from '../views/auth/CheckEmailView.vue'
 import ForgotPasswordView from '../views/auth/ForgotPasswordView.vue'
 
@@ -137,12 +137,6 @@ const router = createRouter({
 
 // The beforeEach guard remains unchanged.
 router.beforeEach(async (to, from, next) => {
-  try {
-    await axiosInstance.get('/health-check/', { timeout: 4000 })
-  } catch (error) {
-    // The interceptor will handle the offline toast.
-  }
-
   const authStore = useAuthStore()
   await authStore.initializeAuth()
   const isAuthenticated = authStore.isAuthenticated
