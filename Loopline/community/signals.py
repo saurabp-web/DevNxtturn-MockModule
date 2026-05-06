@@ -1,8 +1,10 @@
 # C:\Users\Vinay\Project\Loopline\community\signals.py
 # --- ADDED REAL-TIME POST DELETION SIGNAL (Corrected Model Name) ---
+import logging
 
+logger = logging.getLogger(__name__)
 import re
-from django.db.models.signals import post_save, post_delete  # <--- ADD post_delete
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -64,8 +66,8 @@ def post_deleted_signal(sender, instance, **kwargs):
             },
         )
 
-    print(
-        f"!!! REAL-TIME (Post Deleted): Sent post_deleted signal for ID {instance.id} to {len(recipient_user_ids)} users !!!"
+    logger.info(
+        f"Real-time: Sent post_deleted signal for post ID {instance.id} to {len(recipient_user_ids)} users."
     )
 
 
@@ -86,8 +88,8 @@ def send_new_notification_signal(sender, instance, created, **kwargs):
             "message": {"type": "new_notification", "payload": serializer.data},
         }
         async_to_sync(channel_layer.group_send)(group_name, message_data)
-        print(
-            f"!!! REAL-TIME (Notification Created): Sent '{instance.notification_type}' to group {group_name} !!!"
+        logger.info(
+            f"Real-time: Sent notification type '{instance.notification_type}' to user group {group_name}."
         )
 
 
@@ -142,7 +144,7 @@ def create_like_notification(sender, instance, created, **kwargs):
                 action_object=instance,
                 target=notification_target,
             )
-            print(f"Notification DB (Like): Created for {recipient.username}")
+            logger.info(f"DB: Created Like notification for {recipient.username}")
 
 
 # --- 1. REPLACE THE FOLLOW BLOCK WITH THIS ---
@@ -170,7 +172,7 @@ def create_follow_notification(sender, instance, created, **kwargs):
                 notification_type=Notification.FOLLOW,
                 target=follower,  # Allows user to click notification to visit profile
             )
-            print(f"!!! Notification DB (Follow): Created for {followed_user.username}")
+            logger.info(f"DB: Created Follow notification for {followed_user.username}")
 
 
 # --- 2. ADD THIS NEW CONNECTION BLOCK AT THE END OF THE FILE ---
@@ -193,8 +195,8 @@ def create_connection_notification(sender, instance, created, **kwargs):
             action_object=instance,
             target=instance.sender,
         )
-        print(
-            f"!!! Notification DB (Conn Request): {instance.sender.username} -> {instance.receiver.username}"
+        logger.info(
+            f"DB: Created Connection Request notification for {instance.receiver.username}"
         )
 
     # SCENARIO B: An existing request is marked as 'accepted'
@@ -214,8 +216,8 @@ def create_connection_notification(sender, instance, created, **kwargs):
                 action_object=instance,
                 target=instance.receiver,
             )
-            print(
-                f"!!! Notification DB (Conn Accepted): {instance.receiver.username} accepted {instance.sender.username}"
+            logger.info(
+                f"DB: Created Connection Accepted notification for {instance.sender.username}"
             )
 
 
@@ -255,8 +257,8 @@ def create_comment_and_reply_notification(sender, instance, created, **kwargs):
                 action_object=instance,
                 target=instance,
             )
-            print(
-                f"Notification DB ({notification_type}): Created for {recipient.username}"
+            logger.info(
+                f"DB: Created {notification_type} notification for {recipient.username}"
             )
 
 
@@ -298,8 +300,8 @@ def create_mention_notifications(sender, instance, created, **kwargs):
                         target=target,
                         action_object=instance,
                     )
-                    print(
-                        f"Notification DB (Mention): Created for {recipient.username}"
+                    logger.info(
+                        f"DB: Created Mention notification for {recipient.username}"
                     )
         except User.DoesNotExist:
             continue
@@ -335,9 +337,7 @@ def create_group_join_request_notification(sender, instance, created, **kwargs):
             target=group,
             action_object=join_request,
         )
-        print(
-            f"Notification DB (Group Join Request): Created for {group_owner.username}"
-        )
+        logger.info(f"DB: Created Group Join Request for {group_owner.username}")
 
 
 # --- OTHER SIGNALS ---
@@ -359,6 +359,6 @@ def send_live_post_to_followers(sender, instance, created, **kwargs):
         follower = follow_relation.follower
         group_name = f"user_{follower.id}"
         async_to_sync(channel_layer.group_send)(group_name, message_data)
-        print(
-            f"!!! REAL-TIME (New Post): Sent post ID {instance.id} to group {group_name} for user {follower.username} !!!"
+        logger.info(
+            f"Real-time: Dispatched new post ID {instance.id} to follower group {group_name} ({follower.username})."
         )

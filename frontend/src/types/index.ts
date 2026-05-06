@@ -1,5 +1,4 @@
 // C:\Users\Vinay\Project\frontend\src\types\index.ts
-// --- THIS IS THE COMPLETE, REPLACEMENT CONTENT ---
 
 // --- Core User Types (Unchanged) ---
 export interface User {
@@ -21,6 +20,7 @@ export interface NetworkUser {
   name: string // This is our smart field (Display Name > Full Name > Username)
   headline: string | null
   profile_picture: string | null
+  connection_status: 'none' | 'pending_sent' | 'pending_received' | 'connected'
 }
 
 export interface DiscoveryResponse {

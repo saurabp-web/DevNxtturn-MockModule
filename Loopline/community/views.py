@@ -576,16 +576,39 @@ class ConnectionRequestViewSet(
 
     def create(self, request, *args, **kwargs):
         """
-        Custom logic to create or re-activate a connection request.
+        Custom logic to create, re-activate, or SMART-ACCEPT a connection request.
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         receiver = serializer.validated_data["receiver"]
         sender = request.user
 
-        # Find any existing request between these two users, regardless of direction
+        # 1. SMART RESOLVE: Check if THEY already sent YOU a request (The "Omi" case)
+        incoming_request = ConnectionRequest.objects.filter(
+            sender=receiver, receiver=sender, status="pending"
+        ).first()
+
+        if incoming_request:
+            # Instead of throwing a 400 error, we finalize the connection immediately.
+            with transaction.atomic():
+                incoming_request.status = "accepted"
+                incoming_request.save()  # Triggers real-time notification signals
+
+                # Establish mutual follows
+                Follow.objects.get_or_create(follower=sender, following=receiver)
+                Follow.objects.get_or_create(follower=receiver, following=sender)
+
+            return Response(
+                {
+                    "status": "connected",
+                    "detail": f"You are now connected with {receiver.username}!",
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        # 2. Check for an existing request where YOU are the sender
         existing_request = ConnectionRequest.objects.filter(
-            (Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender))
+            sender=sender, receiver=receiver
         ).first()
 
         if existing_request:
@@ -612,7 +635,7 @@ class ConnectionRequestViewSet(
                 )
                 return Response(return_serializer.data, status=status.HTTP_200_OK)
 
-        # If no request exists at all, create a new one.
+        # 3. If no request exists at all, create a new one.
         connection_request = ConnectionRequest.objects.create(
             sender=sender, receiver=receiver
         )

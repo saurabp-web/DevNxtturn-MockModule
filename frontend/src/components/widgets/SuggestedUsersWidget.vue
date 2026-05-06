@@ -69,7 +69,13 @@ async function handleConnect(user: NetworkUser) {
   if (pendingRequests.value.has(user.id)) return
   pendingRequests.value.add(user.id)
   try {
-    await profileStore.sendConnectRequestById(user.id)
+    // Now 'response' will contain the data returned from the store
+    const response = await profileStore.sendConnectRequestById(user.id)
+
+    // If the backend says 'connected' (Smart Resolve), refresh to remove them from suggestions
+    if (response && response.status === 'connected') {
+      handleRefresh()
+    }
   } catch (error) {
     pendingRequests.value.delete(user.id)
   }
@@ -160,10 +166,15 @@ async function handleConnect(user: NetworkUser) {
             :class="[
               pendingRequests.has(user.id)
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-50 text-blue-600 hover:bg-blue-100',
+                : user.connection_status === 'pending_received'
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-blue-50 text-blue-600 hover:bg-blue-100',
             ]"
           >
-            <span v-if="pendingRequests.has(user.id)">Pending</span>
+            <span v-if="pendingRequests.has(user.id)">
+              {{ user.connection_status === 'pending_received' ? 'Accepting...' : 'Pending' }}
+            </span>
+            <span v-else-if="user.connection_status === 'pending_received'">Accept</span>
             <span v-else>Connect</span>
           </button>
         </li>

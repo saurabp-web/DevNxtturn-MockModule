@@ -399,10 +399,13 @@ export const useProfileStore = defineStore('profile', () => {
 
   async function sendConnectRequestById(receiverId: number) {
     try {
-      await axiosInstance.post('/connections/requests/', { receiver: receiverId })
+      // 1. Capture the response from the server
+      const response = await axiosInstance.post('/connections/requests/', { receiver: receiverId })
+
+      // 2. Return the data so the widget can check if it's "connected"
+      return response.data
     } catch (error: any) {
       console.error('Failed to send connection request from widget:', error)
-      // We re-throw the error so the component knows it failed
       throw error
     }
   }

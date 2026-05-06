@@ -4,7 +4,7 @@ from rest_framework import serializers, validators
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Q, Count
 from .utils import process_mentions
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import PasswordResetConfirmSerializer
@@ -13,7 +13,6 @@ from allauth.account.forms import SetPasswordForm as AllAuthSetPasswordForm
 from dj_rest_auth.serializers import LoginSerializer
 from allauth.account.models import EmailAddress
 from rest_framework import serializers
-
 
 # Updated model imports to include PostMedia
 from .models import (
@@ -1467,45 +1466,35 @@ class CustomLoginSerializer(LoginSerializer):
 class NetworkUserSerializer(serializers.ModelSerializer):
     """
     Serializer for listing users in Network Hub.
-    - 'username': Compulsory unique identifier.
-    - 'name': Smart display logic (Display Name > Full Name > Username).
+    Includes connection_status to drive "Premium" UI buttons (Connect/Accept/Pending).
     """
 
-    # 1. Compulsory Username (Always available)
     username = serializers.CharField(read_only=True)
-
-    # 2. Smart Name Field (Calculated)
     name = serializers.SerializerMethodField()
-
-    # 3. Context Fields
     headline = serializers.CharField(source="profile.headline", read_only=True)
     profile_picture = serializers.SerializerMethodField()
+    connection_status = serializers.SerializerMethodField()  # <--- THE NEW FIELD
 
     class Meta:
         model = User
-        fields = ["id", "username", "name", "headline", "profile_picture"]
+        fields = [
+            "id",
+            "username",
+            "name",
+            "headline",
+            "profile_picture",
+            "connection_status",
+        ]
 
     def get_name(self, obj):
-        """
-        Determines the best name to display in the UI.
-        Priority: Profile Display Name -> User Full Name -> Username
-        """
-        # Priority 1: Custom Display Name from Profile
         if hasattr(obj, "profile") and obj.profile.display_name:
             return obj.profile.display_name
-
-        # Priority 2: Full Name (e.g., from future Google Auth)
         full_name = obj.get_full_name()
         if full_name and full_name.strip():
             return full_name
-
-        # Priority 3: Fallback to Username
         return obj.username
 
     def get_profile_picture(self, obj):
-        """
-        Returns absolute URL for the profile picture.
-        """
         request = self.context.get("request")
         try:
             if hasattr(obj, "profile") and obj.profile.picture:
@@ -1517,12 +1506,38 @@ class NetworkUserSerializer(serializers.ModelSerializer):
             pass
         return None
 
+    def get_connection_status(self, obj):
+        """
+        Calculates the state of the relationship so the UI knows
+        whether to show 'Connect', 'Accept', or 'Pending'.
+        """
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return "none"
+
+        user = request.user
+
+        # Check for any connection request record in either direction
+        req = ConnectionRequest.objects.filter(
+            (Q(sender=user, receiver=obj) | Q(sender=obj, receiver=user))
+        ).first()
+
+        if not req:
+            return "none"
+
+        if req.status == "accepted":
+            return "connected"
+
+        if req.sender == user:
+            return "pending_sent"  # You sent it, you are waiting.
+
+        return "pending_received"  # THEY sent it, you need to click 'Accept'!
+
 
 ## community/serializers.py (At the bottom)
 from dj_rest_auth.registration.serializers import SocialLoginSerializer
 from allauth.socialaccount.helpers import complete_social_login
 from django.contrib.auth import get_user_model
-
 
 # community/serializers.py (At the bottom)
 
