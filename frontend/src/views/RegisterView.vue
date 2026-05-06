@@ -117,7 +117,24 @@ const handleRegister = async () => {
 }
 
 const handleGoogleLogin = () => {
-  console.log('Google login')
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+  // We point to /login because your LoginView has the onMounted
+  // logic to catch the 'code' and finish the handshake.
+  const redirectUri = `${window.location.origin}/login`
+  const scope = 'email profile openid'
+
+  const googleAuthUrl =
+    `https://accounts.google.com/o/oauth2/v2/auth?` +
+    `client_id=${clientId}&` +
+    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+    `response_type=code&` +
+    `scope=${encodeURIComponent(scope)}&` +
+    `access_type=offline&` +
+    `prompt=consent`
+
+  console.log('GOLD STANDARD: Redirecting to Google from Register...')
+  window.location.assign(googleAuthUrl)
 }
 </script>
 
@@ -374,13 +391,37 @@ const handleGoogleLogin = () => {
         <p class="text-center text-xs text-gray-600 mb-2">Connect with your favorite platform</p>
 
         <!-- Google Login -->
-        <div class="flex justify-center mb-3">
+        <div class="flex justify-center mb-4">
           <button
             @click="handleGoogleLogin"
-            class="w-9 h-9 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center"
-            title="Sign in with Google"
+            :disabled="authStore.isLoading"
+            class="w-10 h-10 rounded-xl border border-gray-300 bg-white shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            :title="authStore.isLoading ? 'Authenticating...' : 'Sign in with Google'"
           >
-            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24">
+            <!-- Show a spinner if loading, otherwise show Google Icon -->
+            <svg
+              v-if="authStore.isLoading"
+              class="animate-spin h-5 w-5 text-indigo-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+
+            <svg v-else class="h-4 w-4" viewBox="0 0 24 24">
               <path
                 fill="#EA4335"
                 d="M5.26620003,9.76452941 C6.19878754,6.93863203 8.85444915,4.90909091 12,4.90909091 C13.6909091,4.90909091 15.2181818,5.50909091 16.4181818,6.49090909 L19.9090909,3 C17.7818182,1.14545455 15.0545455,0 12,0 C7.27006974,0 3.1977497,2.69829785 1.23999023,6.65002441 L5.26620003,9.76452941 Z"
