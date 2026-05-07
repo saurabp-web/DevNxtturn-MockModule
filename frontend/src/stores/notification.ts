@@ -28,6 +28,7 @@ export interface Notification {
   is_read: boolean
   context_snippet: string | null
   is_following_back: boolean
+  is_declined?: boolean
 }
 export interface PaginatedNotificationResponse {
   count: number

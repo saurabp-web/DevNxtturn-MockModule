@@ -73,8 +73,11 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
     await axiosInstance.post(`/connections/requests/${requestId}/${action}/`)
 
     if (action === 'accept') {
-      notification.is_following_back = true // Show the "Connected" badge immediately
+      notification.is_following_back = true
       eventBus.emit('connection-established', notification.actor.id)
+    } else {
+      // THIS IS NEW: If we decline, set this flag to true
+      notification.is_declined = true
     }
 
     // 3. Mark the notification as read in DB and update local state
@@ -460,14 +463,9 @@ onUnmounted(() => {
                   </div>
 
                   <!-- 2. THE ACTION BUTTONS: Shown if NOT connected yet -->
-                  <div v-else class="flex gap-2">
+                  <div v-else-if="!notification.is_declined" class="flex gap-2">
                     <!-- Connection Request Actions -->
-                    <template
-                      v-if="
-                        notification.notification_type === 'connection_request' &&
-                        !notification.is_read
-                      "
-                    >
+                    <template v-if="notification.notification_type === 'connection_request'">
                       <button
                         @click.stop.prevent="handleConnectionAction(notification, 'accept')"
                         class="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition shadow-sm"
