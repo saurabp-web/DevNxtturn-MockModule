@@ -544,7 +544,6 @@ class FollowersListView(generics.ListAPIView):
 # C:\Users\Vinay\Project\Loopline\community\views.py
 
 
-# --- REPLACE THE ENTIRE ConnectionRequestViewSet ---
 class ConnectionRequestViewSet(
     mixins.ListModelMixin, viewsets.GenericViewSet  # We no longer use CreateModelMixin
 ):
@@ -644,11 +643,15 @@ class ConnectionRequestViewSet(
         )
         return Response(return_serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=["post"])
     def accept(self, request, pk=None):
+        # Change this line: remove the status="pending" requirement from the lookup
         connection_request = get_object_or_404(
-            ConnectionRequest, pk=pk, receiver=request.user, status="pending"
+            ConnectionRequest, pk=pk, receiver=request.user
         )
+
+        # If it's already accepted, just return success quietly
+        if connection_request.status == "accepted":
+            return Response({"status": "Already connected."}, status=status.HTTP_200_OK)
 
         with transaction.atomic():
             connection_request.status = "accepted"

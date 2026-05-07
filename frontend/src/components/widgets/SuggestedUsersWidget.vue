@@ -89,6 +89,7 @@ async function handleConnect(user: NetworkUser) {
 
     // If the backend says 'connected' (Smart Resolve), refresh to remove them from suggestions
     if (response && response.status === 'connected') {
+      eventBus.emit('connection-established', user.id)
       handleRefresh()
     }
   } catch (error) {
