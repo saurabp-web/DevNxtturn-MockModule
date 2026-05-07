@@ -22,6 +22,9 @@ import {
 } from '@heroicons/vue/24/solid'
 import eventBus from '@/services/eventBus'
 
+import { useProfileStore } from '@/stores/profile'
+const profileStore = useProfileStore()
+
 const notificationStore = useNotificationStore()
 const isMarkingAllRead = ref(false)
 const loadMoreTrigger = ref<HTMLElement | null>(null)
@@ -85,6 +88,22 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
   } catch (error) {
     console.error(`Failed to ${action} connection:`, error)
     toast.error(`Error processing ${action}.`)
+  }
+}
+
+const handleFollowBack = async (notification: Notification) => {
+  try {
+    // 1. Actually follow the user back
+    await profileStore.followUser(notification.actor.username)
+
+    // 2. Mark this alert as read so it stops glowing
+    await markOneAsRead(notification.id)
+
+    // 3. Show a success message
+    toast.success(`You are now following ${notification.actor.username}`)
+  } catch (error) {
+    console.error('Follow back failed:', error)
+    toast.error('Could not follow back.')
   }
 }
 
@@ -437,11 +456,20 @@ onUnmounted(() => {
                   </button>
                 </div>
 
-                <div v-if="notification.notification_type === 'follow'" class="mt-3">
+                <div v-if="notification.notification_type === 'follow'" class="mt-3 flex gap-2">
+                  <!-- Follow Back Button -->
+                  <button
+                    @click.stop.prevent="handleFollowBack(notification)"
+                    class="px-4 py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 transition shadow-sm"
+                  >
+                    Follow Back
+                  </button>
+
+                  <!-- View Profile Button (Changed to a neutral style) -->
                   <router-link
                     :to="{ name: 'profile', params: { username: notification.actor.username } }"
                     @click.stop
-                    class="inline-block px-4 py-1.5 border border-green-500 text-green-600 text-xs font-bold rounded-lg hover:bg-green-50 transition"
+                    class="inline-block px-4 py-1.5 border border-gray-300 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-50 transition"
                   >
                     View Profile
                   </router-link>
