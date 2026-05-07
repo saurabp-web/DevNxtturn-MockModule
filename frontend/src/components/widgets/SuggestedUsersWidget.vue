@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useNetworkStore } from '@/stores/network'
 import { useProfileStore } from '@/stores/profile'
 import { storeToRefs } from 'pinia'
 import type { NetworkUser } from '@/types'
 import { ArrowPathIcon } from '@heroicons/vue/24/outline'
-
+import eventBus from '@/services/eventBus'
 // Import the site-wide SVG illustration
 import defaultAvatar from '@/assets/images/default-avatar.svg'
 
@@ -24,6 +24,21 @@ const handleRefresh = () => {
 
 onMounted(() => {
   networkStore.fetchDiscover()
+
+  // SMART SYNC: Listen for connections made on the Alerts/Notifications page
+  eventBus.on('connection-established', (userId: number) => {
+    // Check if the newly connected user is actually visible in this sidebar right now
+    const isUserVisible = suggestionCategory.value?.users.some((u) => u.id === userId)
+
+    // Only hit the server if we actually need to remove them from the list
+    if (isUserVisible) {
+      handleRefresh()
+    }
+  })
+})
+
+onUnmounted(() => {
+  eventBus.off('connection-established')
 })
 
 // 4. Algorithm to pick the first "best" category to show

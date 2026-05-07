@@ -72,6 +72,11 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
     // 2. Call your Django API
     await axiosInstance.post(`/connections/requests/${requestId}/${action}/`)
 
+    if (action === 'accept') {
+      notification.is_following_back = true // Show the "Connected" badge immediately
+      eventBus.emit('connection-established', notification.actor.id)
+    }
+
     // 3. Mark the notification as read in DB and update local state
     await markOneAsRead(notification.id)
     notification.is_read = true
@@ -93,13 +98,17 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
 
 const handleFollowBack = async (notification: Notification) => {
   try {
-    // 1. Actually follow the user back
+    // 1. Send the follow command to the backend
     await profileStore.followUser(notification.actor.username)
 
-    // 2. Mark this alert as read so it stops glowing
+    // 2. SMART UI: Update the local state instantly.
+    // This triggers the template to hide the button and show the "Connected" badge.
+    notification.is_following_back = true
+    eventBus.emit('connection-established', notification.actor.id)
+
+    // 3. Mark as read
     await markOneAsRead(notification.id)
 
-    // 3. Show a success message
     toast.success(`You are now following ${notification.actor.username}`)
   } catch (error) {
     console.error('Follow back failed:', error)
@@ -436,43 +445,60 @@ onUnmounted(() => {
                 </p>
 
                 <!-- COMMAND CENTER: Action Buttons -->
-                <div
-                  v-if="
-                    notification.notification_type === 'connection_request' && !notification.is_read
-                  "
-                  class="mt-3 flex gap-2"
-                >
-                  <button
-                    @click.stop.prevent="handleConnectionAction(notification, 'accept')"
-                    class="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition shadow-sm"
+                <div class="mt-3">
+                  <!-- 1. THE STATUS BADGE: Shown if already connected -->
+                  <div
+                    v-if="
+                      notification.is_following_back &&
+                      (notification.notification_type === 'follow' ||
+                        notification.notification_type === 'connection_request')
+                    "
+                    class="flex items-center gap-1.5 text-emerald-600 font-bold text-xs bg-emerald-50 w-fit px-2.5 py-1.5 rounded-lg border border-emerald-100 shadow-sm"
                   >
-                    Accept
-                  </button>
-                  <button
-                    @click.stop.prevent="handleConnectionAction(notification, 'reject')"
-                    class="px-4 py-1.5 bg-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-300 transition"
-                  >
-                    Decline
-                  </button>
-                </div>
+                    <CheckCircleIcon class="w-4 h-4" />
+                    <span>Connected</span>
+                  </div>
 
-                <div v-if="notification.notification_type === 'follow'" class="mt-3 flex gap-2">
-                  <!-- Follow Back Button -->
-                  <button
-                    @click.stop.prevent="handleFollowBack(notification)"
-                    class="px-4 py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 transition shadow-sm"
-                  >
-                    Follow Back
-                  </button>
+                  <!-- 2. THE ACTION BUTTONS: Shown if NOT connected yet -->
+                  <div v-else class="flex gap-2">
+                    <!-- Connection Request Actions -->
+                    <template
+                      v-if="
+                        notification.notification_type === 'connection_request' &&
+                        !notification.is_read
+                      "
+                    >
+                      <button
+                        @click.stop.prevent="handleConnectionAction(notification, 'accept')"
+                        class="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition shadow-sm"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        @click.stop.prevent="handleConnectionAction(notification, 'reject')"
+                        class="px-4 py-1.5 bg-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-300 transition"
+                      >
+                        Decline
+                      </button>
+                    </template>
 
-                  <!-- View Profile Button (Changed to a neutral style) -->
-                  <router-link
-                    :to="{ name: 'profile', params: { username: notification.actor.username } }"
-                    @click.stop
-                    class="inline-block px-4 py-1.5 border border-gray-300 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-50 transition"
-                  >
-                    View Profile
-                  </router-link>
+                    <!-- Follow Back Actions -->
+                    <template v-if="notification.notification_type === 'follow'">
+                      <button
+                        @click.stop.prevent="handleFollowBack(notification)"
+                        class="px-4 py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 transition shadow-sm"
+                      >
+                        Follow Back
+                      </button>
+                      <router-link
+                        :to="{ name: 'profile', params: { username: notification.actor.username } }"
+                        @click.stop
+                        class="px-4 py-1.5 border border-gray-300 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-50 transition"
+                      >
+                        View Profile
+                      </router-link>
+                    </template>
+                  </div>
                 </div>
               </div>
 

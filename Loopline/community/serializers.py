@@ -313,13 +313,13 @@ class NotificationSerializer(serializers.ModelSerializer):
     actor = UserSerializer(read_only=True)
     target = GenericRelatedObjectSerializer(read_only=True, allow_null=True)
     action_object = GenericRelatedObjectSerializer(read_only=True, allow_null=True)
-
-    # --- 1. ADD THIS NEW FIELD ---
     context_snippet = serializers.SerializerMethodField()
+
+    # --- NEW: Status flag for follow-back buttons ---
+    is_following_back = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
-        # --- 2. ADD 'context_snippet' TO THE FIELDS LIST ---
         fields = [
             "id",
             "actor",
@@ -330,28 +330,32 @@ class NotificationSerializer(serializers.ModelSerializer):
             "timestamp",
             "is_read",
             "context_snippet",
+            "is_following_back",  # <-- Included in fields
         ]
         read_only_fields = fields
 
-    # --- 3. ADD THIS ENTIRE NEW METHOD INSIDE THE CLASS ---
-    # --- FINAL, PERFECTED REPLACEMENT ---
-    def get_context_snippet(self, obj: Notification) -> str | None:
+    def get_is_following_back(self, obj: Notification) -> bool:
         """
-        Generates a short preview of the content related to the notification.
-        This version is the definitive one, handling all cases correctly.
+        Calculates if the logged-in user is currently following the actor back.
+        Uses in-memory checking via prefetched followers list for high performance.
         """
-        source_object = None
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated or not obj.actor:
+            return False
 
-        # For comments, replies, AND mentions, the most relevant new content
-        # is the comment/reply/post where the action happened. This is always the action_object.
+        user = request.user
+
+        # Check if the notification's actor has the requesting user in their followers list.
+        # This works efficiently with the .prefetch_related('actor__followers') we will add in Step 2.
+        return obj.actor.followers.filter(follower=user).exists()
+
+    def get_context_snippet(self, obj: Notification) -> str | None:
+        source_object = None
         if obj.notification_type in ["comment", "reply", "mention"]:
             source_object = obj.action_object
-
-        # For likes, the content we want to show is on the object that was liked, which is the target.
         elif obj.notification_type == "like":
             source_object = obj.target
 
-        # Now that we have the correct source_object, extract its content.
         if (
             source_object
             and hasattr(source_object, "content")
@@ -362,8 +366,6 @@ class NotificationSerializer(serializers.ModelSerializer):
             if len(content) > truncate_at:
                 return f'"{content[:truncate_at]}..."'
             return f'"{content}"'
-
-        # Return None for 'follow' or if no content is found.
         return None
 
 

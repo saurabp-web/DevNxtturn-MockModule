@@ -15,7 +15,7 @@ export interface NotificationRelatedObject {
   id: number
   display_text: string
   object_id?: number
-  slug?: string;
+  slug?: string
 }
 export interface Notification {
   id: number
@@ -26,7 +26,8 @@ export interface Notification {
   action_object: NotificationRelatedObject | null
   timestamp: string
   is_read: boolean
-  context_snippet: string | null 
+  context_snippet: string | null
+  is_following_back: boolean
 }
 export interface PaginatedNotificationResponse {
   count: number
@@ -56,8 +57,8 @@ export const useNotificationStore = defineStore('notification', () => {
   const hasLoadedInitialList = ref<boolean>(false)
 
   async function fetchUnreadCount() {
-    if (!authStore.isAuthenticated) return;
-    
+    if (!authStore.isAuthenticated) return
+
     isLoadingCount.value = true
     try {
       const response = await axiosInstance.get<{ unread_count: number }>(
@@ -74,8 +75,8 @@ export const useNotificationStore = defineStore('notification', () => {
 
   async function fetchNotifications(page: number = 1) {
     if (!authStore.isAuthenticated) {
-      error.value = "You must be logged in to view notifications.";
-      return;
+      error.value = 'You must be logged in to view notifications.'
+      return
     }
 
     isLoadingList.value = true
@@ -99,9 +100,8 @@ export const useNotificationStore = defineStore('notification', () => {
       pagination.value.currentPage = page
       pagination.value.totalPages =
         data.count > 0 ? Math.ceil(data.count / ITEMS_PER_PAGE_NOTIFICATIONS) : 0
-        
-      hasLoadedInitialList.value = true
 
+      hasLoadedInitialList.value = true
     } catch (err: any) {
       console.error('NotificationStore: Error fetching notifications:', err)
       error.value = err.response?.data?.detail || err.message || 'Failed to fetch notifications.'
@@ -111,7 +111,7 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   async function markNotificationsAsRead(notificationIds: number[]) {
-    if (!authStore.isAuthenticated) return { success: false };
+    if (!authStore.isAuthenticated) return { success: false }
     if (!notificationIds || notificationIds.length === 0) return { success: false }
     try {
       await axiosInstance.post('/notifications/mark-as-read/', {
@@ -130,9 +130,9 @@ export const useNotificationStore = defineStore('notification', () => {
       return { success: false, error: error.value }
     }
   }
-  
+
   async function markAllAsRead() {
-    if (!authStore.isAuthenticated) return { success: false };
+    if (!authStore.isAuthenticated) return { success: false }
     try {
       await axiosInstance.post('/notifications/mark-all-as-read/')
       notifications.value.forEach((notification) => {

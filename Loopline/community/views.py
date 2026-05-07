@@ -1353,12 +1353,21 @@ class SendMessageView(APIView):
 class NotificationListAPIView(generics.ListAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = (
-        StandardResultsSetPagination  # KEEP: Offset pagination for notifications
-    )
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        return self.request.user.notifications_received.all().order_by("-timestamp")
+        """
+        Fetches notifications with pre-loaded relationship data.
+        - select_related: Grabs the actor and their profile in the same query.
+        - prefetch_related: Grabs the followers list for all actors in the batch
+          so the 'is_following_back' check happens in memory.
+        """
+        return (
+            self.request.user.notifications_received.all()
+            .select_related("actor", "actor__profile")
+            .prefetch_related("actor__followers")
+            .order_by("-timestamp")
+        )
 
 
 class UnreadNotificationCountAPIView(APIView):
