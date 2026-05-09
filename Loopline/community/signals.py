@@ -151,7 +151,7 @@ def create_like_notification(sender, instance, created, **kwargs):
 def create_follow_notification(sender, instance, created, **kwargs):
     """
     Notifies a user when they get a new follower.
-    Silenced if the users are already formally Connected.
+    Silenced ONLY if the users are already formally 'accepted' connections.
     """
     if not created:
         return
@@ -159,8 +159,10 @@ def create_follow_notification(sender, instance, created, **kwargs):
     followed_user, follower = instance.following, instance.follower
 
     if followed_user != follower:
-        # --- THE FIX: Check if they are already connected ---
-        is_connected = ConnectionRequest.objects.filter(
+        # --- THE PRECISION SILENCE LOGIC ---
+        # We ONLY silence the alert if a connection is already 'accepted'.
+        # If it's 'pending' or doesn't exist, we allow the follow notification.
+        is_already_connected = ConnectionRequest.objects.filter(
             (
                 Q(sender=followed_user, receiver=follower)
                 | Q(sender=follower, receiver=followed_user)
@@ -168,12 +170,13 @@ def create_follow_notification(sender, instance, created, **kwargs):
             status="accepted",
         ).exists()
 
-        if is_connected:
-            # If they are connected, the high-value "Connection" notification
-            # is already handling the alert. We stop here to prevent a duplicate.
+        if is_already_connected:
+            logger.info(
+                f"Signal: Follow alert muted for {followed_user.username} (already Connected)."
+            )
             return
 
-        # Standard check: Only create if no follow alert exists yet
+        # Standard creation for regular follows
         if not Notification.objects.filter(
             recipient=followed_user,
             actor=follower,
