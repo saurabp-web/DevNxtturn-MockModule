@@ -1,9 +1,9 @@
-# C:\Users\Vinay\Project\Loopline\community\signals.py
-# --- ADDED REAL-TIME POST DELETION SIGNAL (Corrected Model Name) ---
+# ---  REAL-TIME POST DELETION SIGNAL (Corrected Model Name) ---
 import logging
 
 logger = logging.getLogger(__name__)
 import re
+from django.db.models import Q
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
@@ -147,11 +147,11 @@ def create_like_notification(sender, instance, created, **kwargs):
             logger.info(f"DB: Created Like notification for {recipient.username}")
 
 
-# --- 1. REPLACE THE FOLLOW BLOCK WITH THIS ---
 @receiver(post_save, sender=Follow, dispatch_uid="create_follow_notification_signal")
 def create_follow_notification(sender, instance, created, **kwargs):
     """
     Notifies a user when they get a new follower.
+    Silenced if the users are already formally Connected.
     """
     if not created:
         return
@@ -159,7 +159,21 @@ def create_follow_notification(sender, instance, created, **kwargs):
     followed_user, follower = instance.following, instance.follower
 
     if followed_user != follower:
-        # Check for duplicates to prevent spamming notifications if they unfollow/refollow
+        # --- THE FIX: Check if they are already connected ---
+        is_connected = ConnectionRequest.objects.filter(
+            (
+                Q(sender=followed_user, receiver=follower)
+                | Q(sender=follower, receiver=followed_user)
+            ),
+            status="accepted",
+        ).exists()
+
+        if is_connected:
+            # If they are connected, the high-value "Connection" notification
+            # is already handling the alert. We stop here to prevent a duplicate.
+            return
+
+        # Standard check: Only create if no follow alert exists yet
         if not Notification.objects.filter(
             recipient=followed_user,
             actor=follower,
@@ -170,12 +184,11 @@ def create_follow_notification(sender, instance, created, **kwargs):
                 actor=follower,
                 verb="started following you",
                 notification_type=Notification.FOLLOW,
-                target=follower,  # Allows user to click notification to visit profile
+                target=follower,
             )
             logger.info(f"DB: Created Follow notification for {followed_user.username}")
 
 
-# --- 2. ADD THIS NEW CONNECTION BLOCK AT THE END OF THE FILE ---
 @receiver(
     post_save,
     sender=ConnectionRequest,
