@@ -151,7 +151,7 @@ def create_like_notification(sender, instance, created, **kwargs):
 def create_follow_notification(sender, instance, created, **kwargs):
     """
     Notifies a user when they get a new follower.
-    Silenced ONLY if the users are already officially 'accepted' connections.
+    Silenced if the relationship is a mutual Connection to prevent double alerts.
     """
     if not created:
         return
@@ -159,10 +159,9 @@ def create_follow_notification(sender, instance, created, **kwargs):
     followed_user, follower = instance.following, instance.follower
 
     if followed_user != follower:
-        # --- THE PRECISION SILENCE FIX ---
-        # We check if an 'accepted' connection exists.
-        # If it's 'pending', we DO NOT silence (handling your doubt).
-        # If it's 'accepted', we stay silent to prevent the double notification bug.
+        # --- THE DOUBLE-SHIELD CHECK ---
+
+        # Check 1: Is there an accepted ConnectionRequest?
         is_already_connected = ConnectionRequest.objects.filter(
             (
                 Q(sender=followed_user, receiver=follower)
@@ -171,13 +170,18 @@ def create_follow_notification(sender, instance, created, **kwargs):
             status="accepted",
         ).exists()
 
-        if is_already_connected:
+        # Check 2: Is this a "Follow Back"? (Backup for timing issues)
+        is_mutual = Follow.objects.filter(
+            follower=followed_user, following=follower
+        ).exists()
+
+        if is_already_connected or is_mutual:
             logger.info(
-                f"Signal: Follow alert muted for {followed_user.username} (Already connected)."
+                f"Signal: Muting generic Follow alert for {followed_user.username} (Connection detected)."
             )
             return
 
-        # Create alert for regular follows or follows during 'pending' requests
+        # Only create alert for standard, one-way follows
         if not Notification.objects.filter(
             recipient=followed_user,
             actor=follower,
@@ -190,7 +194,9 @@ def create_follow_notification(sender, instance, created, **kwargs):
                 notification_type=Notification.FOLLOW,
                 target=follower,
             )
-            logger.info(f"DB: Created Follow notification for {followed_user.username}")
+            logger.info(
+                f"DB: Created standard Follow notification for {followed_user.username}"
+            )
 
 
 @receiver(
