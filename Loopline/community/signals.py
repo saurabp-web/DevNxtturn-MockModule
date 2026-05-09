@@ -151,7 +151,7 @@ def create_like_notification(sender, instance, created, **kwargs):
 def create_follow_notification(sender, instance, created, **kwargs):
     """
     Notifies a user when they get a new follower.
-    Silenced ONLY if the users are already formally 'accepted' connections.
+    Silenced if the relationship is mutual (Connected), as the Connection signal handles the alert.
     """
     if not created:
         return
@@ -159,24 +159,20 @@ def create_follow_notification(sender, instance, created, **kwargs):
     followed_user, follower = instance.following, instance.follower
 
     if followed_user != follower:
-        # --- THE PRECISION SILENCE LOGIC ---
-        # We ONLY silence the alert if a connection is already 'accepted'.
-        # If it's 'pending' or doesn't exist, we allow the follow notification.
-        is_already_connected = ConnectionRequest.objects.filter(
-            (
-                Q(sender=followed_user, receiver=follower)
-                | Q(sender=follower, receiver=followed_user)
-            ),
-            status="accepted",
+        # --- THE FINAL SYNC FIX ---
+        # Check if the person we just followed is already following us back.
+        # If yes, they are "Connected." We don't want to spam them with a generic Follow alert.
+        is_mutual = Follow.objects.filter(
+            follower=followed_user, following=follower
         ).exists()
 
-        if is_already_connected:
+        if is_mutual:
             logger.info(
-                f"Signal: Follow alert muted for {followed_user.username} (already Connected)."
+                f"Signal: Muting Follow alert for {followed_user.username} (Relationship is Mutual)."
             )
             return
 
-        # Standard creation for regular follows
+        # Create alert only for one-way follows
         if not Notification.objects.filter(
             recipient=followed_user,
             actor=follower,

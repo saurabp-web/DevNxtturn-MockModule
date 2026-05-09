@@ -92,7 +92,7 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
 
     // 5. Show success message
     const msg = action === 'accept' ? 'Connection established!' : 'Request declined.'
-    toast.success(msg)
+    // toast.success(msg)
   } catch (error) {
     console.error(`Failed to ${action} connection:`, error)
     toast.error(`Error processing ${action}.`)
@@ -112,7 +112,7 @@ const handleFollowBack = async (notification: Notification) => {
     // 3. Mark as read
     await markOneAsRead(notification.id)
 
-    toast.success(`You are now following ${notification.actor.username}`)
+    // toast.success(`You are now following ${notification.actor.username}`)
   } catch (error) {
     console.error('Follow back failed:', error)
     toast.error('Could not follow back.')
