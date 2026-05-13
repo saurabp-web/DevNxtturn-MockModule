@@ -212,10 +212,23 @@ def create_follow_notification(sender, instance, created, **kwargs):
 )
 def create_connection_notification(sender, instance, created, **kwargs):
     """
-    Handles notifications for the Connection Request lifecycle (Sent and Accepted).
+    Handles notifications for the Connection Request lifecycle.
+    Implements 'Mutual Cleanup': Deletes old alerts in BOTH directions
+    on re-send or status change to ensure the UI is never confusing.
     """
-    # SCENARIO A: A brand new request is sent
-    if created and instance.status == "pending":
+    # SCENARIO A: Request is Sent or Re-sent (Status = Pending)
+    if instance.status == "pending":
+        # 1. TOTAL CLEANUP: Wipe out any old 'connection_request' alerts between these two.
+        # This fixes the 'Role Reversal' case where B sends to A after A previously sent to B.
+        Notification.objects.filter(
+            (
+                Q(recipient=instance.receiver, actor=instance.sender)
+                | Q(recipient=instance.sender, actor=instance.receiver)
+            ),
+            notification_type=Notification.CONNECTION_REQUEST,
+        ).delete()
+
+        # 2. CREATE FRESH ALERT: New ID, New Timestamp, pops to the top for the receiver.
         Notification.objects.create(
             recipient=instance.receiver,
             actor=instance.sender,
@@ -225,13 +238,21 @@ def create_connection_notification(sender, instance, created, **kwargs):
             target=instance.sender,
         )
         logger.info(
-            f"DB: Created Connection Request notification for {instance.receiver.username}"
+            f"DB: Refreshed Connection Request for {instance.receiver.username}"
         )
 
-    # SCENARIO B: An existing request is marked as 'accepted'
+    # SCENARIO B: Request is marked as 'accepted'
     elif not created and instance.status == "accepted":
-        # We notify the person who sent the request originally (the actor becomes the receiver)
-        # Note: We check if a notification already exists for this 'acceptance' to avoid double-firing
+        # 1. CLEANUP: Once accepted, any 'pending' request notifications are irrelevant.
+        Notification.objects.filter(
+            (
+                Q(recipient=instance.receiver, actor=instance.sender)
+                | Q(recipient=instance.sender, actor=instance.receiver)
+            ),
+            notification_type=Notification.CONNECTION_REQUEST,
+        ).delete()
+
+        # 2. CREATE ACCEPTED NOTIFICATION: Notify the original sender.
         if not Notification.objects.filter(
             recipient=instance.sender,
             actor=instance.receiver,
