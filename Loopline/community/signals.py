@@ -156,6 +156,12 @@ def create_follow_notification(sender, instance, created, **kwargs):
     if not created:
         return
 
+    if getattr(instance, "_silent_follow", False):
+        logger.info(
+            f"Signal: Muzzle engaged for {instance.following.username}. Skipping Follow notification."
+        )
+        return
+
     followed_user, follower = instance.following, instance.follower
 
     if followed_user != follower:

@@ -196,17 +196,6 @@ onMounted(() => {
   }
 
   eventBus.on('scroll-notifications-to-top', scrollToTop)
-
-  eventBus.on('connection-established', (userId: number) => {
-    // Look through all notifications on the current page
-    notificationStore.notifications.forEach((n) => {
-      // If we find an alert from the person who was just connected
-      if (n.actor.id === userId) {
-        // Update the state locally to hide buttons and show "Connected" badge
-        n.is_following_back = true
-      }
-    })
-  })
 })
 
 onUnmounted(() => {

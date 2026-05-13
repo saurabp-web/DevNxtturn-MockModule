@@ -415,31 +415,43 @@ class FollowToggleView(APIView):
             )
 
         with transaction.atomic():
-            # Create the follow from the current user to the target user.
-            _, created_follow = Follow.objects.get_or_create(
-                follower=current_user, following=user_to_follow
-            )
-
-            # --- KEY CHANGE: Check for conditions that create a mutual connection ---
-            # Condition 1: Does the target user already follow the current user?
+            # 1. Identify the situation BEFORE saving
             is_reciprocal_follow = Follow.objects.filter(
                 follower=user_to_follow, following=current_user
             ).exists()
 
-            # Condition 2: Does a pending connection request exist FROM the target user?
             pending_request_from_target = ConnectionRequest.objects.filter(
                 sender=user_to_follow, receiver=current_user, status="pending"
             ).first()
 
-            if is_reciprocal_follow or pending_request_from_target:
-                # A mutual connection is now established.
+            is_connecting = is_reciprocal_follow or pending_request_from_target
 
-                # Ensure the reciprocal follow exists (important for the request-based connection).
-                Follow.objects.get_or_create(
+            # 2. Create the follow from current_user to target
+            follow_a = Follow.objects.filter(
+                follower=current_user, following=user_to_follow
+            ).first()
+            created_follow = False
+
+            if not follow_a:
+                follow_a = Follow(follower=current_user, following=user_to_follow)
+                # MUZZLE: If this follow completes a connection, keep it quiet.
+                # The ConnectionRequest signal will handle the notification instead.
+                if is_connecting:
+                    follow_a._silent_follow = True
+                follow_a.save()
+                created_follow = True
+
+            # 3. Handle the Connection logic
+            if is_connecting:
+                # Ensure the reciprocal follow exists (SILENTLY)
+                if not Follow.objects.filter(
                     follower=user_to_follow, following=current_user
-                )
+                ).exists():
+                    follow_b = Follow(follower=user_to_follow, following=current_user)
+                    follow_b._silent_follow = True
+                    follow_b.save()
 
-                # Trigger real-time notifications by using .save() instead of .update()
+                # Accept any pending connection requests (This triggers Event 700)
                 pending_reqs = ConnectionRequest.objects.filter(
                     (
                         Q(sender=current_user, receiver=user_to_follow)
@@ -449,15 +461,14 @@ class FollowToggleView(APIView):
                 )
                 for req in pending_reqs:
                     req.status = "accepted"
-                    req.save()  # This "wakes up" the signal to send the notification
+                    req.save()
 
                 return Response({"status": "connected"}, status=status.HTTP_200_OK)
 
-            # If no connection was made, and a new follow was created, return 'following'.
+            # 4. Standard Follow response (If not connecting)
             if created_follow:
                 return Response({"status": "following"}, status=status.HTTP_201_CREATED)
             else:
-                # If the follow already existed and no connection was made, it's a no-op.
                 return Response(
                     {"detail": "You are already following this user."},
                     status=status.HTTP_200_OK,
@@ -591,11 +602,15 @@ class ConnectionRequestViewSet(
             # Instead of throwing a 400 error, we finalize the connection immediately.
             with transaction.atomic():
                 incoming_request.status = "accepted"
-                incoming_request.save()  # Triggers real-time notification signals
+                incoming_request.save()  # Triggers the 'Accepted' notification (Event 700)
 
-                # Establish mutual follows
-                Follow.objects.get_or_create(follower=sender, following=receiver)
-                Follow.objects.get_or_create(follower=receiver, following=sender)
+                # Establish mutual follows (SILENTLY)
+                # This ensures the Network Hub stays in sync without sending extra toasts
+                for f, r in [(sender, receiver), (receiver, sender)]:
+                    if not Follow.objects.filter(follower=f, following=r).exists():
+                        fol = Follow(follower=f, following=r)
+                        fol._silent_follow = True  # <--- THE MUZZLE
+                        fol.save()
 
             return Response(
                 {
@@ -643,27 +658,29 @@ class ConnectionRequestViewSet(
         )
         return Response(return_serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=["post"])
     def accept(self, request, pk=None):
-        # Change this line: remove the status="pending" requirement from the lookup
         connection_request = get_object_or_404(
             ConnectionRequest, pk=pk, receiver=request.user
         )
 
-        # If it's already accepted, just return success quietly
         if connection_request.status == "accepted":
             return Response({"status": "Already connected."}, status=status.HTTP_200_OK)
 
         with transaction.atomic():
             connection_request.status = "accepted"
             connection_request.save()
-            Follow.objects.get_or_create(
-                follower=connection_request.sender,
-                following=connection_request.receiver,
-            )
-            Follow.objects.get_or_create(
-                follower=connection_request.receiver,
-                following=connection_request.sender,
-            )
+
+            # Establish mutual follows (SILENTLY)
+            # This ensures both people follow each other without the "Ghost" alert
+            for f, r in [
+                (connection_request.sender, connection_request.receiver),
+                (connection_request.receiver, connection_request.sender),
+            ]:
+                if not Follow.objects.filter(follower=f, following=r).exists():
+                    fol = Follow(follower=f, following=r)
+                    fol._silent_follow = True  # <--- THE MUZZLE
+                    fol.save()
 
         return Response(
             {"status": "Connection request accepted."}, status=status.HTTP_200_OK
@@ -671,13 +688,19 @@ class ConnectionRequestViewSet(
 
     @action(detail=True, methods=["post"])
     def reject(self, request, pk=None):
+        # 1. Look up the request without the "pending" restriction.
         connection_request = get_object_or_404(
-            ConnectionRequest, pk=pk, receiver=request.user, status="pending"
+            ConnectionRequest, pk=pk, receiver=request.user
         )
+
+        # 2. If it was already handled, return success quietly.
+        if connection_request.status in ["accepted", "rejected"]:
+            return Response(
+                {"status": "Request already handled."}, status=status.HTTP_200_OK
+            )
 
         connection_request.status = "rejected"
         connection_request.save()
-
         return Response(
             {"status": "Connection request rejected."}, status=status.HTTP_200_OK
         )
@@ -698,10 +721,21 @@ class AcceptConnectionRequestView(APIView):
         )
 
         with transaction.atomic():
+            # 1. Update the Connection Request (This sends the "Accepted" alert)
             connection_request.status = "accepted"
             connection_request.save()
-            Follow.objects.get_or_create(follower=sender, following=receiver)
-            Follow.objects.get_or_create(follower=receiver, following=sender)
+
+            # 2. Create Follow: Sender -> Receiver (SILENTLY)
+            if not Follow.objects.filter(follower=sender, following=receiver).exists():
+                f1 = Follow(follower=sender, following=receiver)
+                f1._silent_follow = True  # <--- MUZZLE ON
+                f1.save()
+
+            # 3. Create Follow: Receiver -> Sender (SILENTLY)
+            if not Follow.objects.filter(follower=receiver, following=sender).exists():
+                f2 = Follow(follower=receiver, following=sender)
+                f2._silent_follow = True  # <--- MUZZLE ON
+                f2.save()
 
         return Response(
             {"status": "Connection request accepted."}, status=status.HTTP_200_OK
@@ -1718,7 +1752,7 @@ def password_reset_redirect_view(request, uidb64, token):
 
 class NetworkFollowersView(generics.ListAPIView):
     """
-    List of users following the current user.
+    List of users who are FOLLOWING the current user.
     """
 
     serializer_class = NetworkUserSerializer
@@ -1726,6 +1760,7 @@ class NetworkFollowersView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
+        # People whose 'following' (people they follow) includes the current user
         return (
             User.objects.filter(following__following=self.request.user)
             .select_related("profile")
@@ -1735,7 +1770,7 @@ class NetworkFollowersView(generics.ListAPIView):
 
 class NetworkFollowingView(generics.ListAPIView):
     """
-    List of users the current user follows.
+    List of users the current user is FOLLOWING.
     """
 
     serializer_class = NetworkUserSerializer
@@ -1743,6 +1778,7 @@ class NetworkFollowingView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
+        # People whose 'followers' (people following them) includes the current user
         return (
             User.objects.filter(followers__follower=self.request.user)
             .select_related("profile")
@@ -1765,8 +1801,7 @@ class NetworkConnectionsView(generics.ListAPIView):
         my_following_ids = Follow.objects.filter(follower=user).values_list(
             "following_id", flat=True
         )
-
-        # 2. Return users who follow me AND are in that list
+        # 2. Get people who follow me AND are in that list
         return (
             User.objects.filter(following__following=user, id__in=my_following_ids)
             .select_related("profile")

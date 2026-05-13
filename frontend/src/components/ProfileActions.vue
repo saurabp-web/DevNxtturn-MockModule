@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { useProfileStore } from '@/stores/profile'
+import { useNotificationStore } from '@/stores/notification'
+import { useNetworkStore } from '@/stores/network'
 import { storeToRefs } from 'pinia'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import eventBus from '@/services/eventBus'
 
 // Import filled icons from Heroicons
 import { ClockIcon } from '@heroicons/vue/24/outline'
@@ -16,6 +19,8 @@ import {
 } from '@heroicons/vue/24/solid'
 
 const profileStore = useProfileStore()
+const notificationStore = useNotificationStore()
+const networkStore = useNetworkStore()
 const { relationshipStatus, currentProfile, isLoadingFollow } = storeToRefs(profileStore)
 
 const showDisconnectConfirm = ref(false)
@@ -37,13 +42,25 @@ const handleConnect = (event: MouseEvent) => {
   }
 }
 
-const handleAccept = (event: MouseEvent) => {
+const handleAccept = async (event: MouseEvent) => {
   event.stopPropagation()
   if (currentProfile.value) {
-    profileStore.acceptConnectRequest(currentProfile.value.user.username)
+    try {
+      await profileStore.acceptConnectRequest(currentProfile.value.user.username)
+      const profileId = currentProfile.value.user.id
+
+      // SYNC 1: Notifications Page (The Header/Bell List)
+      notificationStore.forceSyncConnection(profileId)
+
+      // SYNC 2: Suggestions List (The Discovery Tab/Sidebar)
+      networkStore.forceSyncConnection(profileId)
+
+      eventBus.emit('connection-established', profileId)
+    } catch (error) {
+      console.error('Failed to accept connection:', error)
+    }
   }
 }
-
 const handleFollowToggle = (event: MouseEvent) => {
   event.stopPropagation()
   if (currentProfile.value) {

@@ -7,7 +7,7 @@ import axiosInstance from '@/services/axiosInstance'
 import { useToast } from 'vue-toastification'
 import type { User } from './auth'
 import { useAuthStore } from './auth'
-
+import eventBus from '@/services/eventBus'
 // --- Interface Definitions ---
 export interface NotificationActor extends User {}
 export interface NotificationRelatedObject {
@@ -171,6 +171,15 @@ export const useNotificationStore = defineStore('notification', () => {
     hasLoadedInitialList.value = false
   }
 
+  function forceSyncConnection(userId: any) {
+    const targetId = Number(userId)
+    notifications.value.forEach((n) => {
+      if (Number(n.actor.id) === targetId) {
+        n.is_following_back = true // Instantly changes button to "Connected"
+      }
+    })
+  }
+
   return {
     notifications,
     unreadCount,
@@ -185,5 +194,6 @@ export const useNotificationStore = defineStore('notification', () => {
     markAllAsRead,
     addLiveNotification,
     resetState,
+    forceSyncConnection,
   }
 })

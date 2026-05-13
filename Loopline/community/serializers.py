@@ -336,8 +336,8 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     def get_is_following_back(self, obj: Notification) -> bool:
         """
-        Calculates if the logged-in user is currently following the actor back.
-        Uses in-memory checking via prefetched followers list for high performance.
+        Calculates if the actor and recipient are officially connected.
+        The UI uses this to switch from a 'Follow Back' button to a 'Connected' badge.
         """
         request = self.context.get("request")
         if not request or not request.user.is_authenticated or not obj.actor:
@@ -345,9 +345,12 @@ class NotificationSerializer(serializers.ModelSerializer):
 
         user = request.user
 
-        # Check if the notification's actor has the requesting user in their followers list.
-        # This works efficiently with the .prefetch_related('actor__followers') we will add in Step 2.
-        return obj.actor.followers.filter(follower=user).exists()
+        # NEW LOGIC: Only return True if an ACCEPTED ConnectionRequest exists.
+        # This prevents the "Connected" badge from appearing too early.
+        return ConnectionRequest.objects.filter(
+            (Q(sender=user, receiver=obj.actor) | Q(sender=obj.actor, receiver=user)),
+            status="accepted",
+        ).exists()
 
     def get_context_snippet(self, obj: Notification) -> str | None:
         source_object = None

@@ -75,6 +75,27 @@ export const useNetworkStore = defineStore('network', () => {
     }
   }
 
+  // --- SYNC ACTION: Remove user from all suggestion buckets ---
+  function forceSyncConnection(userId: any) {
+    if (!discoverResults.value) return
+    const targetId = Number(userId)
+
+    // We loop through all categories (mutual_connections, alumni, etc.)
+    // and filter out the user we just connected with.
+    Object.keys(discoverResults.value).forEach((key) => {
+      const category = key as keyof DiscoveryResponse
+      const list = discoverResults.value![category]
+
+      if (Array.isArray(list)) {
+        // Remove the user from this specific bucket
+        ;(discoverResults.value as any)[category] = list.filter(
+          (user) => Number(user.id) !== targetId,
+        )
+      }
+    })
+    console.log('⚡ NETWORK STORE: User removed from suggestions:', targetId)
+  }
+
   /**
 
     Resets the store's state, called on logout.
@@ -102,5 +123,6 @@ export const useNetworkStore = defineStore('network', () => {
     fetchConnections,
     fetchDiscover,
     reset,
+    forceSyncConnection,
   }
 })
