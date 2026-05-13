@@ -107,6 +107,10 @@ from .permissions import (
     IsGroupMemberOrPublicReadOnly,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 User = get_user_model()
 
 
@@ -451,7 +455,7 @@ class FollowToggleView(APIView):
                     follow_b._silent_follow = True
                     follow_b.save()
 
-                # Accept any pending connection requests (This triggers Event 700)
+                # Find any pending connection requests
                 pending_reqs = ConnectionRequest.objects.filter(
                     (
                         Q(sender=current_user, receiver=user_to_follow)
@@ -459,9 +463,25 @@ class FollowToggleView(APIView):
                     ),
                     status="pending",
                 )
-                for req in pending_reqs:
-                    req.status = "accepted"
-                    req.save()
+
+                if pending_reqs.exists():
+                    # CASE 1: Formal Request exists. Update it (Signal sends standard "Accepted" alert)
+                    for req in pending_reqs:
+                        req.status = "accepted"
+                        req.save()
+                else:
+                    # CASE 2: Manual Follow-Follow (No formal request)
+                    # Create the custom notification with your exact sentence
+                    Notification.objects.create(
+                        recipient=user_to_follow,  # Original follower
+                        actor=current_user,  # Person following back
+                        verb="followed you back and established a connection",
+                        notification_type=Notification.CONNECTION_ACCEPTED,  # Keep type for green styling
+                        target=current_user,
+                    )
+                    logger.info(
+                        f"DB: Created 'Followed Back' alert for {user_to_follow.username}"
+                    )
 
                 return Response({"status": "connected"}, status=status.HTTP_200_OK)
 

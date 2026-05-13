@@ -425,7 +425,16 @@ onUnmounted(() => {
 
                   <!-- Case 4: Connection Accepted -->
                   <div v-else-if="notification.notification_type === 'connection_accepted'">
-                    <span>
+                    <!-- If the backend sent our custom 'Followed back' verb, show it -->
+                    <span v-if="notification.verb.includes('followed you back')">
+                      <strong class="font-semibold text-gray-800">{{
+                        notification.actor.username
+                      }}</strong>
+                      {{ notification.verb }}
+                    </span>
+
+                    <!-- Otherwise show the standard connection message -->
+                    <span v-else>
                       You are now connected with
                       <strong class="font-semibold text-gray-800">{{
                         notification.actor.username
