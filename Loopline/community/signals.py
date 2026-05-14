@@ -243,7 +243,7 @@ def create_connection_notification(sender, instance, created, **kwargs):
 
     # SCENARIO B: Request is marked as 'accepted'
     elif not created and instance.status == "accepted":
-        # 1. CLEANUP: Once accepted, any 'pending' request notifications are irrelevant.
+        # 1. CLEANUP: Delete 'pending' request notifications in both directions.
         Notification.objects.filter(
             (
                 Q(recipient=instance.receiver, actor=instance.sender)
@@ -252,7 +252,7 @@ def create_connection_notification(sender, instance, created, **kwargs):
             notification_type=Notification.CONNECTION_REQUEST,
         ).delete()
 
-        # 2. CREATE ACCEPTED NOTIFICATION: Notify the original sender.
+        # 2. FOR SENDER (User A): "User B accepted your request"
         if not Notification.objects.filter(
             recipient=instance.sender,
             actor=instance.receiver,
@@ -266,8 +266,24 @@ def create_connection_notification(sender, instance, created, **kwargs):
                 action_object=instance,
                 target=instance.receiver,
             )
+
+        # 3. FOR RECEIVER (User B - the person who clicked Accept):
+        # Create a record so the notification doesn't vanish.
+        if not Notification.objects.filter(
+            recipient=instance.receiver,
+            actor=instance.sender,
+            notification_type=Notification.CONNECTION_ACCEPTED,
+        ).exists():
+            Notification.objects.create(
+                recipient=instance.receiver,
+                actor=instance.sender,
+                verb="is now connected with you",
+                notification_type=Notification.CONNECTION_ACCEPTED,
+                action_object=instance,
+                target=instance.sender,
+            )
             logger.info(
-                f"DB: Created Connection Accepted notification for {instance.sender.username}"
+                f"DB: Mutual history created for {instance.sender.username} and {instance.receiver.username}"
             )
 
 

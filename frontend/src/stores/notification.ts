@@ -149,6 +149,16 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   function addLiveNotification(newNotification: Notification) {
+    // UI SCRUB: If this is a connection success, remove the old 'pending' row from this person
+    if (newNotification.notification_type === 'connection_accepted') {
+      notifications.value = notifications.value.filter((n) => {
+        const isSamePerson = n.actor.id === newNotification.actor.id
+        const isOldRequest = n.notification_type === 'connection_request'
+        return !(isSamePerson && isOldRequest)
+      })
+    }
+
+    // Add the fresh notification to the top
     notifications.value.unshift(newNotification)
     unreadCount.value++
     toast.info(`${newNotification.actor.username} ${newNotification.verb}`)
@@ -173,11 +183,15 @@ export const useNotificationStore = defineStore('notification', () => {
 
   function forceSyncConnection(userId: any) {
     const targetId = Number(userId)
-    notifications.value.forEach((n) => {
-      if (Number(n.actor.id) === targetId) {
-        n.is_following_back = true // Instantly changes button to "Connected"
-      }
+
+    // UI SCRUB: Remove the 'connection_request' row for this user instantly
+    notifications.value = notifications.value.filter((n) => {
+      const isMatch = Number(n.actor.id) === targetId
+      const isRequest = n.notification_type === 'connection_request'
+      return !(isMatch && isRequest)
     })
+
+    console.log('⚡ STORE: Scrubbed old request for User ID:', targetId)
   }
 
   return {

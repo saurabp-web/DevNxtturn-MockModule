@@ -497,13 +497,13 @@ class FollowToggleView(APIView):
     def delete(self, request, username, format=None):
         """
         Allows current_user to unfollow the target 'username'.
-        If this breaks a mutual connection, it performs a full "disconnect".
+        Performs a Total Reset: Breaks follows and wipes stale notifications.
         """
         user_to_unfollow = get_object_or_404(User, username__iexact=username)
         current_user = request.user
 
         with transaction.atomic():
-            # --- KEY CHANGE: Check for mutual connection BEFORE deleting anything ---
+            # 1. Check for mutual connection BEFORE deleting anything
             was_mutually_connected = (
                 Follow.objects.filter(
                     follower=current_user, following=user_to_unfollow
@@ -513,7 +513,7 @@ class FollowToggleView(APIView):
                 ).exists()
             )
 
-            # Delete the current user's follow toward the target user.
+            # 2. Delete the current user's follow toward the target user.
             deleted_count, _ = Follow.objects.filter(
                 follower=current_user, following=user_to_unfollow
             ).delete()
@@ -524,28 +524,38 @@ class FollowToggleView(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            # --- KEY CHANGE: If they were connected, perform a full disconnect ---
+            # 3. If they were connected, break the reciprocal follow
             if was_mutually_connected:
-                # Remove the reciprocal follow as well.
                 Follow.objects.filter(
                     follower=user_to_unfollow, following=current_user
                 ).delete()
 
-                # Reset connection requests using .save() to ensure database consistency
-                accepted_reqs = ConnectionRequest.objects.filter(
-                    (
-                        Q(sender=current_user, receiver=user_to_unfollow)
-                        | Q(sender=user_to_unfollow, receiver=current_user)
-                    ),
-                    status="accepted",
+            # 4. Reset ANY connection requests (accepted or pending) to 'rejected'
+            ConnectionRequest.objects.filter(
+                (
+                    Q(sender=current_user, receiver=user_to_unfollow)
+                    | Q(sender=user_to_unfollow, receiver=current_user)
                 )
-                for req in accepted_reqs:
-                    req.status = "rejected"
-                    req.save()
+            ).update(status="rejected")
 
+            # --- THE CLEAN SLATE FIX: Wipe all relationship notifications ---
+            # This ensures your second screenshot ("Started following you") vanishes.
+            Notification.objects.filter(
+                (
+                    Q(recipient=current_user, actor=user_to_unfollow)
+                    | Q(recipient=user_to_unfollow, actor=current_user)
+                ),
+                notification_type__in=[
+                    Notification.FOLLOW,
+                    Notification.CONNECTION_REQUEST,
+                    Notification.CONNECTION_ACCEPTED,
+                ],
+            ).delete()
+            # ----------------------------------------------------------------
+
+            if was_mutually_connected:
                 return Response({"status": "disconnected"}, status=status.HTTP_200_OK)
 
-            # If not mutually connected, it was just a simple unfollow.
             return Response({"status": "unfollowed"}, status=status.HTTP_200_OK)
 
 
