@@ -336,21 +336,28 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     def get_is_following_back(self, obj: Notification) -> bool:
         """
-        Calculates if the actor and recipient are officially connected.
-        The UI uses this to switch from a 'Follow Back' button to a 'Connected' badge.
+        Truth: User is 'Connected' if an accepted request exists
+        OR if they both follow each other manually.
         """
         request = self.context.get("request")
         if not request or not request.user.is_authenticated or not obj.actor:
             return False
 
         user = request.user
+        actor = obj.actor
 
-        # NEW LOGIC: Only return True if an ACCEPTED ConnectionRequest exists.
-        # This prevents the "Connected" badge from appearing too early.
-        return ConnectionRequest.objects.filter(
-            (Q(sender=user, receiver=obj.actor) | Q(sender=obj.actor, receiver=user)),
+        # 1. Check for Manual Mutual Follow (A follows B AND B follows A)
+        i_follow_them = Follow.objects.filter(follower=user, following=actor).exists()
+        they_follow_me = Follow.objects.filter(follower=actor, following=user).exists()
+
+        # 2. Check for formal Accepted Request
+        has_accepted_request = ConnectionRequest.objects.filter(
+            (Q(sender=user, receiver=actor) | Q(sender=actor, receiver=user)),
             status="accepted",
         ).exists()
+
+        # Final Truth: If EITHER is true, they are connected.
+        return (i_follow_them and they_follow_me) or has_accepted_request
 
     def get_context_snippet(self, obj: Notification) -> str | None:
         source_object = None
@@ -558,7 +565,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return None
 
         current_user = request.user
-        target_user = obj.user
+        target_user = obj.user  # obj is the UserProfile instance
 
         if target_user == current_user:
             return {
@@ -566,15 +573,28 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 "is_followed_by_request_user": False,
             }
 
-        is_followed_by_request_user = Follow.objects.filter(
+        # 1. Check for manual follows
+        i_follow_them = Follow.objects.filter(
             follower=current_user, following=target_user
         ).exists()
-        is_following_request_user = Follow.objects.filter(
+        they_follow_me = Follow.objects.filter(
             follower=target_user, following=current_user
         ).exists()
 
+        # 2. Check for formal Accepted Request
+        has_accepted_request = ConnectionRequest.objects.filter(
+            (
+                Q(sender=current_user, receiver=target_user)
+                | Q(sender=target_user, receiver=current_user)
+            ),
+            status="accepted",
+        ).exists()
+
+        # Determine the final status
         connection_status = "not_connected"
-        if is_followed_by_request_user and is_following_request_user:
+
+        # TRUTH: Connected if manual mutual follows exist OR formal request is accepted
+        if (i_follow_them and they_follow_me) or has_accepted_request:
             connection_status = "connected"
         elif ConnectionRequest.objects.filter(
             sender=current_user, receiver=target_user, status="pending"
@@ -587,12 +607,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         return {
             "connection_status": connection_status,
-            "is_followed_by_request_user": is_followed_by_request_user,
+            "is_followed_by_request_user": i_follow_them,
         }
-
-
-# --- REPLACE your existing UserProfileUpdateSerializer with this one ---
-# --- REPLACE your existing UserProfileUpdateSerializer with this complete version ---
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
