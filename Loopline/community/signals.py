@@ -277,19 +277,41 @@ def create_connection_notification(sender, instance, created, **kwargs):
                     target=targ,
                 )
 
-    # --- NEW: SCENARIO C: Request is Rejected (Decline) ---
+    # --- SCENARIO C: Request is Rejected (Declined or Cancelled) ---
     elif instance.status == "rejected":
-        # Delete all connection request alerts between these two.
-        # This prevents the notification from re-appearing after a refresh.
-        Notification.objects.filter(
+        # 1. Find the notifications that need to be deleted
+        stale_notifications = Notification.objects.filter(
             (
                 Q(recipient=instance.receiver, actor=instance.sender)
                 | Q(recipient=instance.sender, actor=instance.receiver)
             ),
             notification_type=Notification.CONNECTION_REQUEST,
-        ).delete()
+        )
+
+        # 2. Capture the IDs and the Recipient IDs before we delete them from the DB
+        # We need these to tell the specific frontend clients which row to remove
+        deletion_data = []
+        for n in stale_notifications:
+            deletion_data.append({"id": n.id, "recipient_id": n.recipient.id})
+
+        # 3. Actually delete from DB (The "Clean State")
+        stale_notifications.delete()
+
+        # 4. REAL-TIME BROADCAST: Tell the frontend to remove these rows immediately
+        channel_layer = get_channel_layer()
+        for data in deletion_data:
+            async_to_sync(channel_layer.group_send)(
+                f"user_{data['recipient_id']}",
+                {
+                    "type": "send_notification",
+                    "message": {
+                        "type": "notification_deleted",  # New instruction type
+                        "payload": {"id": data["id"]},
+                    },
+                },
+            )
         logger.info(
-            f"DB: Wiped notifications for rejected request from {instance.sender.username}"
+            f"Real-time: Sent WIPE command for notifications between {instance.sender.username} and {instance.receiver.username}"
         )
 
     # SCENARIO B: Request is marked as 'accepted'

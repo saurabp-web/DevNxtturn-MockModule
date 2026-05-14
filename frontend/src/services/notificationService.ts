@@ -99,6 +99,14 @@ class NotificationService {
           useNotificationStore().addLiveNotification(payload)
           break
         }
+
+        case 'notification_deleted': {
+          console.log('🗑️ WebSocket: Deletion command received for ID:', payload.id)
+          const { useNotificationStore } = await import('@/stores/notification')
+          useNotificationStore().removeNotificationById(payload.id)
+          break
+        }
+
         case 'new_post': {
           const { useFeedStore } = await import('@/stores/feed')
           useFeedStore().handleNewPostSignal(payload.id)

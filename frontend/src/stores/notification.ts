@@ -194,6 +194,19 @@ export const useNotificationStore = defineStore('notification', () => {
     console.log('⚡ STORE: Scrubbed old request for User ID:', targetId)
   }
 
+  function removeNotificationById(notificationId: number) {
+    // 1. Check if the notification exists and is unread before we delete it
+    const target = notifications.value.find((n) => n.id === notificationId)
+    if (target && !target.is_read && unreadCount.value > 0) {
+      unreadCount.value-- // Decrease the red bubble count
+    }
+
+    // 2. Remove the notification from the list in memory
+    notifications.value = notifications.value.filter((n) => n.id !== notificationId)
+
+    console.log('🗑️ STORE: Notification removed from UI memory:', notificationId)
+  }
+
   return {
     notifications,
     unreadCount,
@@ -209,5 +222,6 @@ export const useNotificationStore = defineStore('notification', () => {
     addLiveNotification,
     resetState,
     forceSyncConnection,
+    removeNotificationById,
   }
 })
