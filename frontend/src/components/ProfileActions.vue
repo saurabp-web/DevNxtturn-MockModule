@@ -16,6 +16,7 @@ import {
   LinkIcon as LinkIconSolid,
   HandThumbDownIcon as HandThumbDownIconSolid,
   ArrowPathIcon,
+  XMarkIcon,
 } from '@heroicons/vue/24/solid'
 
 const profileStore = useProfileStore()
@@ -61,6 +62,15 @@ const handleAccept = async (event: MouseEvent) => {
     }
   }
 }
+
+const handleCancel = (event: MouseEvent) => {
+  event.stopPropagation()
+  if (currentProfile.value) {
+    // Calls the store function to cancel the request in the DB
+    profileStore.cancelConnectRequest(currentProfile.value.user.username)
+  }
+}
+
 const handleFollowToggle = (event: MouseEvent) => {
   event.stopPropagation()
   if (currentProfile.value) {
@@ -191,22 +201,38 @@ onUnmounted(() => {
         </span>
       </button>
 
-      <!-- State: Request Sent -->
+      <!-- State: Request Sent (Now clickable to Cancel) -->
       <button
         v-else-if="relationshipStatus.connection_status === 'request_sent'"
-        disabled
+        @click="handleCancel"
+        @mouseenter="isHovering.connect = true"
+        @mouseleave="isHovering.connect = false"
+        @mousedown="createRipple"
         data-cy="pending-button"
-        class="flex flex-col items-center p-2 cursor-not-allowed w-[60px] h-[70px] relative"
+        class="relative flex flex-col items-center p-2 transition-all duration-300 group w-[60px] h-[70px]"
+        title="Click to cancel request"
       >
         <div
-          class="p-2 rounded-full mb-1 border-2 border-amber-200/60 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm"
+          :class="[
+            'p-2 rounded-full mb-1 border-2 transition-all duration-300',
+            isHovering.connect
+              ? 'bg-red-50 border-red-200 shadow-sm'
+              : 'border-amber-200/60 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm',
+          ]"
         >
-          <ClockIcon class="w-5 h-5 text-amber-500" />
+          <!-- Show X icon on hover to signify 'Cancel', otherwise show Clock -->
+          <XMarkIcon v-if="isHovering.connect" class="w-5 h-5 text-red-500" />
+          <ClockIcon v-else class="w-5 h-5 text-amber-500" />
         </div>
         <span
-          class="text-xs font-semibold bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent mt-1"
+          :class="[
+            'text-xs font-semibold mt-1 transition-all duration-300',
+            isHovering.connect
+              ? 'text-red-600'
+              : 'bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent',
+          ]"
         >
-          Pending
+          {{ isHovering.connect ? 'Cancel' : 'Pending' }}
         </span>
       </button>
 

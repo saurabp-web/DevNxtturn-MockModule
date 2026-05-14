@@ -690,13 +690,28 @@ class ConnectionRequestViewSet(
 
     @action(detail=True, methods=["post"])
     def accept(self, request, pk=None):
+        # 1. Look up the request (Must be for the logged-in user)
         connection_request = get_object_or_404(
             ConnectionRequest, pk=pk, receiver=request.user
         )
 
+        # 2. If it is already accepted, just say "Already connected" (Idempotency)
         if connection_request.status == "accepted":
             return Response({"status": "Already connected."}, status=status.HTTP_200_OK)
 
+        # --- THE FIX: SECURITY GUARD ---
+        # 3. If the request was previously declined/rejected, block the acceptance.
+        # This prevents accepting stale requests from old browser tabs.
+        if connection_request.status == "rejected":
+            return Response(
+                {
+                    "detail": "This request was previously declined and cannot be accepted."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # -------------------------------
+
+        # 4. Proceed with formal acceptance
         with transaction.atomic():
             connection_request.status = "accepted"
             connection_request.save()
@@ -709,7 +724,7 @@ class ConnectionRequestViewSet(
             ]:
                 if not Follow.objects.filter(follower=f, following=r).exists():
                     fol = Follow(follower=f, following=r)
-                    fol._silent_follow = True  # <--- THE MUZZLE
+                    fol._silent_follow = True  # <--- THE MUZZLE (Approach A)
                     fol.save()
 
         return Response(
@@ -733,6 +748,26 @@ class ConnectionRequestViewSet(
         connection_request.save()
         return Response(
             {"status": "Connection request rejected."}, status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        """
+        Allows the SENDER to retract a pending connection request.
+        """
+        # 1. Find the request: Must be sent BY the current user and still PENDING
+        connection_request = get_object_or_404(
+            ConnectionRequest, pk=pk, sender=request.user, status="pending"
+        )
+
+        # 2. Set to rejected
+        # Because we implemented 'Scenario C' in signals.py, this .save()
+        # will automatically delete the notification from the Receiver's list.
+        connection_request.status = "rejected"
+        connection_request.save()
+
+        return Response(
+            {"status": "Connection request cancelled."}, status=status.HTTP_200_OK
         )
 
 
@@ -769,6 +804,32 @@ class AcceptConnectionRequestView(APIView):
 
         return Response(
             {"status": "Connection request accepted."}, status=status.HTTP_200_OK
+        )
+
+
+class CancelConnectionRequestView(APIView):
+    """
+    Allows a user to cancel a request they sent to a specific username.
+    """
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, username, format=None):
+        receiver = get_object_or_404(User, username__iexact=username)
+        sender = request.user
+
+        # Find the pending request sent by the current user to this target
+        connection_request = get_object_or_404(
+            ConnectionRequest, sender=sender, receiver=receiver, status="pending"
+        )
+
+        with transaction.atomic():
+            connection_request.status = "rejected"
+            connection_request.save()  # Triggers 'Scenario C' signal to wipe notifications
+
+        return Response(
+            {"status": "Connection request cancelled."}, status=status.HTTP_200_OK
         )
 
 

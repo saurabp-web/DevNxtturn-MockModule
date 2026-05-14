@@ -67,6 +67,11 @@ urlpatterns = [
         views.AcceptConnectionRequestView.as_view(),
         name="user-accept-request",
     ),
+    path(
+        "users/<str:username>/cancel-request/",
+        views.CancelConnectionRequestView.as_view(),
+        name="user-cancel-request",
+    ),
     # --- Network Hub ---
     path(
         "network/followers/",

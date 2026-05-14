@@ -213,6 +213,17 @@ export const useProfileStore = defineStore('profile', () => {
     }
   }
 
+  async function cancelConnectRequest(username: string) {
+    try {
+      // Hits the username-based endpoint
+      await axiosInstance.post(`/users/${username}/cancel-request/`)
+      await fetchProfile(username) // Refresh local state to show 'Connect' button
+    } catch (error: any) {
+      console.error('Failed to cancel connection request:', error)
+      alert(error.response?.data?.detail || 'Could not cancel request.')
+    }
+  }
+
   async function updateProfile(username: string, payload: ProfileUpdatePayload) {
     try {
       await axiosInstance.patch<UserProfile>(`/profiles/${username}/`, payload)
@@ -449,6 +460,7 @@ export const useProfileStore = defineStore('profile', () => {
     relationshipStatus,
     sendConnectRequest,
     acceptConnectRequest,
+    cancelConnectRequest,
     addEducation,
     updateEducation,
     deleteEducation,

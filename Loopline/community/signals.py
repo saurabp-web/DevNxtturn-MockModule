@@ -212,14 +212,12 @@ def create_follow_notification(sender, instance, created, **kwargs):
 )
 def create_connection_notification(sender, instance, created, **kwargs):
     """
-    Handles notifications for the Connection Request lifecycle.
-    Implements 'Mutual Cleanup': Deletes old alerts in BOTH directions
-    on re-send or status change to ensure the UI is never confusing.
+    Scenario A: Pending -> Create/Refresh alert.
+    Scenario B: Accepted -> Create mutual history.
+    Scenario C: Rejected -> WIPE ALL ALERTS (Clean State).
     """
-    # SCENARIO A: Request is Sent or Re-sent (Status = Pending)
+    # SCENARIO A: Request is Sent or Re-sent
     if instance.status == "pending":
-        # 1. TOTAL CLEANUP: Wipe out any old 'connection_request' alerts between these two.
-        # This fixes the 'Role Reversal' case where B sends to A after A previously sent to B.
         Notification.objects.filter(
             (
                 Q(recipient=instance.receiver, actor=instance.sender)
@@ -228,7 +226,6 @@ def create_connection_notification(sender, instance, created, **kwargs):
             notification_type=Notification.CONNECTION_REQUEST,
         ).delete()
 
-        # 2. CREATE FRESH ALERT: New ID, New Timestamp, pops to the top for the receiver.
         Notification.objects.create(
             recipient=instance.receiver,
             actor=instance.sender,
@@ -237,8 +234,62 @@ def create_connection_notification(sender, instance, created, **kwargs):
             action_object=instance,
             target=instance.sender,
         )
+
+    # SCENARIO B: Request is Accepted
+    elif instance.status == "accepted":
+        # Delete pending request alerts in both directions
+        Notification.objects.filter(
+            (
+                Q(recipient=instance.receiver, actor=instance.sender)
+                | Q(recipient=instance.sender, actor=instance.receiver)
+            ),
+            notification_type=Notification.CONNECTION_REQUEST,
+        ).delete()
+
+        # Create history for BOTH users so it doesn't vanish on refresh
+        users = [
+            (
+                instance.sender,
+                instance.receiver,
+                "accepted your connection request",
+                instance.receiver,
+            ),
+            (
+                instance.receiver,
+                instance.sender,
+                "is now connected with you",
+                instance.sender,
+            ),
+        ]
+
+        for rec, act, v, targ in users:
+            if not Notification.objects.filter(
+                recipient=rec,
+                actor=act,
+                notification_type=Notification.CONNECTION_ACCEPTED,
+            ).exists():
+                Notification.objects.create(
+                    recipient=rec,
+                    actor=act,
+                    verb=v,
+                    notification_type=Notification.CONNECTION_ACCEPTED,
+                    action_object=instance,
+                    target=targ,
+                )
+
+    # --- NEW: SCENARIO C: Request is Rejected (Decline) ---
+    elif instance.status == "rejected":
+        # Delete all connection request alerts between these two.
+        # This prevents the notification from re-appearing after a refresh.
+        Notification.objects.filter(
+            (
+                Q(recipient=instance.receiver, actor=instance.sender)
+                | Q(recipient=instance.sender, actor=instance.receiver)
+            ),
+            notification_type=Notification.CONNECTION_REQUEST,
+        ).delete()
         logger.info(
-            f"DB: Refreshed Connection Request for {instance.receiver.username}"
+            f"DB: Wiped notifications for rejected request from {instance.sender.username}"
         )
 
     # SCENARIO B: Request is marked as 'accepted'

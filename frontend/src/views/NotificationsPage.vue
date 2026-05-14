@@ -19,6 +19,7 @@ import {
   BellIcon,
   CheckCircleIcon,
   LinkIcon,
+  XMarkIcon,
 } from '@heroicons/vue/24/solid'
 import eventBus from '@/services/eventBus'
 
@@ -469,9 +470,8 @@ onUnmounted(() => {
                   <!-- 1. THE STATUS BADGE: Shown if already connected -->
                   <div
                     v-if="
-                      notification.is_following_back &&
-                      (notification.notification_type === 'follow' ||
-                        notification.notification_type === 'connection_request')
+                      notification.is_following_back ||
+                      notification.notification_type === 'connection_accepted'
                     "
                     class="flex items-center gap-1.5 text-emerald-600 font-bold text-xs bg-emerald-50 w-fit px-2.5 py-1.5 rounded-lg border border-emerald-100 shadow-sm"
                   >
@@ -479,9 +479,18 @@ onUnmounted(() => {
                     <span>Connected</span>
                   </div>
 
-                  <!-- 2. THE ACTION BUTTONS: Shown if NOT connected yet -->
-                  <div v-else-if="!notification.is_declined" class="flex gap-2">
-                    <!-- Connection Request Actions -->
+                  <!-- 2. THE FEEDBACK: Shown immediately after clicking Decline -->
+                  <div
+                    v-else-if="notification.is_declined"
+                    class="flex items-center gap-1.5 text-gray-500 font-bold text-xs bg-gray-100 w-fit px-2.5 py-1.5 rounded-lg border border-gray-200 shadow-sm"
+                  >
+                    <XMarkIcon class="w-4 h-4" />
+                    <span>Request declined</span>
+                  </div>
+
+                  <!-- 3. THE ACTION BUTTONS: Shown only if NOT connected AND NOT declined -->
+                  <div v-else class="flex gap-2">
+                    <!-- Connection Request Actions (Accept/Decline) -->
                     <template v-if="notification.notification_type === 'connection_request'">
                       <button
                         @click.stop.prevent="handleConnectionAction(notification, 'accept')"
@@ -497,7 +506,7 @@ onUnmounted(() => {
                       </button>
                     </template>
 
-                    <!-- Follow Back Actions -->
+                    <!-- Follow Back Action -->
                     <template v-if="notification.notification_type === 'follow'">
                       <button
                         @click.stop.prevent="handleFollowBack(notification)"
@@ -505,13 +514,6 @@ onUnmounted(() => {
                       >
                         Follow Back
                       </button>
-                      <router-link
-                        :to="{ name: 'profile', params: { username: notification.actor.username } }"
-                        @click.stop
-                        class="px-4 py-1.5 border border-gray-300 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-50 transition"
-                      >
-                        View Profile
-                      </router-link>
                     </template>
                   </div>
                 </div>
