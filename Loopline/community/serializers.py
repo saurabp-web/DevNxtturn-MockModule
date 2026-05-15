@@ -555,12 +555,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     # --- RETAINED: Existing Relationship Logic ---
     def get_relationship_status(self, obj):
+        """
+        Determines the relationship between the current user and the profile owner.
+        Strictly validates 'pending' status to prevent stale buttons after a disconnect.
+        """
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
             return None
 
         current_user = request.user
-        target_user = obj.user  # obj is the UserProfile instance
+        target_user = obj.user
 
         if target_user == current_user:
             return {
@@ -568,7 +572,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 "is_followed_by_request_user": False,
             }
 
-        # 1. Check for manual follows
+        # 1. Check for manual follows (A follows B AND B follows A)
         i_follow_them = Follow.objects.filter(
             follower=current_user, following=target_user
         ).exists()
@@ -576,7 +580,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             follower=target_user, following=current_user
         ).exists()
 
-        # 2. Check for formal Accepted Request
+        # 2. Check for a formal Accepted Request
         has_accepted_request = ConnectionRequest.objects.filter(
             (
                 Q(sender=current_user, receiver=target_user)
@@ -585,20 +589,24 @@ class UserProfileSerializer(serializers.ModelSerializer):
             status="accepted",
         ).exists()
 
-        # Determine the final status
         connection_status = "not_connected"
 
-        # TRUTH: Connected if manual mutual follows exist OR formal request is accepted
+        # LOGIC: They are connected if mutual follows exist OR an accepted request exists
         if (i_follow_them and they_follow_me) or has_accepted_request:
             connection_status = "connected"
+
+        # --- THE FIX: ONLY show sent/received if the status is PENDING ---
+        # This ignores 'rejected' records, solving the Step 12 desync.
         elif ConnectionRequest.objects.filter(
             sender=current_user, receiver=target_user, status="pending"
         ).exists():
             connection_status = "request_sent"
+
         elif ConnectionRequest.objects.filter(
             sender=target_user, receiver=current_user, status="pending"
         ).exists():
             connection_status = "request_received"
+        # ----------------------------------------------------------------
 
         return {
             "connection_status": connection_status,
@@ -1527,8 +1535,8 @@ class NetworkUserSerializer(serializers.ModelSerializer):
 
     def get_connection_status(self, obj):
         """
-        Calculates the state of the relationship so the UI knows
-        whether to show 'Connect', 'Accept', or 'Pending'.
+        Calculates the state of the relationship.
+        Strictly validates that only 'pending' requests show as Pending/Accept.
         """
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
@@ -1536,21 +1544,28 @@ class NetworkUserSerializer(serializers.ModelSerializer):
 
         user = request.user
 
-        # Check for any connection request record in either direction
+        # 1. Find the most recent record between these two users
         req = ConnectionRequest.objects.filter(
             (Q(sender=user, receiver=obj) | Q(sender=obj, receiver=user))
         ).first()
 
+        # 2. If no record exists, they are strangers
         if not req:
             return "none"
 
+        # 3. If the request was accepted, they are connected
         if req.status == "accepted":
             return "connected"
 
-        if req.sender == user:
-            return "pending_sent"  # You sent it, you are waiting.
+        # 4. THE FIX: Only show 'pending' states if the status is actually 'pending'.
+        # If the status is 'rejected' (from a disconnect), we return 'none'.
+        if req.status == "pending":
+            if req.sender == user:
+                return "pending_sent"
+            return "pending_received"
 
-        return "pending_received"  # THEY sent it, you need to click 'Accept'!
+        # 5. Default fallback for 'rejected' or any other status
+        return "none"
 
 
 ## community/serializers.py (At the bottom)
