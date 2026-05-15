@@ -131,22 +131,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_picture(self, obj):
         """
-        Returns the absolute URL for the user's profile picture.
+        Returns a browser-reachable URL.
+        Local: returns '/media/...' (Vite Proxy handles this)
+        Cloud: returns 'https://storage.googleapis.com/...' (GCS handles this)
         """
-        request = self.context.get("request")
-        if not request:
-            return None
-
         try:
-            if (
-                hasattr(obj, "profile")
-                and obj.profile.picture
-                and hasattr(obj.profile.picture, "url")
-            ):
-                return request.build_absolute_uri(obj.profile.picture.url)
-        except UserProfile.DoesNotExist:
+            if hasattr(obj, "profile") and obj.profile.picture:
+                # We return the raw .url attribute.
+                # We DO NOT use build_absolute_uri here.
+                return obj.profile.picture.url
+        except (UserProfile.DoesNotExist, AttributeError):
             pass
-
         return None
 
 
@@ -1493,7 +1488,7 @@ class NetworkUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(read_only=True)
     name = serializers.SerializerMethodField()
     headline = serializers.CharField(source="profile.headline", read_only=True)
-    profile_picture = serializers.SerializerMethodField()
+    picture = serializers.SerializerMethodField()
     connection_status = serializers.SerializerMethodField()  # <--- THE NEW FIELD
 
     class Meta:
@@ -1503,7 +1498,7 @@ class NetworkUserSerializer(serializers.ModelSerializer):
             "username",
             "name",
             "headline",
-            "profile_picture",
+            "picture",
             "connection_status",
         ]
 
@@ -1515,15 +1510,18 @@ class NetworkUserSerializer(serializers.ModelSerializer):
             return full_name
         return obj.username
 
-    def get_profile_picture(self, obj):
-        request = self.context.get("request")
+    def get_picture(self, obj):
+        """
+        Returns a browser-reachable URL.
+        Local: returns '/media/...' (Vite Proxy handles this)
+        Cloud: returns 'https://storage.googleapis.com/...' (GCS handles this)
+        """
         try:
             if hasattr(obj, "profile") and obj.profile.picture:
-                url = obj.profile.picture.url
-                if request:
-                    return request.build_absolute_uri(url)
-                return url
-        except Exception:
+                # We return the raw .url attribute.
+                # We DO NOT use build_absolute_uri here.
+                return obj.profile.picture.url
+        except (UserProfile.DoesNotExist, AttributeError):
             pass
         return None
 

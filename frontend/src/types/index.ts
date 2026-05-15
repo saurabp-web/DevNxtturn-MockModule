@@ -19,7 +19,7 @@ export interface NetworkUser {
   username: string
   name: string // This is our smart field (Display Name > Full Name > Username)
   headline: string | null
-  profile_picture: string | null
+  picture: string | null
   connection_status: 'none' | 'pending_sent' | 'pending_received' | 'connected'
 }
 

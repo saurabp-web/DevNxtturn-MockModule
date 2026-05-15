@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia'
 import type { NetworkUser } from '@/types'
 import { ArrowPathIcon } from '@heroicons/vue/24/outline'
 import eventBus from '@/services/eventBus'
+import { getAvatarUrl } from '@/utils/avatars'
 // Import the site-wide SVG illustration
 import defaultAvatar from '@/assets/images/default-avatar.svg'
 
@@ -154,14 +155,9 @@ async function handleConnect(user: NetworkUser) {
           <!-- Clickable Avatar and Info -->
           <RouterLink :to="`/profile/${user.username}`" class="flex items-center flex-1 min-w-0">
             <img
-              :src="user.profile_picture || defaultAvatar"
-              @error="
-                (e) => {
-                  ;(e.target as HTMLImageElement).src = defaultAvatar
-                  ;(e.target as HTMLImageElement).onerror = null
-                }
-              "
+              :src="getAvatarUrl(user.picture, user.name || user.username, '')"
               class="h-10 w-10 rounded-full ring-2 ring-white shadow-sm flex-shrink-0 mr-3 object-cover bg-white group-hover:ring-blue-100 transition-all"
+              alt=""
             />
 
             <div class="flex-1 min-w-0 mr-3">

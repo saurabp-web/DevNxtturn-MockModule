@@ -448,7 +448,13 @@ onUnmounted(() => {
     <form @submit.prevent="handleSubmit" novalidate>
       <div class="flex items-start gap-3 sm:gap-4">
         <img
-          :src="getAvatarUrl(currentUser?.picture, currentUser?.first_name, currentUser?.last_name)"
+          :src="
+            getAvatarUrl(
+              currentUser?.picture,
+              currentUser?.first_name || currentUser?.username,
+              currentUser?.last_name,
+            )
+          "
           alt="Your avatar"
           class="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover bg-gray-200 flex-shrink-0 -ml-2"
         />

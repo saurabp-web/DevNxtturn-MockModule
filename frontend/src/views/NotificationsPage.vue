@@ -279,7 +279,7 @@ onUnmounted(() => {
                   :src="
                     getAvatarUrl(
                       notification.actor.picture,
-                      notification.actor.first_name,
+                      notification.actor.first_name || notification.actor.username,
                       notification.actor.last_name,
                     )
                   "

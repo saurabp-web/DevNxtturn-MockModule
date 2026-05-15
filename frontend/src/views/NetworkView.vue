@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useNetworkStore } from '@/stores/network'
 import { storeToRefs } from 'pinia'
 import { Users, UserPlus, UserCheck, Search, MessageSquare, UserCircle } from 'lucide-vue-next'
+import { getAvatarUrl } from '@/utils/avatars'
 
 // 1. Setup the store we created yesterday
 const networkStore = useNetworkStore()
@@ -121,8 +122,9 @@ const filteredList = computed(() => {
           >
             <div class="flex items-center gap-4">
               <img
-                :src="user.profile_picture || '/img/default-avatar.png'"
-                class="w-14 h-14 rounded-2xl object-cover border border-gray-100"
+                :src="getAvatarUrl(user.picture, user.name, '')"
+                class="w-14 h-14 rounded-2xl object-cover border border-gray-100 shadow-sm"
+                alt=""
               />
               <div class="min-w-0">
                 <RouterLink

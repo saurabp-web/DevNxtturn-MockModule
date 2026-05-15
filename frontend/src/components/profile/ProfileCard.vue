@@ -142,24 +142,24 @@ function handleEditModalFileChange(event: Event) {
 
 async function uploadProfilePicture() {
   if (!selectedFile.value) return
-
-  // Check if component is still mounted
   if (!isComponentMounted.value) return
 
   isUploadingPicture.value = true
   try {
     await profileStore.updateProfilePicture(props.profile.user.username, selectedFile.value)
 
-    // Check again before updating UI
     if (!isComponentMounted.value) return
 
+    // SUCCESS: Keep the preview visible for 2 seconds.
+    // This gives the browser time to download the real image from the
+    // new backend URL in the background without showing a broken icon.
     selectedFile.value = null
-    // Don't clear preview URL immediately so user can see the result
     setTimeout(() => {
       if (isComponentMounted.value) {
         picturePreviewUrl.value = null
       }
     }, 2000)
+
     isPreviewModalOpen.value = false
   } catch (error: any) {
     if (isComponentMounted.value) {
@@ -211,24 +211,28 @@ async function uploadEditModalProfilePicture() {
 
 async function uploadSelectedAvatar() {
   if (!selectedAvatar.value) return
-
-  // Check if component is still mounted
   if (!isComponentMounted.value) return
 
   isUploadingPicture.value = true
   try {
-    // Convert the avatar image to a File object for upload
     const response = await fetch(selectedAvatar.value.src)
     const blob = await response.blob()
     const file = new File([blob], `${selectedAvatar.value.id}.png`, { type: 'image/png' })
 
     await profileStore.updateProfilePicture(props.profile.user.username, file)
 
-    // Check again before updating UI
     if (!isComponentMounted.value) return
 
+    // SUCCESS: Close modal but KEEP the picturePreviewUrl (the local asset)
+    // for 2 seconds so the transition is invisible to the user.
     isAvatarPreviewModalOpen.value = false
     selectedAvatar.value = null
+
+    setTimeout(() => {
+      if (isComponentMounted.value) {
+        picturePreviewUrl.value = null
+      }
+    }, 2000)
   } catch (error: any) {
     if (isComponentMounted.value) {
       alert(error.message || 'Failed to set avatar.')
@@ -304,6 +308,11 @@ function handleAvatarSelect(avatar: { id: string; src: string }) {
   if (!isComponentMounted.value) return
 
   selectedAvatar.value = avatar
+
+  // --- THE FIX: Set the preview URL immediately using the local asset ---
+  // This ensures the image shows up instantly on the card!
+  picturePreviewUrl.value = avatar.src
+
   isEditProfileModalOpen.value = false
   isAvatarPreviewModalOpen.value = true
 }
@@ -383,8 +392,11 @@ onUnmounted(() => {
               <img
                 data-cy="profile-picture-img"
                 :src="
-                  picturePreviewUrl ||
-                  getAvatarUrl(profile.picture, profile.user.first_name, profile.user.last_name)
+                  getAvatarUrl(
+                    picturePreviewUrl || profile.picture,
+                    profile.display_name || profile.user.first_name || profile.user.username,
+                    profile.user.last_name,
+                  )
                 "
                 alt="Profile Picture"
                 class="relative w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-gray-200 z-10 cursor-pointer"
@@ -555,7 +567,13 @@ onUnmounted(() => {
           class="mb-6 w-full max-w-2xl overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center"
         >
           <img
-            :src="getAvatarUrl(profile.picture, profile.user.first_name, profile.user.last_name)"
+            :src="
+              getAvatarUrl(
+                profile.picture,
+                profile.display_name || profile.user.first_name || profile.user.username,
+                profile.user.last_name,
+              )
+            "
             alt="Profile Picture Preview"
             class="w-full h-auto max-h-96 object-contain"
           />
@@ -603,8 +621,11 @@ onUnmounted(() => {
         >
           <img
             :src="
-              picturePreviewUrl ||
-              getAvatarUrl(profile.picture, profile.user.first_name, profile.user.last_name)
+              getAvatarUrl(
+                picturePreviewUrl || profile.picture,
+                profile.display_name || profile.user.first_name || profile.user.username,
+                profile.user.last_name,
+              )
             "
             alt="Profile Picture Preview"
             class="w-full h-auto max-h-64 object-contain"

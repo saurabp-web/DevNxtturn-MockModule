@@ -550,7 +550,13 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                       >
                         <div class="relative flex-shrink-0">
                           <img
-                            :src="getAvatarUrl(user.picture, user.first_name, user.last_name)"
+                            :src="
+                              getAvatarUrl(
+                                user.picture,
+                                user.first_name || user.username,
+                                user.last_name,
+                              )
+                            "
                             alt="avatar"
                             class="w-7 h-7 rounded-full object-cover border border-gray-200 group-hover:border-blue-300 transition-colors"
                           />
@@ -934,7 +940,7 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                     :src="
                       getAvatarUrl(
                         currentUser?.picture,
-                        currentUser?.first_name,
+                        currentUser?.first_name || currentUser?.username,
                         currentUser?.last_name,
                       )
                     "
@@ -986,7 +992,7 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                         :src="
                           getAvatarUrl(
                             currentUser.picture,
-                            currentUser.first_name,
+                            currentUser.first_name || currentUser.username,
                             currentUser.last_name,
                           )
                         "
@@ -1225,9 +1231,15 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                       >
                         <div class="relative flex-shrink-0">
                           <img
-                            :src="getAvatarUrl(user.picture, user.first_name, user.last_name)"
+                            :src="
+                              getAvatarUrl(
+                                user.picture,
+                                user.first_name || user.username,
+                                user.last_name,
+                              )
+                            "
                             alt="avatar"
-                            class="w-8 h-8 rounded-full object-cover border border-gray-200 group-hover:border-blue-300 transition-colors"
+                            class="w-7 h-7 rounded-full object-cover border border-gray-200 group-hover:border-blue-300 transition-colors"
                           />
                         </div>
                         <div class="flex-1 min-w-0">
@@ -1394,7 +1406,11 @@ const currentUsername = computed(() => currentUser.value?.username || '')
             >
               <img
                 :src="
-                  getAvatarUrl(currentUser.picture, currentUser.first_name, currentUser.last_name)
+                  getAvatarUrl(
+                    currentUser.picture,
+                    currentUser.first_name || currentUser.username,
+                    currentUser.last_name,
+                  )
                 "
                 alt="Your avatar"
                 class="w-12 h-12 rounded-full object-cover"
