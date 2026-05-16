@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useNetworkStore } from '@/stores/network'
+import { useProfileStore } from '@/stores/profile'
+import { useNotificationStore } from '@/stores/notification'
 import { storeToRefs } from 'pinia'
 import { Users, UserPlus, UserCheck, Search, MessageSquare, UserCircle } from 'lucide-vue-next'
 import { getAvatarUrl } from '@/utils/avatars'
+import eventBus from '@/services/eventBus'
 
 // 1. Setup the store we created yesterday
 const networkStore = useNetworkStore()
+const profileStore = useProfileStore()
+const notificationStore = useNotificationStore()
 const { followers, following, connections, pending, isLoading, error } = storeToRefs(networkStore)
 
 // 2. State for Tabs and Search (Added 'pending')
 const activeTab = ref<'connections' | 'followers' | 'following' | 'pending'>('connections')
 const searchQuery = ref('')
+const successfulConnections = ref<Set<number>>(new Set())
 
 // 3. Fetch data whenever the tab changes
 const fetchData = async () => {
@@ -43,6 +49,57 @@ const filteredList = computed(() => {
       user.username.toLowerCase().includes(searchQuery.value.toLowerCase()),
   )
 })
+
+// --- GLOBAL SYNC HANDLERS ---
+
+const handleAccept = async (user: any) => {
+  if (successfulConnections.value.has(user.id)) return // Prevent double-clicks
+
+  try {
+    // 1. Update the Database
+    await profileStore.acceptConnectRequest(user.username)
+
+    // 2. SHOW FEEDBACK: Add to successful set
+    successfulConnections.value.add(user.id)
+
+    // 3. WAIT 1.5 SECONDS (UX satisfy delay)
+    setTimeout(async () => {
+      // 4. SYNC EVERYTHING ELSE
+      notificationStore.forceSyncConnection(user.id)
+
+      // Refresh the Network Hub lists (moves user between tabs)
+      await networkStore.fetchPending()
+      await networkStore.fetchConnections()
+
+      // Broadcast to Sidebar
+      eventBus.emit('connection-established', user.id)
+
+      // Cleanup the feedback state
+      successfulConnections.value.delete(user.id)
+
+      console.log('✅ NetworkHub: Delayed sync complete for', user.username)
+    }, 1500)
+  } catch (err) {
+    console.error('NetworkHub: Failed to accept', err)
+  }
+}
+
+const handleCancel = async (user: any) => {
+  try {
+    // 1. Update the Database
+    await profileStore.cancelConnectRequest(user.username)
+
+    // 2. DIRECT SYNC: Scrub the notification store memory
+    notificationStore.forceSyncConnection(user.id)
+
+    // 3. INTERNAL SYNC: Refresh the pending list
+    await networkStore.fetchPending()
+
+    console.log('✅ NetworkHub: Cancel sync complete for', user.username)
+  } catch (err) {
+    console.error('NetworkHub: Failed to cancel', err)
+  }
+}
 </script>
 
 <template>
@@ -144,12 +201,50 @@ const filteredList = computed(() => {
             </div>
 
             <div class="flex items-center gap-2">
-              <button
-                class="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all"
-                title="Message"
-              >
-                <MessageSquare class="w-5 h-5" />
-              </button>
+              <!-- 1. PENDING TAB: Show Accept/Cancel Buttons -->
+              <template v-if="activeTab === 'pending'">
+                <!-- CASE: They sent you a request -->
+                <!-- Case: They sent you a request -->
+                <button
+                  v-if="user.connection_status === 'pending_received'"
+                  @click="handleAccept(user)"
+                  :disabled="successfulConnections.has(user.id)"
+                  class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm border min-w-[100px]"
+                  :class="[
+                    // 1. Success State: Solid Green
+                    successfulConnections.has(user.id)
+                      ? 'bg-green-600 text-white border-green-700 cursor-default'
+                      : // 2. Default State: Soft Green
+                        'bg-green-50 text-green-600 border-green-200 hover:bg-green-100',
+                  ]"
+                >
+                  <!-- Label logic: Show checkmark if success, otherwise 'Accept' -->
+                  <span v-if="successfulConnections.has(user.id)">Connected ✓</span>
+                  <span v-else>Accept</span>
+                </button>
+
+                <!-- CASE: You sent them a request (Hover to Cancel) -->
+                <button
+                  v-else-if="user.connection_status === 'pending_sent'"
+                  @click="handleCancel(user)"
+                  class="px-4 py-1.5 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg hover:bg-red-50 hover:text-red-600 border border-gray-200 transition group/cancel"
+                >
+                  <span class="group-hover/cancel:hidden">Pending</span>
+                  <span class="hidden group-hover/cancel:inline">Cancel</span>
+                </button>
+              </template>
+
+              <!-- 2. OTHER TABS: Show Standard Message Button -->
+              <template v-else>
+                <button
+                  class="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all"
+                  title="Message"
+                >
+                  <MessageSquare class="w-5 h-5" />
+                </button>
+              </template>
+
+              <!-- Always show Profile Link -->
               <RouterLink
                 :to="`/profile/${user.username}`"
                 class="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
