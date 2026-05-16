@@ -611,6 +611,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return {
             "connection_status": connection_status,
             "is_followed_by_request_user": i_follow_them,
+            "is_following_viewer": they_follow_me,
         }
 
 
@@ -1536,7 +1537,7 @@ class NetworkUserSerializer(serializers.ModelSerializer):
     def get_connection_status(self, obj):
         """
         Calculates the state of the relationship.
-        Strictly validates that only 'pending' requests show as Pending/Accept.
+        Updated to detect 'Follow Back' opportunities.
         """
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
@@ -1544,27 +1545,34 @@ class NetworkUserSerializer(serializers.ModelSerializer):
 
         user = request.user
 
-        # 1. Find the most recent record between these two users
+        # 1. Check for Manual Mutual Follow (Highest Priority Connection)
+        i_follow_them = Follow.objects.filter(follower=user, following=obj).exists()
+        they_follow_me = Follow.objects.filter(follower=obj, following=user).exists()
+
+        if i_follow_them and they_follow_me:
+            return "connected"
+
+        # 2. Check the formal ConnectionRequest table
         req = ConnectionRequest.objects.filter(
             (Q(sender=user, receiver=obj) | Q(sender=obj, receiver=user))
         ).first()
 
-        # 2. If no record exists, they are strangers
-        if not req:
-            return "none"
+        if req:
+            if req.status == "accepted":
+                return "connected"
 
-        # 3. If the request was accepted, they are connected
-        if req.status == "accepted":
-            return "connected"
+            # Only show pending states if the status is actually 'pending'
+            if req.status == "pending":
+                if req.sender == user:
+                    return "pending_sent"
+                return "pending_received"
 
-        # 4. THE FIX: Only show 'pending' states if the status is actually 'pending'.
-        # If the status is 'rejected' (from a disconnect), we return 'none'.
-        if req.status == "pending":
-            if req.sender == user:
-                return "pending_sent"
-            return "pending_received"
+        # 3. THE "WARM" STATE: They follow you, but you haven't followed back
+        # and there is no formal connection request pending.
+        if they_follow_me and not i_follow_them:
+            return "follows_you"
 
-        # 5. Default fallback for 'rejected' or any other status
+        # 4. Default: Strangers
         return "none"
 
 

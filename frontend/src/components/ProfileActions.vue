@@ -32,6 +32,69 @@ const isHovering = ref({
   disconnect: false,
 })
 
+// --- NEW: DYNAMIC BUTTON LOGIC ---
+
+// 1. Decides the text based on Hover and Relationship
+const followButtonLabel = computed(() => {
+  const status = relationshipStatus.value
+  if (!status) return 'Follow'
+
+  // CASE: You already follow them
+  if (status.is_followed_by_request_user) {
+    return isHovering.value.follow ? 'Unfollow' : 'Following'
+  }
+
+  // CASE: They follow you, but you don't follow back (The Follow-Back Invitation)
+  if (status.is_following_viewer) {
+    return isHovering.value.follow ? 'Follow Back' : 'Following'
+  }
+
+  // CASE: Standard (Stranger)
+  return 'Follow'
+})
+
+// 2. Decides the colors based on the relationship
+const followButtonClasses = computed(() => {
+  const status = relationshipStatus.value
+  if (!status)
+    return {
+      ring: 'bg-purple-50 border-purple-200',
+      icon: 'text-purple-500',
+      text: 'text-purple-600',
+    }
+
+  // IF YOU FOLLOW THEM: Use the Rose/Red "Unfollow" theme
+  if (status.is_followed_by_request_user) {
+    return {
+      ring: isHovering.value.follow
+        ? 'bg-red-100 border-red-300 shadow-sm shadow-red-100 scale-105'
+        : 'bg-rose-50 border-rose-200',
+      icon: isHovering.value.follow ? 'text-red-600' : 'text-rose-500',
+      text: isHovering.value.follow ? 'text-red-600' : 'text-rose-600',
+    }
+  }
+
+  // IF THEY FOLLOW YOU: Use the Emerald "Positive/Follow-Back" theme
+  if (status.is_following_viewer) {
+    return {
+      ring: isHovering.value.follow
+        ? 'bg-emerald-100 border-emerald-300 shadow-sm shadow-emerald-100 scale-105'
+        : 'bg-emerald-50 border-emerald-200',
+      icon: isHovering.value.follow ? 'text-emerald-600' : 'text-emerald-500',
+      text: isHovering.value.follow ? 'text-emerald-600' : 'text-emerald-600',
+    }
+  }
+
+  // STANDARD FOLLOW: Use the default Purple theme
+  return {
+    ring: isHovering.value.follow
+      ? 'bg-purple-100 border-purple-300 shadow-sm shadow-purple-100 scale-105'
+      : 'bg-purple-50 border-purple-200',
+    icon: isHovering.value.follow ? 'text-purple-600' : 'text-purple-500',
+    text: isHovering.value.follow ? 'text-purple-600' : 'text-purple-600',
+  }
+})
+
 const followIcon = computed(() => {
   return relationshipStatus.value?.is_followed_by_request_user ? HeartIconSolid : HeartIconSolid
 })
@@ -71,13 +134,23 @@ const handleCancel = (event: MouseEvent) => {
   }
 }
 
-const handleFollowToggle = (event: MouseEvent) => {
+const handleFollowToggle = async (event: MouseEvent) => {
   event.stopPropagation()
   if (currentProfile.value) {
-    if (relationshipStatus.value?.is_followed_by_request_user) {
-      profileStore.unfollowUser(currentProfile.value.user.username)
-    } else {
-      profileStore.followUser(currentProfile.value.user.username)
+    try {
+      if (relationshipStatus.value?.is_followed_by_request_user) {
+        // We don't need manual isLoading toggle here because
+        // unfollowUser in your store likely handles it.
+        await profileStore.unfollowUser(currentProfile.value.user.username)
+      } else {
+        await profileStore.followUser(currentProfile.value.user.username)
+
+        // THE SYNC: Remove the "User X followed you" notification instantly
+        const profileId = currentProfile.value.user.id
+        notificationStore.forceSyncConnection(profileId)
+      }
+    } catch (error) {
+      console.error('Follow toggle failed:', error)
     }
   }
 }
@@ -371,13 +444,7 @@ onUnmounted(() => {
         <div
           :class="[
             'relative p-2 rounded-full mb-1 border-2 transition-all duration-300',
-            relationshipStatus.is_followed_by_request_user
-              ? isHovering.follow
-                ? 'bg-gradient-to-br from-rose-100 to-pink-100 border-rose-300/80 shadow-sm shadow-rose-200/50 scale-105'
-                : 'bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200/60 shadow-sm'
-              : isHovering.follow
-                ? 'bg-gradient-to-br from-purple-100 to-violet-100 border-purple-300/80 shadow-sm shadow-purple-200/50 scale-105'
-                : 'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200/60 shadow-sm',
+            followButtonClasses.ring,
           ]"
         >
           <component
@@ -385,25 +452,17 @@ onUnmounted(() => {
             :class="[
               'w-5 h-5 transition-transform duration-300',
               isLoadingFollow ? 'animate-spin' : '',
-              relationshipStatus.is_followed_by_request_user
-                ? isHovering.follow
-                  ? 'text-rose-600 scale-110'
-                  : 'text-rose-500'
-                : isHovering.follow
-                  ? 'text-purple-600 scale-110'
-                  : 'text-purple-500',
+              followButtonClasses.icon,
             ]"
           />
         </div>
         <span
           :class="[
-            'text-xs font-semibold transition-all duration-300 mt-1',
-            relationshipStatus.is_followed_by_request_user
-              ? 'bg-gradient-to-r from-rose-600 to-pink-500 bg-clip-text text-transparent'
-              : 'bg-gradient-to-r from-purple-600 to-violet-500 bg-clip-text text-transparent',
+            'text-[10px] font-bold uppercase tracking-tight transition-all duration-300 mt-1',
+            followButtonClasses.text,
           ]"
         >
-          {{ relationshipStatus.is_followed_by_request_user ? 'Following' : 'Follow' }}
+          {{ followButtonLabel }}
         </span>
       </button>
     </div>

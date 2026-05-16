@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useNetworkStore } from '@/stores/network'
 import { useProfileStore } from '@/stores/profile'
+import { useNotificationStore } from '@/stores/notification'
 import { storeToRefs } from 'pinia'
 import type { NetworkUser } from '@/types'
 import { ArrowPathIcon } from '@heroicons/vue/24/outline'
@@ -13,10 +14,12 @@ import defaultAvatar from '@/assets/images/default-avatar.svg'
 // 1. Setup Stores
 const networkStore = useNetworkStore()
 const profileStore = useProfileStore()
+const notificationStore = useNotificationStore()
 const { discoverResults, isLoading } = storeToRefs(networkStore)
 
 // 2. Local State for "Pending" status (Optimistic UI)
 const pendingRequests = ref<Set<number>>(new Set())
+const successfulConnections = ref<Set<number>>(new Set())
 
 // 3. Fetch discovery data
 const handleRefresh = () => {
@@ -26,15 +29,15 @@ const handleRefresh = () => {
 onMounted(() => {
   networkStore.fetchDiscover()
 
-  // SMART SYNC: Listen for connections made on the Alerts/Notifications page
+  // SMART SYNC: Listen for connections made anywhere else in the app
   eventBus.on('connection-established', (userId: number) => {
-    // Check if the newly connected user is actually visible in this sidebar right now
-    const isUserVisible = suggestionCategory.value?.users.some((u) => u.id === userId)
+    // 1. Instantly clean this user out of the Store's memory (All buckets)
+    networkStore.forceSyncConnection(userId)
 
-    // Only hit the server if we actually need to remove them from the list
-    if (isUserVisible) {
-      handleRefresh()
-    }
+    // 2. Instantly clean this user out of the Notification Bar (if active)
+    notificationStore.forceSyncConnection(userId)
+
+    console.log('🔄 Widget: Local memory scrubbed for User ID:', userId)
   })
 })
 
@@ -80,21 +83,40 @@ function getCategoryTitle(key: string): string {
   }
 }
 
-// 5. "Connect" button logic
 async function handleConnect(user: NetworkUser) {
-  if (pendingRequests.value.has(user.id)) return
+  if (pendingRequests.value.has(user.id) || successfulConnections.value.has(user.id)) return
+
   pendingRequests.value.add(user.id)
+
   try {
-    // Now 'response' will contain the data returned from the store
     const response = await profileStore.sendConnectRequestById(user.id)
 
-    // If the backend says 'connected' (Smart Resolve), refresh to remove them from suggestions
+    // IF SUCCESSFUL CONNECTION (Follow-back or Smart Resolve)
     if (response && response.status === 'connected') {
-      eventBus.emit('connection-established', user.id)
-      handleRefresh()
+      // 1. Switch from 'Pending' to 'Success' state
+      pendingRequests.value.delete(user.id)
+      successfulConnections.value.add(user.id)
+
+      // 2. DELAYED CLEANUP: Wait 1.5 seconds so user sees "Connected"
+      setTimeout(() => {
+        // Sync Notification Bar instantly
+        notificationStore.forceSyncConnection(user.id)
+
+        // Remove from Sidebar list
+        networkStore.forceSyncConnection(user.id)
+
+        // Remove from local feedback tracker
+        successfulConnections.value.delete(user.id)
+
+        eventBus.emit('connection-established', user.id)
+      }, 1500)
+    } else {
+      // If it was just a standard request sent (not a mutual connection yet)
+      // Keep it in pendingRequests so the button stays "Pending"
     }
   } catch (error) {
     pendingRequests.value.delete(user.id)
+    console.error('Connection failed:', error)
   }
 }
 </script>
@@ -170,23 +192,35 @@ async function handleConnect(user: NetworkUser) {
             </div>
           </RouterLink>
 
-          <!-- Dynamic Connect Button -->
+          <!-- Dynamic Connect/Follow Back Button -->
           <button
             @click="handleConnect(user)"
-            :disabled="pendingRequests.has(user.id)"
-            class="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm"
+            :disabled="pendingRequests.has(user.id) || successfulConnections.has(user.id)"
+            class="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm border"
             :class="[
-              pendingRequests.has(user.id)
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : user.connection_status === 'pending_received'
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-blue-50 text-blue-600 hover:bg-blue-100',
+              // 1. Success State (Green)
+              successfulConnections.has(user.id)
+                ? 'bg-green-600 text-white border-green-700'
+                : // 2. Loading/Pending State (Gray)
+                  pendingRequests.has(user.id)
+                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                  : // 3. Follow Back State (Emerald)
+                    user.connection_status === 'follows_you'
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
+                    : // 4. Accept State (Green)
+                      user.connection_status === 'pending_received'
+                      ? 'bg-green-600 text-white border-green-700 hover:bg-green-700'
+                      : // 5. Default Connect State (Blue)
+                        'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100',
             ]"
           >
-            <span v-if="pendingRequests.has(user.id)">
+            <!-- Label Logic -->
+            <span v-if="successfulConnections.has(user.id)">Connected ✓</span>
+            <span v-else-if="pendingRequests.has(user.id)">
               {{ user.connection_status === 'pending_received' ? 'Accepting...' : 'Pending' }}
             </span>
             <span v-else-if="user.connection_status === 'pending_received'">Accept</span>
+            <span v-else-if="user.connection_status === 'follows_you'">Follow Back</span>
             <span v-else>Connect</span>
           </button>
         </li>

@@ -7,10 +7,10 @@ import { getAvatarUrl } from '@/utils/avatars'
 
 // 1. Setup the store we created yesterday
 const networkStore = useNetworkStore()
-const { followers, following, connections, isLoading, error } = storeToRefs(networkStore)
+const { followers, following, connections, pending, isLoading, error } = storeToRefs(networkStore)
 
-// 2. State for Tabs and Search
-const activeTab = ref<'connections' | 'followers' | 'following'>('connections')
+// 2. State for Tabs and Search (Added 'pending')
+const activeTab = ref<'connections' | 'followers' | 'following' | 'pending'>('connections')
 const searchQuery = ref('')
 
 // 3. Fetch data whenever the tab changes
@@ -18,6 +18,7 @@ const fetchData = async () => {
   if (activeTab.value === 'connections') await networkStore.fetchConnections()
   else if (activeTab.value === 'followers') await networkStore.fetchFollowers()
   else if (activeTab.value === 'following') await networkStore.fetchFollowing()
+  else if (activeTab.value === 'pending') await networkStore.fetchPending()
 }
 
 // Watch for tab changes and fetch immediately on load
@@ -30,7 +31,9 @@ const filteredList = computed(() => {
       ? connections.value
       : activeTab.value === 'followers'
         ? followers.value
-        : following.value
+        : activeTab.value === 'following'
+          ? following.value
+          : pending.value
 
   if (!searchQuery.value) return list
 
@@ -76,7 +79,7 @@ const filteredList = computed(() => {
         <!-- Tab Buttons -->
         <div class="flex gap-2 mt-6 p-1 bg-gray-100/50 rounded-xl w-fit">
           <button
-            v-for="tab in ['connections', 'followers', 'following'] as const"
+            v-for="tab in ['connections', 'followers', 'following', 'pending'] as const"
             :key="tab"
             @click="activeTab = tab"
             :class="[

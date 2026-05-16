@@ -89,6 +89,11 @@ urlpatterns = [
         name="network-connections",
     ),
     path(
+        "network/pending/",
+        views.NetworkPendingView.as_view(),
+        name="network-pending",
+    ),
+    path(
         "network/discover/",
         views.NetworkDiscoverView.as_view(),
         name="network-discover",

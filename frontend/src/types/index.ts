@@ -20,7 +20,7 @@ export interface NetworkUser {
   name: string // This is our smart field (Display Name > Full Name > Username)
   headline: string | null
   picture: string | null
-  connection_status: 'none' | 'pending_sent' | 'pending_received' | 'connected'
+  connection_status: 'none' | 'pending_sent' | 'pending_received' | 'connected' | 'follows_you'
 }
 
 export interface DiscoveryResponse {
@@ -97,6 +97,7 @@ export interface UserProfile {
   relationship_status: {
     connection_status: 'not_connected' | 'request_sent' | 'request_received' | 'connected' | 'self'
     is_followed_by_request_user: boolean
+    is_following_viewer: boolean
   } | null
   skill_categories: SkillCategory[]
   education: EducationEntry[]

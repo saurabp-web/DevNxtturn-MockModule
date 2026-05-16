@@ -197,6 +197,16 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 50
 
 
+class NetworkResultsPagination(PageNumberPagination):
+    """
+    Specific pagination for the Network Hub to show more users at once.
+    """
+
+    page_size = 50  # Increased from 10 to 50
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 # NEW: CursorPagination for dynamic feeds (Main Feed, Group Feeds)
 class PostCursorPagination(CursorPagination):
     page_size = 10
@@ -1842,16 +1852,13 @@ def password_reset_redirect_view(request, uidb64, token):
 
 
 class NetworkFollowersView(generics.ListAPIView):
-    """
-    List of users who are FOLLOWING the current user.
-    """
+    """Inclusive: List of users who are FOLLOWING the current user."""
 
     serializer_class = NetworkUserSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = StandardResultsSetPagination
+    pagination_class = NetworkResultsPagination  # Updated
 
     def get_queryset(self):
-        # People whose 'following' (people they follow) includes the current user
         return (
             User.objects.filter(following__following=self.request.user)
             .select_related("profile")
@@ -1860,16 +1867,13 @@ class NetworkFollowersView(generics.ListAPIView):
 
 
 class NetworkFollowingView(generics.ListAPIView):
-    """
-    List of users the current user is FOLLOWING.
-    """
+    """Inclusive: List of users the current user is FOLLOWING."""
 
     serializer_class = NetworkUserSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = StandardResultsSetPagination
+    pagination_class = NetworkResultsPagination  # Updated
 
     def get_queryset(self):
-        # People whose 'followers' (people following them) includes the current user
         return (
             User.objects.filter(followers__follower=self.request.user)
             .select_related("profile")
@@ -1878,23 +1882,59 @@ class NetworkFollowingView(generics.ListAPIView):
 
 
 class NetworkConnectionsView(generics.ListAPIView):
+    """Mutual Connections Only."""
+
+    serializer_class = NetworkUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = NetworkResultsPagination  # Updated
+
+    def get_queryset(self):
+        user = self.request.user
+        my_following_ids = Follow.objects.filter(follower=user).values_list(
+            "following_id", flat=True
+        )
+        return (
+            User.objects.filter(following__following=user, id__in=my_following_ids)
+            .select_related("profile")
+            .distinct()
+        )
+
+
+class NetworkPendingView(generics.ListAPIView):
     """
-    List of Mutual Connections (I follow them AND they follow me).
+    EXCLUSIVE: Users with pending requests who are NOT yet connections.
+    This fixes the '@ivinay' ghost bug.
     """
 
     serializer_class = NetworkUserSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = StandardResultsSetPagination
+    pagination_class = NetworkResultsPagination  # Updated
 
     def get_queryset(self):
         user = self.request.user
-        # 1. Get IDs of people I follow
+
+        # 1. Get IDs of current Mutual Connections
         my_following_ids = Follow.objects.filter(follower=user).values_list(
             "following_id", flat=True
         )
-        # 2. Get people who follow me AND are in that list
+        connection_ids = User.objects.filter(
+            following__following=user, id__in=my_following_ids
+        ).values_list("id", flat=True)
+
+        # 2. Get IDs from pending requests
+        incoming = ConnectionRequest.objects.filter(
+            receiver=user, status="pending"
+        ).values_list("sender_id", flat=True)
+        outgoing = ConnectionRequest.objects.filter(
+            sender=user, status="pending"
+        ).values_list("receiver_id", flat=True)
+        pending_ids = set(list(incoming) + list(outgoing))
+
+        # 3. THE FIX: Filter the user list
+        # We show them if they are in 'pending_ids' BUT NOT in 'connection_ids'
         return (
-            User.objects.filter(following__following=user, id__in=my_following_ids)
+            User.objects.filter(id__in=pending_ids)
+            .exclude(id__in=connection_ids)
             .select_related("profile")
             .distinct()
         )

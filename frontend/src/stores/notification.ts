@@ -184,14 +184,17 @@ export const useNotificationStore = defineStore('notification', () => {
   function forceSyncConnection(userId: any) {
     const targetId = Number(userId)
 
-    // UI SCRUB: Remove the 'connection_request' row for this user instantly
+    // UI SCRUB: Remove both 'connection_request' AND 'follow' rows for this user
+    // because once you connect on the profile, these alerts are no longer needed.
     notifications.value = notifications.value.filter((n) => {
       const isMatch = Number(n.actor.id) === targetId
-      const isRequest = n.notification_type === 'connection_request'
-      return !(isMatch && isRequest)
+      // We check for both types now
+      const isStaleType = ['connection_request', 'follow'].includes(n.notification_type)
+
+      return !(isMatch && isStaleType)
     })
 
-    console.log('⚡ STORE: Scrubbed old request for User ID:', targetId)
+    console.log('⚡ STORE: Scrubbed stale relationship notifications for User ID:', targetId)
   }
 
   function removeNotificationById(notificationId: number) {

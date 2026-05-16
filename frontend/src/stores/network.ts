@@ -11,6 +11,7 @@ export const useNetworkStore = defineStore('network', () => {
   const discoverResults = ref<DiscoveryResponse | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const pending = ref<NetworkUser[]>([])
 
   // --- ACTIONS ---
 
@@ -55,6 +56,20 @@ export const useNetworkStore = defineStore('network', () => {
       connections.value = response.data.results
     } catch (err: any) {
       error.value = 'Failed to load connections'
+      console.error(err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function fetchPending() {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await axiosInstance.get('/network/pending/')
+      pending.value = response.data.results
+    } catch (err: any) {
+      error.value = 'Failed to load pending requests'
       console.error(err)
     } finally {
       isLoading.value = false
@@ -114,6 +129,7 @@ export const useNetworkStore = defineStore('network', () => {
     followers,
     following,
     connections,
+    pending,
     discoverResults,
     isLoading,
     error,
@@ -121,6 +137,7 @@ export const useNetworkStore = defineStore('network', () => {
     fetchFollowers,
     fetchFollowing,
     fetchConnections,
+    fetchPending,
     fetchDiscover,
     reset,
     forceSyncConnection,
