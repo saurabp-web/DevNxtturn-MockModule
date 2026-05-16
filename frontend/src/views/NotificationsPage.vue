@@ -61,8 +61,6 @@ const markOneAsRead = async (notificationId: number) => {
 const toast = useToast()
 
 const handleConnectionAction = async (notification: Notification, action: 'accept' | 'reject') => {
-  // 1. We need the ID of the connection request.
-  // Based on your backend, this is stored in action_object.id
   const requestId = notification.action_object?.id
   if (!requestId) {
     toast.error('Could not find request ID.')
@@ -70,33 +68,43 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
   }
 
   try {
-    // 2. Call your Django API
+    // 1. Tell the backend to process the choice
     await axiosInstance.post(`/connections/requests/${requestId}/${action}/`)
 
     if (action === 'accept') {
+      // Logic for Accept: Update state and shout to other components
       notification.is_following_back = true
       eventBus.emit('connection-established', notification.actor.id)
+
+      // Note: We don't manually remove the notification for 'Accept' here
+      // because our Backend Signal will automatically replace this row
+      // with a permanent "You are now connected" record on refresh.
     } else {
-      // THIS IS NEW: If we decline, set this flag to true
+      // --- THE SYNC FIX FOR DECLINE ---
+      // 2. Visual Feedback: Show "Request declined" immediately
       notification.is_declined = true
+
+      // 3. Professional Delay: Wait 1.5 seconds so user can read the confirmation
+      setTimeout(() => {
+        // 4. Scrub the memory: Removes the row and updates the unread count
+        notificationStore.removeNotificationById(notification.id)
+      }, 1500)
     }
 
-    // 3. Mark the notification as read in DB and update local state
-    await markOneAsRead(notification.id)
-    notification.is_read = true
-
-    // 4. [NEW] Decrease the unread count in the store immediately
-    // This ensures the red bubble on the Bell Icon updates instantly
-    if (notificationStore.unreadCount > 0) {
-      notificationStore.unreadCount--
+    // 5. Mark as read immediately (User interacted with it, so it's no longer 'new')
+    if (!notification.is_read) {
+      notification.is_read = true
+      if (notificationStore.unreadCount > 0) {
+        notificationStore.unreadCount--
+      }
+      // This tells the backend the notification was seen
+      await notificationStore.markNotificationsAsRead([notification.id])
     }
-
-    // 5. Show success message
-    const msg = action === 'accept' ? 'Connection established!' : 'Request declined.'
-    // toast.success(msg)
   } catch (error) {
     console.error(`Failed to ${action} connection:`, error)
     toast.error(`Error processing ${action}.`)
+    // Reset state on error so buttons reappear
+    notification.is_declined = false
   }
 }
 

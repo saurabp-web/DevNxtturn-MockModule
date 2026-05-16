@@ -843,6 +843,37 @@ class CancelConnectionRequestView(APIView):
         )
 
 
+class RejectConnectionRequestView(APIView):
+    """
+    Allows a user to decline/reject a request sent to them by a specific username.
+    Used for UI components (like the Network Hub) that use usernames instead of IDs.
+    """
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request, username, format=None):
+        # 1. The sender is the 'username' from the URL
+        sender = get_object_or_404(User, username__iexact=username)
+        # 2. The receiver is the person clicking 'Decline' (you)
+        receiver = request.user
+
+        # 3. Find the specific pending request
+        connection_request = get_object_or_404(
+            ConnectionRequest, sender=sender, receiver=receiver, status="pending"
+        )
+
+        with transaction.atomic():
+            # 4. Set to rejected
+            connection_request.status = "rejected"
+            # This .save() triggers our Scenario C signal to wipe the notification bar row
+            connection_request.save()
+
+        return Response(
+            {"status": "Connection request rejected."}, status=status.HTTP_200_OK
+        )
+
+
 # ==================================
 # Search Views
 # ==================================

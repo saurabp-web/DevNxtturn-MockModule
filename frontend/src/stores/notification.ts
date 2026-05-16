@@ -184,13 +184,19 @@ export const useNotificationStore = defineStore('notification', () => {
   function forceSyncConnection(userId: any) {
     const targetId = Number(userId)
 
-    // UI SCRUB: Remove both 'connection_request' AND 'follow' rows for this user
-    // because once you connect on the profile, these alerts are no longer needed.
+    // 1. Check if the user has an UNREAD notification in memory before we scrub it
+    const hasUnread = notifications.value.some((n) => Number(n.actor.id) === targetId && !n.is_read)
+
+    // 2. If an unread notification was found, decrease the global bubble count
+    if (hasUnread && unreadCount.value > 0) {
+      unreadCount.value--
+      console.log('📉 STORE: Decreased unread count via manual sync')
+    }
+
+    // 3. Keep the original scrubbing logic to remove the rows
     notifications.value = notifications.value.filter((n) => {
       const isMatch = Number(n.actor.id) === targetId
-      // We check for both types now
       const isStaleType = ['connection_request', 'follow'].includes(n.notification_type)
-
       return !(isMatch && isStaleType)
     })
 
@@ -198,16 +204,23 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   function removeNotificationById(notificationId: number) {
-    // 1. Check if the notification exists and is unread before we delete it
+    // 1. Find the specific notification in memory
     const target = notifications.value.find((n) => n.id === notificationId)
-    if (target && !target.is_read && unreadCount.value > 0) {
-      unreadCount.value-- // Decrease the red bubble count
+    if (!target) return
+
+    // 2. THE SAFETY NET: If the user just clicked a button, they are seeing
+    // local feedback (is_declined or is_following_back).
+    // We skip the immediate removal so they have time to read it.
+    if (target.is_declined || target.is_following_back) {
+      console.log('⏳ STORE: Preservation mode active. Skipping real-time wipe to show feedback.')
+      return
     }
 
-    // 2. Remove the notification from the list in memory
+    // 3. Otherwise, perform the normal real-time removal
+    if (!target.is_read && unreadCount.value > 0) {
+      unreadCount.value--
+    }
     notifications.value = notifications.value.filter((n) => n.id !== notificationId)
-
-    console.log('🗑️ STORE: Notification removed from UI memory:', notificationId)
   }
 
   return {

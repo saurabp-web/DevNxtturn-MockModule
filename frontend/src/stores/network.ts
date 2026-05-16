@@ -13,17 +13,35 @@ export const useNetworkStore = defineStore('network', () => {
   const error = ref<string | null>(null)
   const pending = ref<NetworkUser[]>([])
 
-  // --- ACTIONS ---
+  const nextUrls = ref({
+    followers: null as string | null,
+    following: null as string | null,
+    connections: null as string | null,
+    pending: null as string | null,
+  })
 
   // --- ACTIONS (Corrected Paths) ---
 
-  async function fetchFollowers() {
+  async function fetchFollowers(url: string | null = null) {
     isLoading.value = true
     error.value = null
+
+    // 1. Use the provided URL (for page 2, 3...) or the default (for page 1)
+    const apiUrl = url || '/network/followers/'
+
     try {
-      // Corrected: Removed /api/community prefix
-      const response = await axiosInstance.get('/network/followers/')
-      followers.value = response.data.results
+      const response = await axiosInstance.get(apiUrl)
+
+      if (url) {
+        // 2. APPEND: If we are loading a next page, add new results to the bottom
+        followers.value = [...followers.value, ...response.data.results]
+      } else {
+        // 3. REFRESH: If no URL is provided, start the list fresh
+        followers.value = response.data.results
+      }
+
+      // 4. Save the 'next' URL from the server so we know where the next page is
+      nextUrls.value.followers = response.data.next
     } catch (err: any) {
       error.value = 'Failed to load followers'
       console.error(err)
@@ -32,13 +50,21 @@ export const useNetworkStore = defineStore('network', () => {
     }
   }
 
-  async function fetchFollowing() {
+  async function fetchFollowing(url: string | null = null) {
     isLoading.value = true
     error.value = null
+    const apiUrl = url || '/network/following/'
     try {
-      // Corrected: Removed /api/community prefix
-      const response = await axiosInstance.get('/network/following/')
-      following.value = response.data.results
+      const response = await axiosInstance.get(apiUrl)
+      if (url) {
+        // APPEND to existing list
+        following.value = [...following.value, ...response.data.results]
+      } else {
+        // FRESH LOAD
+        following.value = response.data.results
+      }
+      // Store the pointer for the next page of Following
+      nextUrls.value.following = response.data.next
     } catch (err: any) {
       error.value = 'Failed to load following list'
       console.error(err)
@@ -47,13 +73,19 @@ export const useNetworkStore = defineStore('network', () => {
     }
   }
 
-  async function fetchConnections() {
+  async function fetchConnections(url: string | null = null) {
     isLoading.value = true
     error.value = null
+    const apiUrl = url || '/network/connections/'
     try {
-      // Corrected: Removed /api/community prefix
-      const response = await axiosInstance.get('/network/connections/')
-      connections.value = response.data.results
+      const response = await axiosInstance.get(apiUrl)
+      if (url) {
+        connections.value = [...connections.value, ...response.data.results]
+      } else {
+        connections.value = response.data.results
+      }
+      // Store the pointer for the next page of Connections
+      nextUrls.value.connections = response.data.next
     } catch (err: any) {
       error.value = 'Failed to load connections'
       console.error(err)
@@ -62,12 +94,19 @@ export const useNetworkStore = defineStore('network', () => {
     }
   }
 
-  async function fetchPending() {
+  async function fetchPending(url: string | null = null) {
     isLoading.value = true
     error.value = null
+    const apiUrl = url || '/network/pending/'
     try {
-      const response = await axiosInstance.get('/network/pending/')
-      pending.value = response.data.results
+      const response = await axiosInstance.get(apiUrl)
+      if (url) {
+        pending.value = [...pending.value, ...response.data.results]
+      } else {
+        pending.value = response.data.results
+      }
+      // Store the pointer for the next page of Pending Requests
+      nextUrls.value.pending = response.data.next
     } catch (err: any) {
       error.value = 'Failed to load pending requests'
       console.error(err)
@@ -122,6 +161,14 @@ export const useNetworkStore = defineStore('network', () => {
     discoverResults.value = null
     error.value = null
     isLoading.value = false
+
+    // Reset pagination URLs ---
+    nextUrls.value = {
+      followers: null,
+      following: null,
+      connections: null,
+      pending: null,
+    }
   }
 
   return {
@@ -130,6 +177,7 @@ export const useNetworkStore = defineStore('network', () => {
     following,
     connections,
     pending,
+    nextUrls,
     discoverResults,
     isLoading,
     error,

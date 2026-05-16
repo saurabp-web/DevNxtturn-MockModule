@@ -224,6 +224,19 @@ export const useProfileStore = defineStore('profile', () => {
     }
   }
 
+  async function rejectConnectRequest(username: string) {
+    try {
+      // Hits the new endpoint: /api/users/<username>/reject-request/
+      await axiosInstance.post(`/users/${username}/reject-request/`)
+
+      // Refresh local state so buttons update to "Connect"
+      await fetchProfile(username)
+    } catch (error: any) {
+      console.error('Failed to reject connection request:', error)
+      alert(error.response?.data?.detail || 'Could not reject request.')
+    }
+  }
+
   async function updateProfile(username: string, payload: ProfileUpdatePayload) {
     try {
       await axiosInstance.patch<UserProfile>(`/profiles/${username}/`, payload)
@@ -461,6 +474,7 @@ export const useProfileStore = defineStore('profile', () => {
     sendConnectRequest,
     acceptConnectRequest,
     cancelConnectRequest,
+    rejectConnectRequest,
     addEducation,
     updateEducation,
     deleteEducation,
