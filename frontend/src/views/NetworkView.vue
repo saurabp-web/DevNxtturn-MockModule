@@ -9,6 +9,8 @@ import { Users, UserPlus, UserCheck, Search, MessageSquare, UserCircle } from 'l
 import { getAvatarUrl } from '@/utils/avatars'
 import eventBus from '@/services/eventBus'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import { onMounted } from 'vue' // Ensure onMounted is imported from 'vue'
+import { useRoute } from 'vue-router'
 import { XMarkIcon } from '@heroicons/vue/24/solid' // Ensure this is also here for your Decline feedback
 
 // 1. Setup the store we created yesterday
@@ -17,6 +19,7 @@ const profileStore = useProfileStore()
 const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
 const { followers, following, connections, pending, isLoading, error } = storeToRefs(networkStore)
+const route = useRoute()
 
 // 2. State for Tabs and Search (Added 'pending')
 const activeTab = ref<'connections' | 'followers' | 'following' | 'pending'>('connections')
@@ -186,6 +189,21 @@ const handleMessage = (user: any) => {
   console.log('Opening chat with:', user.username)
   // Example: router.push({ name: 'messages', query: { user: user.username }})
 }
+
+// --- DEEP LINKING LOGIC ---
+onMounted(() => {
+  // 1. Get the 'tab' from the URL: /network?tab=followers
+  const requestedTab = route.query.tab as string
+
+  // 2. Define our allowed tabs
+  const validTabs = ['connections', 'followers', 'following', 'pending']
+
+  // 3. If the URL says a specific tab, switch to it immediately
+  if (requestedTab && validTabs.includes(requestedTab)) {
+    activeTab.value = requestedTab as any
+    console.log('🔗 Deep Link: Switching to tab:', requestedTab)
+  }
+})
 </script>
 
 <template>

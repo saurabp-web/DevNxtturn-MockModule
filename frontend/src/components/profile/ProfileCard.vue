@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onUnmounted, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { getAvatarUrl } from '@/utils/avatars'
 import type { UserProfile } from '@/types'
 import { useProfileStore } from '@/stores/profile'
 import ProfileActions from '@/components/ProfileActions.vue'
+
 import BaseModal from '@/components/common/BaseModal.vue'
 import IdentityForm from '@/components/profile/forms/IdentityForm.vue'
 import { PencilIcon, XMarkIcon, CheckIcon } from '@heroicons/vue/24/solid'
@@ -30,6 +32,13 @@ const emit = defineEmits<{
 }>()
 
 const profileStore = useProfileStore()
+const router = useRouter()
+
+// This function tells the app to go to the network page and open a specific tab
+const navigateToNetworkTab = (tabName: string) => {
+  router.push({ name: 'network', query: { tab: tabName } })
+}
+
 const isModalOpen = ref(false)
 const isPreviewModalOpen = ref(false)
 const isEditProfileModalOpen = ref(false)
@@ -470,49 +479,11 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Social Stats with proper responsive spacing -->
+        <!-- Social Stats reordered for consistency -->
         <div class="mt-2 pt-4 border-t border-gray-100">
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <!-- Followers Card -->
-            <div class="stats-card group">
-              <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
-              >
-                <div
-                  class="stats-gradient bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50"
-                ></div>
-                <div class="relative z-10 flex flex-col items-center justify-center h-full">
-                  <div class="text-sm sm:text-md font-bold text-sky-700 mb-0.5 drop-shadow-sm">
-                    {{ socialStats.followers.toLocaleString() }}
-                  </div>
-                  <div class="text-xs font-medium text-sky-600/80 uppercase tracking-wider">
-                    Followers
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Following Card -->
-            <div class="stats-card group">
-              <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
-              >
-                <div
-                  class="stats-gradient bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50"
-                ></div>
-                <div class="relative z-10 flex flex-col items-center justify-center h-full">
-                  <div class="text-sm sm:text-md font-bold text-emerald-700 mb-0.5 drop-shadow-sm">
-                    {{ socialStats.following.toLocaleString() }}
-                  </div>
-                  <div class="text-xs font-medium text-emerald-600/80 uppercase tracking-wider">
-                    Following
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Connections Card -->
-            <div class="stats-card group">
+            <!-- 1. Connections Card (Moved to First) -->
+            <div class="stats-card group" @click="navigateToNetworkTab('connections')">
               <div
                 class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
               >
@@ -530,7 +501,45 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- Posts Card - Clickable -->
+            <!-- 2. Followers Card (Now Second) -->
+            <div class="stats-card group" @click="navigateToNetworkTab('followers')">
+              <div
+                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
+              >
+                <div
+                  class="stats-gradient bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50"
+                ></div>
+                <div class="relative z-10 flex flex-col items-center justify-center h-full">
+                  <div class="text-sm sm:text-md font-bold text-sky-700 mb-0.5 drop-shadow-sm">
+                    {{ socialStats.followers.toLocaleString() }}
+                  </div>
+                  <div class="text-xs font-medium text-sky-600/80 uppercase tracking-wider">
+                    Followers
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Following Card (Now Third) -->
+            <div class="stats-card group" @click="navigateToNetworkTab('following')">
+              <div
+                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
+              >
+                <div
+                  class="stats-gradient bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50"
+                ></div>
+                <div class="relative z-10 flex flex-col items-center justify-center h-full">
+                  <div class="text-sm sm:text-md font-bold text-emerald-700 mb-0.5 drop-shadow-sm">
+                    {{ socialStats.following.toLocaleString() }}
+                  </div>
+                  <div class="text-xs font-medium text-emerald-600/80 uppercase tracking-wider">
+                    Following
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Posts Card (Stay Last) -->
             <div class="stats-card group" @click="handlePostsClick">
               <div
                 class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300 cursor-pointer"
