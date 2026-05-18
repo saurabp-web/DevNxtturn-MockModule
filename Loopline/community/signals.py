@@ -315,7 +315,7 @@ def create_connection_notification(sender, instance, created, **kwargs):
         )
 
     # SCENARIO B: Request is marked as 'accepted'
-    elif not created and instance.status == "accepted":
+    elif instance.status == "accepted":
         # 1. CLEANUP: Delete 'pending' request notifications in both directions.
         Notification.objects.filter(
             (

@@ -397,19 +397,6 @@ class UserPostListView(generics.ListAPIView):
         return {"request": self.request}
 
 
-# --- FIND AND REPLACE THE ENTIRE FollowToggleView CLASS ---
-
-# C:\Users\Vinay\Project\Loopline\community\views.py
-
-# C:\Users\Vinay\Project\Loopline\community\views.py
-
-# --- FINAL, CORRECTED FollowToggleView ---
-
-# C:\Users\Vinay\Project\Loopline\community\views.py
-
-# --- FINAL, CORRECTED FollowToggleView ---
-
-
 class FollowToggleView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -457,7 +444,7 @@ class FollowToggleView(APIView):
 
             # 3. Handle the Connection logic
             if is_connecting:
-                # Ensure the reciprocal follow exists (SILENTLY)
+                # A. Ensure reciprocal follow exists (SILENTLY via Muzzle)
                 if not Follow.objects.filter(
                     follower=user_to_follow, following=current_user
                 ).exists():
@@ -465,33 +452,42 @@ class FollowToggleView(APIView):
                     follow_b._silent_follow = True
                     follow_b.save()
 
-                # Find any pending connection requests
-                pending_reqs = ConnectionRequest.objects.filter(
+                # B. Update any pending connection requests to 'accepted'
+                ConnectionRequest.objects.filter(
                     (
                         Q(sender=current_user, receiver=user_to_follow)
                         | Q(sender=user_to_follow, receiver=current_user)
                     ),
                     status="pending",
+                ).update(status="accepted")
+
+                # --- THE PRECISION NOTIFICATIONS ---
+
+                # 1. FOR THE WAITER (User 1): This will pop to the top of their list via WebSocket
+                Notification.objects.create(
+                    recipient=user_to_follow,
+                    actor=current_user,
+                    verb="followed you back and established a connection",
+                    notification_type=Notification.CONNECTION_ACCEPTED,
+                    target=current_user,
                 )
 
-                if pending_reqs.exists():
-                    # CASE 1: Formal Request exists. Update it (Signal sends standard "Accepted" alert)
-                    for req in pending_reqs:
-                        req.status = "accepted"
-                        req.save()
-                else:
-                    # CASE 2: Manual Follow-Follow (No formal request)
-                    # Create the custom notification with your exact sentence
-                    Notification.objects.create(
-                        recipient=user_to_follow,  # Original follower
-                        actor=current_user,  # Person following back
-                        verb="followed you back and established a connection",
-                        notification_type=Notification.CONNECTION_ACCEPTED,  # Keep type for green styling
-                        target=current_user,
-                    )
-                    logger.info(
-                        f"DB: Created 'Followed Back' alert for {user_to_follow.username}"
-                    )
+                # 2. FOR THE CLICKER (User 2): This creates the permanent history record
+                Notification.objects.create(
+                    recipient=current_user,
+                    actor=user_to_follow,
+                    verb="you followed back and established a connection",
+                    notification_type=Notification.CONNECTION_ACCEPTED,
+                    target=user_to_follow,
+                )
+
+                # 3. CLEANUP: Delete the old "Started following you" (FOLLOW) alert
+                # This ensures that when the Clicker refreshes later, the old row is gone.
+                Notification.objects.filter(
+                    recipient=current_user,
+                    actor=user_to_follow,
+                    notification_type=Notification.FOLLOW,
+                ).delete()
 
                 return Response({"status": "connected"}, status=status.HTTP_200_OK)
 
@@ -633,23 +629,35 @@ class ConnectionRequestViewSet(
         receiver = serializer.validated_data["receiver"]
         sender = request.user
 
-        # 1. SMART RESOLVE: Check if THEY already sent YOU a request (The "Omi" case)
+        # 1. SMART RESOLVE: Check for an incoming pending request OR a manual follow
         incoming_request = ConnectionRequest.objects.filter(
             sender=receiver, receiver=sender, status="pending"
         ).first()
 
-        if incoming_request:
-            # Instead of throwing a 400 error, we finalize the connection immediately.
-            with transaction.atomic():
-                incoming_request.status = "accepted"
-                incoming_request.save()  # Triggers the 'Accepted' notification (Event 700)
+        # Check if the other person already follows you manually
+        already_follows_you = Follow.objects.filter(
+            follower=receiver, following=sender
+        ).exists()
 
-                # Establish mutual follows (SILENTLY)
-                # This ensures the Network Hub stays in sync without sending extra toasts
+        if incoming_request or already_follows_you:
+            # Instead of a new request, we finalize the connection immediately.
+            with transaction.atomic():
+                if incoming_request:
+                    incoming_request.status = "accepted"
+                    incoming_request.save()  # Triggers the 'Accepted' notification
+                else:
+                    # Create a formal accepted record so history/logic stays in sync
+                    ConnectionRequest.objects.update_or_create(
+                        sender=receiver,
+                        receiver=sender,
+                        defaults={"status": "accepted"},
+                    )
+
+                # Establish mutual follows (SILENTLY using the Muzzle)
                 for f, r in [(sender, receiver), (receiver, sender)]:
                     if not Follow.objects.filter(follower=f, following=r).exists():
                         fol = Follow(follower=f, following=r)
-                        fol._silent_follow = True  # <--- THE MUZZLE
+                        fol._silent_follow = True
                         fol.save()
 
             return Response(

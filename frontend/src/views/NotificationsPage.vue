@@ -72,21 +72,33 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
     await axiosInstance.post(`/connections/requests/${requestId}/${action}/`)
 
     if (action === 'accept') {
-      // Logic for Accept: Update state and shout to other components
+      // --- THE FIX: SYNC UNREAD STATE ---
+      // If the notification is unread, mark it read locally and in the database
+      if (!notification.is_read) {
+        notification.is_read = true
+
+        // Decrement the bubble count on the bell icon instantly
+        if (notificationStore.unreadCount > 0) {
+          notificationStore.unreadCount--
+        }
+
+        // Tell the backend to mark it read so it doesn't come back on refresh
+        notificationStore.markNotificationsAsRead([notification.id])
+      }
+
+      // Existing logic to show connected state
       notification.is_following_back = true
       eventBus.emit('connection-established', notification.actor.id)
-
-      // Note: We don't manually remove the notification for 'Accept' here
-      // because our Backend Signal will automatically replace this row
-      // with a permanent "You are now connected" record on refresh.
     } else {
       // --- THE SYNC FIX FOR DECLINE ---
-      // 2. Visual Feedback: Show "Request declined" immediately
       notification.is_declined = true
 
-      // 3. Professional Delay: Wait 1.5 seconds so user can read the confirmation
+      // NEW: Tell the database this is handled so the count stays synced on refresh
+      if (!notification.is_read) {
+        notificationStore.markNotificationsAsRead([notification.id])
+      }
+
       setTimeout(() => {
-        // 4. Scrub the memory: Removes the row and updates the unread count
         notificationStore.removeNotificationById(notification.id)
       }, 1500)
     }
