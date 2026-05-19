@@ -72,10 +72,21 @@ export function getAvatarUrl(
   pictureUrl: string | null | undefined,
   firstName: string | null | undefined,
   lastName: string | null | undefined,
+  colorSeed?: string | null,
 ): string {
   // 1. Use custom photo if it exists (handles both Cloud GCS and Local Media)
   if (pictureUrl) {
-    if (pictureUrl.startsWith('http')) return pictureUrl
+    if (pictureUrl.startsWith('http')) {
+      try {
+        const parsed = new URL(pictureUrl)
+        if (parsed.hostname === 'backend') {
+          return `${parsed.pathname}${parsed.search}${parsed.hash}`
+        }
+      } catch {
+        // Fall through and return the original URL if parsing fails.
+      }
+      return pictureUrl
+    }
     return `${API_URL_BASE}${pictureUrl}`
   }
 
@@ -84,10 +95,11 @@ export function getAvatarUrl(
   const lName = lastName || ''
   const initials = `${fName?.[0] || ''}${lName?.[0] || ''}`
   const fullName = `${fName} ${lName}`.trim()
+  const colorKey = (colorSeed || fullName || `${fName}${lName}` || 'User').trim()
 
   if (initials) {
     // We pass fullName to ensures "abc" and "aab" get different colors
-    return createInitialsAvatar(initials.substring(0, 2), fullName)
+    return createInitialsAvatar(initials.substring(0, 2), colorKey)
   }
 
   // 3. Absolute Fallback
@@ -99,6 +111,16 @@ export function getAvatarUrl(
  */
 export function buildMediaUrl(url: string | null | undefined): string {
   if (!url) return ''
-  if (url.startsWith('http')) return url
+  if (url.startsWith('http')) {
+    try {
+      const parsed = new URL(url)
+      if (parsed.hostname === 'backend') {
+        return `${parsed.pathname}${parsed.search}${parsed.hash}`
+      }
+    } catch {
+      // Fall through and return the original URL if parsing fails.
+    }
+    return url
+  }
   return `${API_URL_BASE}${url}`
 }

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "community.apps.CommunityConfig",
     "allauth.socialaccount.providers.google",
+    "messaging.apps.MessagingConfig",
 ]
 # Only add e2e_test_utils if we're NOT in production
 # This physically removes test apps from production builds

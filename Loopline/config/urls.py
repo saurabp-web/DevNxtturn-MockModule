@@ -35,6 +35,7 @@ urlpatterns = [
         name="password_reset_confirm",
     ),
     path("api/", include("community.urls", namespace="community")),
+    path("api/messaging/", include("messaging.urls")),
 ]
 
 # The rest of your file remains unchanged

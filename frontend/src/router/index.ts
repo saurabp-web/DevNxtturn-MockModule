@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import CommunityLayout from '@/layouts/CommunityLayout.vue'
+import MessagingLayout from '@/layouts/MessagingLayout.vue'
 import ProfileLayout from '@/layouts/ProfileLayout.vue'
 import ExploreLayout from '@/layouts/ExploreLayout.vue'
 
@@ -73,6 +74,22 @@ const router = createRouter({
       children: [
         { path: ':username', name: 'profile', component: () => import('@/views/ProfileView.vue') },
       ],
+    },
+    {
+      path: '/messages',
+      component: MessagingLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'messages',
+          component: () => import('@/views/MessagingViews.vue'),
+        },
+      ],
+    },
+    {
+      path: '/chat',
+      redirect: { name: 'messages' },
     },
     // --- ROUTE GROUP 3: Uses the Explore Layout ---
     {

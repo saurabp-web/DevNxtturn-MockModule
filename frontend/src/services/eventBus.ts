@@ -12,6 +12,7 @@ type Events = {
   'scroll-groups-to-top': void
   'trigger-profile-edit': string
   'connection-established': number
+  'messaging-read-updated': void
 }
 
 const emitter = mitt<Events>()

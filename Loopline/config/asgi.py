@@ -15,6 +15,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from community.middleware import TokenAuthMiddleware
 
 import community.routing
+import messaging.routing
 
 application = ProtocolTypeRouter({
     # Standard HTTP requests are still handled by the Django app.
@@ -24,6 +25,7 @@ application = ProtocolTypeRouter({
     "websocket": TokenAuthMiddleware(
         URLRouter(
             community.routing.websocket_urlpatterns
+            + messaging.routing.websocket_urlpatterns
         )
     ),
 })

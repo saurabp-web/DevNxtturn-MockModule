@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, watch, ref, computed } from 'vue'
 import { useRouter, RouterLink, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
+import axiosInstance from '@/services/axiosInstance'
 import { storeToRefs } from 'pinia'
 import { debounce } from 'lodash-es'
 import { getAvatarUrl } from '@/utils/avatars'
@@ -122,6 +123,7 @@ const { groupSearchResults: groupResults, isLoadingGroupSearch } = storeToRefs(g
 const searchQuery = ref('')
 const showSearchDropdown = ref(false)
 const searchContainerRef = ref<HTMLDivElement | null>(null)
+const unreadMessageCount = ref(0)
 
 // --- State for the new Profile Dropdown ---
 const isProfileMenuOpen = ref(false)
@@ -140,6 +142,7 @@ const mobileSearchInputRef = ref<HTMLInputElement | null>(null)
 // --- Notification bell animation state ---
 const isBellRinging = ref(false)
 let bellInterval: number | null = null
+let messageUnreadPollTimer: number | null = null
 
 // Check if we're on the current user's profile page
 const isOnOwnProfilePage = computed(() => {
@@ -176,6 +179,41 @@ const stopBellAnimation = () => {
   isBellRinging.value = false
 }
 
+const stopMessageUnreadPolling = () => {
+  if (messageUnreadPollTimer) {
+    window.clearInterval(messageUnreadPollTimer)
+    messageUnreadPollTimer = null
+  }
+}
+
+const handleMessagingReadUpdated = async () => {
+  await fetchUnreadMessages()
+}
+
+const fetchUnreadMessages = async () => {
+  if (!authStore.isAuthenticated) {
+    unreadMessageCount.value = 0
+    return
+  }
+
+  try {
+    const response = await axiosInstance.get('/messaging/messages/unread-count/')
+    unreadMessageCount.value = Number(response.data?.count || 0)
+  } catch (error) {
+    console.error('TopNavBar: Failed to fetch unread messages:', error)
+    unreadMessageCount.value = 0
+  }
+}
+
+const startMessageUnreadPolling = () => {
+  stopMessageUnreadPolling()
+  if (!authStore.isAuthenticated) return
+
+  messageUnreadPollTimer = window.setInterval(() => {
+    fetchUnreadMessages()
+  }, 15000)
+}
+
 // Start/stop bell animation based on unread count
 watch(unreadCount, (newCount) => {
   if (newCount > 0) {
@@ -185,9 +223,25 @@ watch(unreadCount, (newCount) => {
   }
 })
 
+watch(
+  () => authStore.isAuthenticated,
+  async (isAuthenticated) => {
+    if (isAuthenticated) {
+      await fetchUnreadMessages()
+      startMessageUnreadPolling()
+    } else {
+      unreadMessageCount.value = 0
+      stopMessageUnreadPolling()
+    }
+  },
+  { immediate: true },
+)
+
 // Stop animation when component unmounts
 onUnmounted(() => {
   stopBellAnimation()
+  stopMessageUnreadPolling()
+  eventBus.off('messaging-read-updated', handleMessagingReadUpdated)
   document.removeEventListener('click', closeSearchDropdownOnClickOutside)
   document.removeEventListener('click', closeAllMenusOnClickOutside)
   document.removeEventListener('click', closeMobileMenuOnClickOutside)
@@ -374,10 +428,15 @@ watch([isProfileMenuOpen, isExploreMenuOpen, isSeekersMenuOpen, isMobileMenuOpen
   }
 })
 
-onMounted(() => {
-  authStore.initializeAuth()
+onMounted(async () => {
+  eventBus.on('messaging-read-updated', handleMessagingReadUpdated)
+  await authStore.initializeAuth()
   if (unreadCount.value > 0) {
     startBellAnimation()
+  }
+  if (authStore.isAuthenticated) {
+    await fetchUnreadMessages()
+    startMessageUnreadPolling()
   }
 })
 
@@ -877,9 +936,8 @@ const currentUsername = computed(() => currentUser.value?.username || '')
             </RouterLink>
 
             <!-- MESSAGES (Now with color-filled solid icon and slightly bigger) -->
-            <button
-              type="button"
-              @click="handleNonNavigableClick"
+            <RouterLink
+              :to="{ name: 'messages' }"
               class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px] hover:bg-messages-hover"
               aria-label="Messaging"
             >
@@ -888,8 +946,14 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                 aria-hidden="true"
               />
               <span class="nav-label nav-label-messages">Messages</span>
-              <span class="notification-badge" aria-label="3 unread messages">3</span>
-            </button>
+              <span
+                v-if="unreadMessageCount > 0"
+                class="notification-badge"
+                aria-label="unread messages"
+              >
+                {{ unreadMessageCount > 9 ? '9+' : unreadMessageCount }}
+              </span>
+            </RouterLink>
 
             <!-- NOTIFICATIONS -->
             <RouterLink
