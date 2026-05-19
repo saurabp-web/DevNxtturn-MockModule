@@ -17,8 +17,6 @@ from community.views import (
     GoogleLogin,
 )
 
-from messaging import views as messaging_views
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/logout/", ForcefulLogoutView.as_view(), name="forceful_rest_logout"),
@@ -36,8 +34,11 @@ urlpatterns = [
         password_reset_redirect_view,
         name="password_reset_confirm",
     ),
-    path("api/", include("community.urls", namespace="community")),
+    # --- IMPORTANT: Specific patterns must come BEFORE generic patterns ---
+    # Messaging routes are matched first so they don't get caught by the generic /api/ pattern
     path("api/messaging/", include("messaging.urls")),
+    # Generic API routes (community, profiles, posts, groups, etc.)
+    path("api/", include("community.urls", namespace="community")),
 ]
 
 # The rest of your file remains unchanged
