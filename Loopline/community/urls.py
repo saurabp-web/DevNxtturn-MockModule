@@ -224,6 +224,8 @@ urlpatterns = [
     #     name="message-list",
     # ),
     # path("messages/send/", views.SendMessageView.as_view(), name="send-message"),
+
+    
     # --- Polls & Saves ---
     path(
         "polls/<int:poll_id>/options/<int:option_id>/vote/",
