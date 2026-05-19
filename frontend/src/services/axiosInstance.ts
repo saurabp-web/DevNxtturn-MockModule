@@ -7,8 +7,11 @@ import { useToast } from 'vue-toastification'
 let isOffline = false
 let offlineToastId: string | number | null = null
 
+const rawApiBaseURL = import.meta.env.VITE_API_BASE_URL || '/api/'
+const apiBaseURL = rawApiBaseURL.replace(/\/+$|\/+(?=\?)|\/+(?=#)/g, '/')
+
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: apiBaseURL,
   timeout: 155000,
   headers: {
     Accept: 'application/json',
@@ -17,7 +20,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    // 1. If the URL is absolute (http...), strip it to a relative path
+    // 1. Normalize absolute URLs to relative paths so baseURL injection works consistently.
     if (config.url && config.url.startsWith('http')) {
       try {
         const url = new URL(config.url)
@@ -27,12 +30,20 @@ axiosInstance.interceptors.request.use(
       }
     }
 
-    // 2. THE FIX: If the path already starts with /api/, remove the baseURL prefix
-    // to prevent double /api//api/
+    // 2. Keep backend host resolution stable across environments.
+    // If configured to use a relative /api/ proxy, leave /api/ requests as-is.
+    // If configured to use an absolute backend URL that already contains /api/, avoid duplicating it.
     if (config.url && config.url.startsWith('/api/')) {
-      config.baseURL = ''
+      if (apiBaseURL.match(/^https?:\/\/.*\/api\/?$/)) {
+        config.url = config.url.replace(/^\/api/, '')
+        config.baseURL = apiBaseURL
+      } else if (apiBaseURL.startsWith('/')) {
+        config.baseURL = ''
+      } else {
+        config.baseURL = apiBaseURL
+      }
     } else {
-      config.baseURL = import.meta.env.VITE_API_BASE_URL
+      config.baseURL = apiBaseURL
     }
 
     const authStore = useAuthStore()

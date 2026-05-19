@@ -17,7 +17,7 @@ from community.views import (
     GoogleLogin,
 )
 
-from
+from messaging import views as messaging_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
