@@ -16,7 +16,8 @@ from community.views import (
     password_reset_redirect_view,
     GoogleLogin,
 )
-from messaging import urls as messaging_urls
+
+from
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -36,8 +37,7 @@ urlpatterns = [
         name="password_reset_confirm",
     ),
     path("api/", include("community.urls", namespace="community")),
-    path("api/messaging/", include(messaging_urls)),
-    path("api/messaging", include(messaging_urls)),
+    path("api/messaging/", include("messaging.urls")),
 ]
 
 # The rest of your file remains unchanged
