@@ -144,7 +144,9 @@
               type="button"
               @click="toggleEmoji"
             >
-              😊
+              <svg class="h-6 w-6 text-violet-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 8.25c-.414 0-.75-.336-.75-.75s.336-.75.75-.75.75.336.75.75-.336.75-.75.75zm-7.5 0c-.414 0-.75-.336-.75-.75s.336-.75.75-.75.75.336.75.75-.336.75-.75.75zm11.25 3.75a9 9 0 11-18 0 9 9 0 0118 0zm-6.44 2.96a3.75 3.75 0 01-5.31 0" />
+              </svg>
             </button>
 
             <transition
@@ -180,7 +182,7 @@
                     type="button"
                     @click="pickEmoji(emoji)"
                   >
-                    {{ emoji }}
+                    <EmojiGlyph :emoji="emoji" animated :size="26" />
                   </button>
                 </div>
               </div>
@@ -220,9 +222,13 @@
 </template>
 
 <script>
+import EmojiGlyph from './EmojiGlyph.vue'
 import { EMOJI_CATEGORIES } from './emojis'
 
 export default {
+  components: {
+    EmojiGlyph,
+  },
   props: {
     disabled: {
       type: Boolean,

@@ -215,15 +215,15 @@ urlpatterns = [
         name="notifications-mark-all-as-read",
     ),
     # --- Messaging ---
-    path(
-        "conversations/", views.ConversationListView.as_view(), name="conversation-list"
-    ),
-    path(
-        "conversations/<int:conversation_id>/messages/",
-        views.MessageListView.as_view(),
-        name="message-list",
-    ),
-    path("messages/send/", views.SendMessageView.as_view(), name="send-message"),
+    # path(
+    #     "conversations/", views.ConversationListView.as_view(), name="conversation-list"
+    # ),
+    # path(
+    #     "conversations/<int:conversation_id>/messages/",
+    #     views.MessageListView.as_view(),
+    #     name="message-list",
+    # ),
+    # path("messages/send/", views.SendMessageView.as_view(), name="send-message"),
     # --- Polls & Saves ---
     path(
         "polls/<int:poll_id>/options/<int:option_id>/vote/",

@@ -28,7 +28,7 @@
             :aria-label="`React with ${emoji} emoji`"
             @click="selectReaction(emoji)"
           >
-            {{ emoji }}
+            <EmojiGlyph :emoji="emoji" animated :size="22" />
           </button>
         </div>
       </transition>
@@ -88,7 +88,7 @@
             <!-- Text Content -->
             <div
               v-if="hasText"
-              class="break-words leading-relaxed text-sm"
+              class="chat-message-content break-words leading-relaxed text-sm"
               :class="[hasMedia ? 'mb-2' : '']"
               v-html="linkedContent"
             ></div>
@@ -376,12 +376,36 @@
 </template>
 
 <script>
+import EmojiGlyph from './EmojiGlyph.vue'
 import { buildMediaUrl } from '@/utils/avatars'
 
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
+const TEXT_EMOJI_REGEX =
+  /(?:\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\uFE0E)?)*|[#*0-9]\uFE0F?\u20E3|\p{Regional_Indicator}{2})/gu
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function emojiMarkup(emoji) {
+  const escaped = escapeHtml(emoji)
+  return `<span class="emoji-inline emoji-inline--text" aria-label="${escaped}" role="img">${escaped}</span>`
+}
 
 export default {
   name: 'MessageBubble',
+  components: {
+    EmojiGlyph,
+  },
   emits: ['react', 'reply', 'edit', 'delete', 'media-error'],
   props: {
     message: {
@@ -430,14 +454,6 @@ export default {
     linkedContent() {
       if (!this.hasText) return ''
 
-      const escapeHtml = (value) =>
-        value
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;')
-
       const rawText = String(this.message?.content || '')
       const urlPattern = /((https?:\/\/|www\.)[^\s<]+)/gi
       const pieces = []
@@ -475,8 +491,12 @@ export default {
         return rawUrl
       })
 
-      pieces.push(escapeHtml(rawText.slice(lastIndex)).replace(/\n/g, '<br>'))
-      return pieces.join('')
+      pieces.push(escapeHtml(rawText.slice(lastIndex)))
+
+      return pieces
+        .join('')
+        .replace(TEXT_EMOJI_REGEX, (emoji) => emojiMarkup(emoji))
+        .replace(/\n/g, '<br>')
     },
     media() {
       return this.message || null
@@ -707,6 +727,41 @@ export default {
 .chat-message-content :deep(.chat-link:hover),
 .chat-message-content .chat-link:hover {
   color: #1d4ed8;
+}
+
+.chat-message-content :deep(.emoji-inline),
+.chat-message-content .emoji-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.15em;
+}
+
+.chat-message-content :deep(.emoji-inline--image),
+.chat-message-content .emoji-inline--image {
+  object-fit: contain;
+}
+
+.chat-message-content :deep(.emoji-inline--text),
+.chat-message-content .emoji-inline--text {
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: emoji-live 2.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes emoji-live {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-1px) scale(1.05);
+  }
 }
 
 @keyframes spin {

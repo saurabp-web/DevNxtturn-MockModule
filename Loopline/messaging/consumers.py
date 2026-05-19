@@ -13,7 +13,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self.close()
             return
 
-        self.other_user_id = int(self.scope["url_route"]["kwargs"]["user_id"])
+        try:
+            self.other_user_id = int(self.scope["url_route"]["kwargs"]["user_id"])
+        except (TypeError, ValueError, KeyError):
+            await self.close()
+            return
+
         self.other_user = await self.get_user(self.other_user_id)
         if not self.other_user:
             await self.close()

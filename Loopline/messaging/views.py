@@ -72,7 +72,7 @@ def resolve_reply_target(sender, receiver, reply_to_message_id):
 @permission_classes([IsAuthenticated])
 def send_message(request, user_id):
     sender = request.user
-    receiver = User.objects.get(id=user_id)
+    receiver = get_object_or_404(User, id=user_id)
     reply_to_message = resolve_reply_target(
         sender,
         receiver,
@@ -233,7 +233,7 @@ def react_message(request):
 @permission_classes([IsAuthenticated])
 def get_messages(request, user_id):
     user = request.user
-    other_user = User.objects.get(id=user_id)
+    other_user = get_object_or_404(User, id=user_id)
 
     Message.objects.filter(
         sender=other_user,
@@ -321,9 +321,8 @@ def conversations(request):
 
     data = []
     for partner_id in partner_ids:
-        try:
-            other = User.objects.get(id=partner_id)
-        except User.DoesNotExist:
+        other = User.objects.filter(id=partner_id).first()
+        if not other:
             continue
 
         # Get the latest message in this conversation
@@ -349,7 +348,7 @@ def conversations(request):
             "last_message": (
                 "Message deleted" if last_msg and last_msg.is_deleted else last_msg.content
             ) if last_msg else "",
-            "last_message_time": last_msg.timestamp.isoformat() if last_msg else None,
+            "last_message_time": last_msg.timestamp.isoformat() if last_msg and last_msg.timestamp else None,
             "last_message_is_mine": last_msg.sender_id == user.id if last_msg else False,
         })
 
