@@ -550,13 +550,7 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                       >
                         <div class="relative flex-shrink-0">
                           <img
-                            :src="
-                              getAvatarUrl(
-                                user.picture,
-                                user.first_name || user.username,
-                                user.last_name,
-                              )
-                            "
+                            :src="getAvatarUrl(user.picture, user.display_name, user.username)"
                             alt="avatar"
                             class="w-7 h-7 rounded-full object-cover border border-gray-200 group-hover:border-blue-300 transition-colors"
                           />
@@ -940,8 +934,8 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                     :src="
                       getAvatarUrl(
                         currentUser?.picture,
-                        currentUser?.first_name || currentUser?.username,
-                        currentUser?.last_name,
+                        currentUser?.display_name,
+                        currentUser?.username,
                       )
                     "
                     alt="Your avatar"
@@ -992,8 +986,8 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                         :src="
                           getAvatarUrl(
                             currentUser.picture,
-                            currentUser.first_name || currentUser.username,
-                            currentUser.last_name,
+                            currentUser.display_name,
+                            currentUser.username,
                           )
                         "
                         alt="Your avatar"
@@ -1231,13 +1225,7 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                       >
                         <div class="relative flex-shrink-0">
                           <img
-                            :src="
-                              getAvatarUrl(
-                                user.picture,
-                                user.first_name || user.username,
-                                user.last_name,
-                              )
-                            "
+                            :src="getAvatarUrl(user.picture, user.display_name, user.username)"
                             alt="avatar"
                             class="w-7 h-7 rounded-full object-cover border border-gray-200 group-hover:border-blue-300 transition-colors"
                           />
@@ -1406,11 +1394,7 @@ const currentUsername = computed(() => currentUser.value?.username || '')
             >
               <img
                 :src="
-                  getAvatarUrl(
-                    currentUser.picture,
-                    currentUser.first_name || currentUser.username,
-                    currentUser.last_name,
-                  )
+                  getAvatarUrl(currentUser.picture, currentUser.display_name, currentUser.username)
                 "
                 alt="Your avatar"
                 class="w-12 h-12 rounded-full object-cover"

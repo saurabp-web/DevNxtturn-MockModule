@@ -65,33 +65,35 @@ function createInitialsAvatar(initials: string, fullName: string): string {
 }
 
 /**
- * The Centralized Avatar Orchestrator.
- * Priority: 1. Custom Photo -> 2. Colorful Circular Initial -> 3. System Default
+ * The Centralized Avatar Orchestrator (Privacy-First Version).
+ *
+ * Hierarchy of Truth:
+ * 1. pictureUrl: If a photo is set, show it.
+ * 2. displayName: If no photo, use the chosen Public Alias (e.g., "WebR").
+ * 3. username: If no Alias, use the System ID (e.g., "rahi1").
+ * 4. 'U': Absolute fallback.
  */
 export function getAvatarUrl(
   pictureUrl: string | null | undefined,
-  firstName: string | null | undefined,
-  lastName: string | null | undefined,
+  displayName: string | null | undefined,
+  username: string | null | undefined,
 ): string {
-  // 1. Use custom photo if it exists (handles both Cloud GCS and Local Media)
+  // 1. Priority: Custom Photo (handles GCS Cloud and Local Media)
   if (pictureUrl) {
     if (pictureUrl.startsWith('http')) return pictureUrl
     return `${API_URL_BASE}${pictureUrl}`
   }
 
-  // 2. Generate Initial-based Circle if name exists
-  const fName = firstName || ''
-  const lName = lastName || ''
-  const initials = `${fName?.[0] || ''}${lName?.[0] || ''}`
-  const fullName = `${fName} ${lName}`.trim()
+  // 2. Identify the 'Public Identity' for the initial and the color hash.
+  // We intentionally ignore first_name/last_name here to protect user privacy.
+  const nameToUse = (displayName && displayName.trim()) || (username && username.trim()) || 'U'
 
-  if (initials) {
-    // We pass fullName to ensures "abc" and "aab" get different colors
-    return createInitialsAvatar(initials.substring(0, 2), fullName)
-  }
+  // 3. Take the first character (e.g., 'W' from 'WebR' or 'R' from 'rahi1')
+  const initial = nameToUse.charAt(0).toUpperCase()
 
-  // 3. Absolute Fallback
-  return defaultAvatar
+  // 4. Generate the circular SVG
+  // We use initials.substring(0, 1) because we only want one letter in the circle now for a cleaner look.
+  return createInitialsAvatar(initial, nameToUse)
 }
 
 /**

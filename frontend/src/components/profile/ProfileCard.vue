@@ -5,6 +5,7 @@ import { getAvatarUrl } from '@/utils/avatars'
 import type { UserProfile } from '@/types'
 import { useProfileStore } from '@/stores/profile'
 import ProfileActions from '@/components/ProfileActions.vue'
+import { useAuthStore } from '@/stores/auth'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 import IdentityForm from '@/components/profile/forms/IdentityForm.vue'
@@ -32,6 +33,7 @@ const emit = defineEmits<{
 }>()
 
 const profileStore = useProfileStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 // This function tells the app to go to the network page and open a specific tab
@@ -106,7 +108,15 @@ onMounted(() => {
 
 async function handleSaveChanges(formData: IdentityFormData) {
   try {
+    // 1. Tell the Profile Store to update the database
     await profileStore.updateProfile(props.profile.user.username, formData)
+
+    // 2. THE HANDSHAKE: Tell the Auth Store (the Navbar's brain) to update
+    // its memory with the new display_name immediately.
+    authStore.updateCurrentUser({
+      display_name: formData.display_name,
+    })
+
     isModalOpen.value = false
   } catch (error) {
     console.error('Failed to update profile:', error)
@@ -155,19 +165,26 @@ async function uploadProfilePicture() {
 
   isUploadingPicture.value = true
   try {
-    await profileStore.updateProfilePicture(props.profile.user.username, selectedFile.value)
+    // 1. We capture the response so we have the new image URL
+    const response = await profileStore.updateProfilePicture(
+      props.profile.user.username,
+      selectedFile.value,
+    )
 
     if (!isComponentMounted.value) return
 
-    // SUCCESS: Keep the preview visible for 2 seconds.
-    // This gives the browser time to download the real image from the
-    // new backend URL in the background without showing a broken icon.
+    // 2. THE HANDSHAKE: Tell the Auth Store about the new picture immediately
+    if (response && response.picture) {
+      authStore.updateCurrentUser({ picture: response.picture })
+    }
+
+    // --- EVERYTHING BELOW IS YOUR ORIGINAL LOGIC PRESERVED ---
     selectedFile.value = null
     setTimeout(() => {
       if (isComponentMounted.value) {
         picturePreviewUrl.value = null
       }
-    }, 2000)
+    }, 2000) // This is your original 2s safety delay
 
     isPreviewModalOpen.value = false
   } catch (error: any) {
@@ -182,27 +199,31 @@ async function uploadProfilePicture() {
     }
   }
 }
-
 async function uploadEditModalProfilePicture() {
   if (!editModalSelectedFile.value) return
-
-  // Check if component is still mounted
   if (!isComponentMounted.value) return
 
   isUploadingPicture.value = true
   try {
-    await profileStore.updateProfilePicture(
+    // 1. Capture the server response
+    const response = await profileStore.updateProfilePicture(
       props.profile.user.username,
       editModalSelectedFile.value,
     )
 
-    // Check again before updating UI
     if (!isComponentMounted.value) return
 
+    // 2. THE HANDSHAKE: Sync to global authStore
+    if (response && response.picture) {
+      authStore.updateCurrentUser({ picture: response.picture })
+    }
+
+    // --- PRESERVING YOUR ORIGINAL UI CLEANUP LOGIC ---
     editModalSelectedFile.value = null
     editModalPicturePreviewUrl.value = null
     isEditProfileModalOpen.value = false
-    // Also update the main preview
+
+    // Also update the main preview state so everything is in sync
     selectedFile.value = null
     picturePreviewUrl.value = null
   } catch (error: any) {
@@ -228,12 +249,20 @@ async function uploadSelectedAvatar() {
     const blob = await response.blob()
     const file = new File([blob], `${selectedAvatar.value.id}.png`, { type: 'image/png' })
 
-    await profileStore.updateProfilePicture(props.profile.user.username, file)
+    // 1. Capture the response from the server
+    const uploadResponse = await profileStore.updateProfilePicture(
+      props.profile.user.username,
+      file,
+    )
 
     if (!isComponentMounted.value) return
 
-    // SUCCESS: Close modal but KEEP the picturePreviewUrl (the local asset)
-    // for 2 seconds so the transition is invisible to the user.
+    // 2. THE HANDSHAKE: Sync the gallery choice to the Global Identity Store
+    if (uploadResponse && uploadResponse.picture) {
+      authStore.updateCurrentUser({ picture: uploadResponse.picture })
+    }
+
+    // --- EVERYTHING BELOW IS YOUR ORIGINAL TRANSITION LOGIC PRESERVED ---
     isAvatarPreviewModalOpen.value = false
     selectedAvatar.value = null
 
@@ -241,7 +270,7 @@ async function uploadSelectedAvatar() {
       if (isComponentMounted.value) {
         picturePreviewUrl.value = null
       }
-    }, 2000)
+    }, 2000) // Your original 2s transition buffer
   } catch (error: any) {
     if (isComponentMounted.value) {
       alert(error.message || 'Failed to set avatar.')
@@ -273,10 +302,15 @@ async function handleRemovePicture() {
   if (window.confirm('Are you sure you want to remove your profile picture?')) {
     isRemovingPicture.value = true
     try {
+      // 1. Tell the database to remove the file
       await profileStore.removeProfilePicture(props.profile.user.username)
 
-      // Check again before updating UI
+      // Check again before updating global UI
       if (!isComponentMounted.value) return
+
+      // 2. THE HANDSHAKE: Tell the Auth Store to nullify the picture in memory
+      // This forces the Navbar to immediately draw the Initial-based fallback.
+      authStore.updateCurrentUser({ picture: null })
 
       isPreviewModalOpen.value = false
     } catch (error) {
@@ -399,15 +433,8 @@ onUnmounted(() => {
                 class="absolute -inset-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-20 group-hover:opacity-30 transition-opacity duration-300"
               ></div>
               <img
-                data-cy="profile-picture-img"
-                :src="
-                  getAvatarUrl(
-                    picturePreviewUrl || profile.picture,
-                    profile.display_name || profile.user.first_name || profile.user.username,
-                    profile.user.last_name,
-                  )
-                "
-                alt="Profile Picture"
+                :src="getAvatarUrl(profile.picture, profile.display_name, profile.user.username)"
+                alt="Profile Picture Preview"
                 class="relative w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-gray-200 z-10 cursor-pointer"
                 @click="handleProfilePictureClick"
               />
@@ -578,9 +605,9 @@ onUnmounted(() => {
           <img
             :src="
               getAvatarUrl(
-                profile.picture,
-                profile.display_name || profile.user.first_name || profile.user.username,
-                profile.user.last_name,
+                picturePreviewUrl || profile.picture,
+                profile.display_name,
+                profile.user.username,
               )
             "
             alt="Profile Picture Preview"
@@ -632,8 +659,8 @@ onUnmounted(() => {
             :src="
               getAvatarUrl(
                 picturePreviewUrl || profile.picture,
-                profile.display_name || profile.user.first_name || profile.user.username,
-                profile.user.last_name,
+                profile.display_name,
+                profile.user.username,
               )
             "
             alt="Profile Picture Preview"

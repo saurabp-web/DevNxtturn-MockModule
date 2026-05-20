@@ -122,13 +122,7 @@ const isSavedPostsRouteActive = computed(() => route.name === 'saved-posts')
         <!-- Avatar -->
         <RouterLink :to="`/profile/${currentUser.username}`">
           <img
-            :src="
-              getAvatarUrl(
-                currentUser.picture,
-                myProfile?.display_name || currentUser.first_name || currentUser.username,
-                currentUser.last_name,
-              )
-            "
+            :src="getAvatarUrl(currentUser.picture, myProfile?.display_name, currentUser.username)"
             alt="User Avatar"
             class="h-16 w-16 rounded-full object-cover border-4 border-white/30 shadow-lg mb-3.5 hover:scale-105 transition-transform"
           />

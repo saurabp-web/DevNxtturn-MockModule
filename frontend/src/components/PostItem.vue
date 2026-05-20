@@ -1900,11 +1900,7 @@ function fallbackCopyTextToClipboard(text: string) {
           <router-link :to="{ name: 'profile', params: { username: post.author.username } }">
             <img
               :src="
-                getAvatarUrl(
-                  post.author.picture,
-                  post.author.first_name || post.author.username,
-                  post.author.last_name,
-                )
+                getAvatarUrl(post.author.picture, post.author.display_name, post.author.username)
               "
               alt="author avatar"
               class="w-9 h-9 lg:w-11 lg:h-11 rounded-full object-cover mr-3 lg:mr-4 bg-gray-200"
@@ -2074,8 +2070,8 @@ function fallbackCopyTextToClipboard(text: string) {
               :src="
                 getAvatarUrl(
                   post.parent_post.author.picture,
-                  post.parent_post.author.first_name || post.parent_post.author.username,
-                  post.parent_post.author.last_name,
+                  post.parent_post.author.display_name,
+                  post.parent_post.author.username,
                 )
               "
               class="w-6 h-6 rounded-full object-cover bg-gray-100"
@@ -2571,8 +2567,8 @@ function fallbackCopyTextToClipboard(text: string) {
               :src="
                 getAvatarUrl(
                   authStore.currentUser?.picture,
-                  authStore.currentUser?.first_name || authStore.currentUser?.username,
-                  authStore.currentUser?.last_name,
+                  authStore.currentUser?.display_name,
+                  authStore.currentUser?.username,
                 )
               "
               alt="your avatar"
@@ -3346,8 +3342,8 @@ function fallbackCopyTextToClipboard(text: string) {
                 :src="
                   getAvatarUrl(
                     authStore.currentUser?.picture,
-                    authStore.currentUser?.first_name || authStore.currentUser?.username,
-                    authStore.currentUser?.last_name,
+                    authStore.currentUser?.display_name,
+                    authStore.currentUser?.username,
                   )
                 "
                 alt="your avatar"
@@ -3446,11 +3442,7 @@ function fallbackCopyTextToClipboard(text: string) {
                 <div class="flex items-center gap-3">
                   <img
                     :src="
-                      getAvatarUrl(
-                        item.user.picture,
-                        item.user.first_name || item.user.username,
-                        item.user.last_name,
-                      )
+                      getAvatarUrl(item.user.picture, item.user.display_name, item.user.username)
                     "
                     class="w-10 h-10 rounded-full object-cover border border-gray-100"
                   />
@@ -3506,8 +3498,8 @@ function fallbackCopyTextToClipboard(text: string) {
                 :src="
                   getAvatarUrl(
                     currentUser?.picture,
-                    currentUser?.first_name || currentUser?.username,
-                    currentUser?.last_name,
+                    currentUser?.display_name,
+                    currentUser?.username,
                   )
                 "
                 class="w-9 h-9 rounded-full object-cover"

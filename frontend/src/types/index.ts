@@ -8,6 +8,7 @@ export interface User {
   email: string
   first_name: string
   last_name: string
+  display_name: string | null
 }
 
 export interface CurrentUser extends User {
@@ -147,6 +148,7 @@ export interface PostAuthor {
   username: string
   first_name: string
   last_name: string
+  display_name: string | null
   picture: string | null
 }
 

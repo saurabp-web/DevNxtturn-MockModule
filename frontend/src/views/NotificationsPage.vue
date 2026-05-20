@@ -299,8 +299,8 @@ onUnmounted(() => {
                   :src="
                     getAvatarUrl(
                       notification.actor.picture,
-                      notification.actor.first_name || notification.actor.username,
-                      notification.actor.last_name,
+                      notification.actor.display_name,
+                      notification.actor.username,
                     )
                   "
                   class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"

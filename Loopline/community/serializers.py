@@ -124,28 +124,35 @@ class PollSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     picture = serializers.SerializerMethodField()
+    # 1. We define the field here so it's included in the 'Global Identity Packet'
+    display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "email", "picture"]
+        # 2. We add it to the fields list
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "display_name",
+            "email",
+            "picture",
+        ]
+
+    # 3. This method reaches into the Profile to get the 'Superior' name
+    def get_display_name(self, obj):
+        if hasattr(obj, "profile"):
+            return obj.profile.display_name
+        return None
 
     def get_picture(self, obj):
-        """
-        Returns a browser-reachable URL.
-        Local: returns '/media/...' (Vite Proxy handles this)
-        Cloud: returns 'https://storage.googleapis.com/...' (GCS handles this)
-        """
         try:
             if hasattr(obj, "profile") and obj.profile.picture:
-                # We return the raw .url attribute.
-                # We DO NOT use build_absolute_uri here.
                 return obj.profile.picture.url
         except (UserProfile.DoesNotExist, AttributeError):
             pass
         return None
-
-
-# community/serializers.py
 
 
 # community/serializers.py

@@ -20,6 +20,7 @@ export interface User {
   email: string // <--- FIX: Added this property
   date_joined: string
   picture: string | null
+  display_name: string | null
 }
 
 // Interface for registration data
@@ -59,9 +60,11 @@ export const useAuthStore = defineStore('auth', () => {
     currentUser.value = user
   }
 
-  function updateCurrentUserPicture(newPictureUrl: string | null) {
+  function updateCurrentUser(data: Partial<User>) {
     if (currentUser.value) {
-      currentUser.value.picture = newPictureUrl
+      // This 'merges' the new data into the existing user in RAM
+      currentUser.value = { ...currentUser.value, ...data }
+      console.log('👤 AuthStore: Global identity synced in memory')
     }
   }
 
@@ -228,7 +231,7 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     verifyEmail,
     initializeAuth,
-    updateCurrentUserPicture,
+    updateCurrentUser,
     resetAuthState,
   }
 })
