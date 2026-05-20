@@ -159,8 +159,15 @@ useInfiniteScroll(
 
 const loadProfileData = () => {
   if (username.value) {
+    // 1. Fetch the public profile
     profileStore.fetchProfile(username.value)
     profileStore.refreshUserPosts(username.value)
+
+    // 2. THE SYNCHRONIZATION: If this is our own profile,
+    // force the Auth Store to pull the freshest session data from the server.
+    if (isOwnProfile.value) {
+      authStore.fetchUserProfile()
+    }
   }
 }
 
@@ -218,6 +225,20 @@ function scrollToTop() {
 function navigateToPostsPage() {
   router.push(`/profile/${username.value}/posts`)
 }
+
+// --- THE FINAL HANDSHAKE WATCHER ---
+// If the Auth Store's picture changes, immediately copy it to the
+// profile page state so the card doesn't lag behind.
+watch(
+  () => authStore.currentUser,
+  (newUser) => {
+    if (isOwnProfile.value && newUser && profileStore.currentProfile) {
+      profileStore.currentProfile.picture = newUser.picture
+      profileStore.currentProfile.display_name = newUser.display_name
+    }
+  },
+  { deep: true, immediate: true },
+)
 
 onMounted(() => {
   eventBus.on('scroll-profile-to-top', scrollToTop)

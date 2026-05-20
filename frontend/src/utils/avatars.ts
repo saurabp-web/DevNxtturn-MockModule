@@ -80,8 +80,17 @@ export function getAvatarUrl(
 ): string {
   // 1. Priority: Custom Photo (handles GCS Cloud and Local Media)
   if (pictureUrl) {
-    if (pictureUrl.startsWith('http')) return pictureUrl
-    return `${API_URL_BASE}${pictureUrl}`
+    let cleanUrl = pictureUrl
+
+    // Self-Healing Docker Fix:
+    // If the URL contains 'backend:8000', strip the internal Docker host
+    // so it falls back to a relative path and loads through the Vite proxy instead.
+    if (cleanUrl.includes('backend:8000')) {
+      cleanUrl = cleanUrl.replace(/https?:\/\/backend:8000/, '')
+    }
+
+    if (cleanUrl.startsWith('http')) return cleanUrl
+    return `${API_URL_BASE}${cleanUrl}`
   }
 
   // 2. Identify the 'Public Identity' for the initial and the color hash.

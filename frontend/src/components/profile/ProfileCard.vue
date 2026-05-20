@@ -86,6 +86,19 @@ const socialStats = computed(() => ({
   posts: props.profile.posts_count || 0,
 }))
 
+const displayPicture = computed(() => {
+  // If we have a local preview (during the 2s window), show that first!
+  if (picturePreviewUrl.value) return picturePreviewUrl.value
+
+  // If it's our own profile, always trust the Global Auth Store over the Prop
+  if (props.isOwnProfile && authStore.currentUser) {
+    return authStore.currentUser.picture
+  }
+
+  // Otherwise (for other users), use the prop
+  return props.profile.picture
+})
+
 // Track if component is mounted
 const isComponentMounted = ref(false)
 
@@ -433,8 +446,8 @@ onUnmounted(() => {
                 class="absolute -inset-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-20 group-hover:opacity-30 transition-opacity duration-300"
               ></div>
               <img
-                :src="getAvatarUrl(profile.picture, profile.display_name, profile.user.username)"
-                alt="Profile Picture Preview"
+                :src="getAvatarUrl(displayPicture, profile.display_name, profile.user.username)"
+                alt="Profile"
                 class="relative w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-gray-200 z-10 cursor-pointer"
                 @click="handleProfilePictureClick"
               />
@@ -656,13 +669,7 @@ onUnmounted(() => {
           class="mb-4 w-full max-w-xs overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center"
         >
           <img
-            :src="
-              getAvatarUrl(
-                picturePreviewUrl || profile.picture,
-                profile.display_name,
-                profile.user.username,
-              )
-            "
+            :src="getAvatarUrl(displayPicture, profile.display_name, profile.user.username)"
             alt="Profile Picture Preview"
             class="w-full h-auto max-h-64 object-contain"
           />
