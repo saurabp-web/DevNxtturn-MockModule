@@ -67,56 +67,66 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
     return
   }
 
+  // --- THE FIXED SHIELD: Set state BEFORE the await to block the WebSocket delete race ---
+  if (action === 'accept') {
+    notification.is_following_back = true
+  } else {
+    notification.is_declined = true
+  }
+
   try {
     // 1. Tell the backend to process the choice
     await axiosInstance.post(`/connections/requests/${requestId}/${action}/`)
 
     if (action === 'accept') {
-      // --- THE FIX: SYNC UNREAD STATE ---
-      // If the notification is unread, mark it read locally and in the database
+      // 1. If the old request was unread, decrement the count locally first
       if (!notification.is_read) {
         notification.is_read = true
-
-        // Decrement the bubble count on the bell icon instantly
         if (notificationStore.unreadCount > 0) {
           notificationStore.unreadCount--
         }
-
-        // Tell the backend to mark it read so it doesn't come back on refresh
-        notificationStore.markNotificationsAsRead([notification.id])
+        // SILENT: We add ', true' here so it does not fetch the unread count from the server too early!
+        await notificationStore.markNotificationsAsRead([notification.id], true)
       }
 
-      // Existing logic to show connected state
-      notification.is_following_back = true
+      // 2. Fetch the fresh list so the new permanent "connection_accepted" notification lands on our screen
+      await notificationStore.fetchNotifications(1)
+
+      // 3. Find that new "connection_accepted" notification in the fresh list
+      const newConnectedAlert = notificationStore.notifications.find(
+        (n) =>
+          n.notification_type === 'connection_accepted' &&
+          Number(n.actor.id) === Number(notification.actor.id),
+      )
+
+      // 4. Force-mark the new history alert as READ
+      if (newConnectedAlert && !newConnectedAlert.is_read) {
+        // This is our single, final database sync at the end. It will correctly fetch the final count of 0!
+        await notificationStore.markNotificationsAsRead([newConnectedAlert.id])
+      } else {
+        // Fallback: If the alert wasn't found or was already read, manually sync the unread count once at the very end
+        await notificationStore.fetchUnreadCount()
+      }
+
       eventBus.emit('connection-established', notification.actor.id)
     } else {
-      // --- THE SYNC FIX FOR DECLINE ---
-      notification.is_declined = true
-
-      // NEW: Tell the database this is handled so the count stays synced on refresh
+      // If declining, mark it read locally and in the database
       if (!notification.is_read) {
+        notification.is_read = true
+        if (notificationStore.unreadCount > 0) {
+          notificationStore.unreadCount--
+        }
         notificationStore.markNotificationsAsRead([notification.id])
       }
 
-      setTimeout(() => {
-        notificationStore.removeNotificationById(notification.id)
-      }, 1500)
-    }
-
-    // 5. Mark as read immediately (User interacted with it, so it's no longer 'new')
-    if (!notification.is_read) {
-      notification.is_read = true
-      if (notificationStore.unreadCount > 0) {
-        notificationStore.unreadCount--
-      }
-      // This tells the backend the notification was seen
-      await notificationStore.markNotificationsAsRead([notification.id])
+      // Note: 1.5-second timeout is removed. The feedback stays visible on the screen.
     }
   } catch (error) {
     console.error(`Failed to ${action} connection:`, error)
     toast.error(`Error processing ${action}.`)
     // Reset state on error so buttons reappear
     notification.is_declined = false
+    notification.is_following_back = false
   }
 }
 
@@ -212,9 +222,9 @@ const scrollToTopOnOpen = () => {
 onMounted(() => {
   scrollToTopOnOpen()
 
-  if (!notificationStore.hasLoadedInitialList) {
-    notificationStore.fetchNotifications(1)
-  }
+  // Always run both fetches in the background on load to ensure 100% database sync
+  notificationStore.fetchNotifications(1)
+  notificationStore.fetchUnreadCount()
 
   eventBus.on('scroll-notifications-to-top', scrollToTop)
 })

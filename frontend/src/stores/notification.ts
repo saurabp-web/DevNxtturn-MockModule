@@ -83,7 +83,6 @@ export const useNotificationStore = defineStore('notification', () => {
     isLoadingList.value = true
     error.value = null
     if (page === 1) {
-      notifications.value = []
     }
     try {
       const response = await axiosInstance.get<PaginatedNotificationResponse>('/notifications/', {
@@ -111,7 +110,7 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
-  async function markNotificationsAsRead(notificationIds: number[]) {
+  async function markNotificationsAsRead(notificationIds: number[], skipFetchCount = false) {
     if (!authStore.isAuthenticated) return { success: false }
     if (!notificationIds || notificationIds.length === 0) return { success: false }
     try {
@@ -123,7 +122,12 @@ export const useNotificationStore = defineStore('notification', () => {
           n.is_read = true
         }
       })
-      await fetchUnreadCount()
+
+      // Only fetch the unread count if we didn't explicitly ask to skip it
+      if (!skipFetchCount) {
+        await fetchUnreadCount()
+      }
+
       return { success: true }
     } catch (err: any) {
       console.error('NotificationStore: Error marking notifications as read:', err)
@@ -251,6 +255,27 @@ export const useNotificationStore = defineStore('notification', () => {
     notifications.value = notifications.value.filter((n) => n.id !== notificationId)
   }
 
+  async function declineNotificationInPlace(notificationId: number) {
+    const target = notifications.value.find((n) => n.id === notificationId)
+    if (!target) return
+
+    // 1. Keep the previous read state before we update it
+    const wasUnread = !target.is_read
+
+    // 2. Set local feedback state immediately so the WebSocket ignore logic activates
+    target.is_declined = true
+    target.is_read = true
+    target.verb = 'declined the request'
+
+    // 3. If it was unread, update the count locally and sync with the database
+    if (wasUnread) {
+      if (unreadCount.value > 0) unreadCount.value--
+      await markNotificationsAsRead([notificationId])
+    }
+
+    console.log(`📉 STORE: Local decline applied to ID: ${notificationId}. Database synced.`)
+  }
+
   return {
     notifications,
     unreadCount,
@@ -266,6 +291,8 @@ export const useNotificationStore = defineStore('notification', () => {
     addLiveNotification,
     resetState,
     forceSyncConnection,
+    declineNotificationInPlace,
+
     removeNotificationById,
   }
 })
