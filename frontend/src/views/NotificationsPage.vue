@@ -7,7 +7,7 @@ import { useToast } from 'vue-toastification'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { formatDistanceToNowStrict } from 'date-fns'
 import { getAvatarUrl } from '@/utils/avatars'
-import type { Notification } from '@/stores/notification'
+import type { Notification, PaginatedNotificationResponse } from '@/stores/notification'
 import {
   HeartIcon,
   ChatBubbleOvalLeftEllipsisIcon,
@@ -85,26 +85,27 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
         if (notificationStore.unreadCount > 0) {
           notificationStore.unreadCount--
         }
-        // SILENT: We add ', true' here so it does not fetch the unread count from the server too early!
         await notificationStore.markNotificationsAsRead([notification.id], true)
       }
 
-      // 2. Fetch the fresh list so the new permanent "connection_accepted" notification lands on our screen
-      await notificationStore.fetchNotifications(1)
+      // 2. SILENT BACKGROUND FETCH: Pull the fresh list from the server without touching the screen
+      // This preserves your exact scroll position and leaves the card at position #50 untouched!
+      const response = await axiosInstance.get<PaginatedNotificationResponse>('/notifications/', {
+        params: { page: 1 },
+      })
+      const freshNotifications = response.data.results
 
-      // 3. Find that new "connection_accepted" notification in the fresh list
-      const newConnectedAlert = notificationStore.notifications.find(
+      // 3. Find that new "connection_accepted" notification in the silent list
+      const newConnectedAlert = freshNotifications.find(
         (n) =>
           n.notification_type === 'connection_accepted' &&
           Number(n.actor.id) === Number(notification.actor.id),
       )
 
-      // 4. Force-mark the new history alert as READ
+      // 4. Force-mark the new history alert as READ silently
       if (newConnectedAlert && !newConnectedAlert.is_read) {
-        // This is our single, final database sync at the end. It will correctly fetch the final count of 0!
         await notificationStore.markNotificationsAsRead([newConnectedAlert.id])
       } else {
-        // Fallback: If the alert wasn't found or was already read, manually sync the unread count once at the very end
         await notificationStore.fetchUnreadCount()
       }
 
@@ -131,22 +132,48 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
 }
 
 const handleFollowBack = async (notification: Notification) => {
+  // 1. Set local state instantly to shield against WebSocket race conditions
+  notification.is_following_back = true
+
   try {
-    // 1. Send the follow command to the backend
+    // 2. Send the follow command to the backend
     await profileStore.followUser(notification.actor.username)
 
-    // 2. SMART UI: Update the local state instantly.
-    // This triggers the template to hide the button and show the "Connected" badge.
-    notification.is_following_back = true
     eventBus.emit('connection-established', notification.actor.id)
 
-    // 3. Mark as read
-    await markOneAsRead(notification.id)
+    // 3. Mark the original follow notification as read silently (no unread count refetch)
+    if (!notification.is_read) {
+      notification.is_read = true
+      if (notificationStore.unreadCount > 0) {
+        notificationStore.unreadCount--
+      }
+      await notificationStore.markNotificationsAsRead([notification.id], true)
+    }
 
-    // toast.success(`You are now following ${notification.actor.username}`)
+    // 4. SILENT BACKGROUND FETCH: Check if the backend created a new "connection_accepted" alert
+    const response = await axiosInstance.get<PaginatedNotificationResponse>('/notifications/', {
+      params: { page: 1 },
+    })
+    const freshNotifications = response.data.results
+
+    const newConnectedAlert = freshNotifications.find(
+      (n) =>
+        n.notification_type === 'connection_accepted' &&
+        Number(n.actor.id) === Number(notification.actor.id),
+    )
+
+    // 5. Force-mark the new alert as read
+    if (newConnectedAlert && !newConnectedAlert.is_read) {
+      // Final sync: Marks read and pulls the final unread count of 0
+      await notificationStore.markNotificationsAsRead([newConnectedAlert.id])
+    } else {
+      await notificationStore.fetchUnreadCount()
+    }
   } catch (error) {
     console.error('Follow back failed:', error)
     toast.error('Could not follow back.')
+    // Reset state on failure
+    notification.is_following_back = false
   }
 }
 
