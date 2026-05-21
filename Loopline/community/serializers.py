@@ -1552,34 +1552,37 @@ class NetworkUserSerializer(serializers.ModelSerializer):
 
         user = request.user
 
-        # 1. Check for Manual Mutual Follow (Highest Priority Connection)
+        # 1. Check for Manual Mutual Follow (A follows B AND B follows A)
         i_follow_them = Follow.objects.filter(follower=user, following=obj).exists()
         they_follow_me = Follow.objects.filter(follower=obj, following=user).exists()
 
-        if i_follow_them and they_follow_me:
+        # 2. Check for a formal Accepted Request (No mutual follow needed)
+        has_accepted_request = ConnectionRequest.objects.filter(
+            (Q(sender=user, receiver=obj) | Q(sender=obj, receiver=user)),
+            status="accepted",
+        ).exists()
+
+        # 3. IF MUTUAL FOLLOW OR ACCEPTED REQUEST -> THEY ARE CONNECTED
+        if (i_follow_them and they_follow_me) or has_accepted_request:
             return "connected"
 
-        # 2. Check the formal ConnectionRequest table
-        req = ConnectionRequest.objects.filter(
-            (Q(sender=user, receiver=obj) | Q(sender=obj, receiver=user))
-        ).first()
+        # 4. Check for active, pending requests ONLY (ignores old rejected/cancelled rows)
+        if ConnectionRequest.objects.filter(
+            sender=user, receiver=obj, status="pending"
+        ).exists():
+            return "pending_sent"
 
-        if req:
-            if req.status == "accepted":
-                return "connected"
+        if ConnectionRequest.objects.filter(
+            sender=obj, receiver=user, status="pending"
+        ).exists():
+            return "pending_received"
 
-            # Only show pending states if the status is actually 'pending'
-            if req.status == "pending":
-                if req.sender == user:
-                    return "pending_sent"
-                return "pending_received"
-
-        # 3. THE "WARM" STATE: They follow you, but you haven't followed back
+        # 5. THE "WARM" STATE: They follow you, but you haven't followed back
         # and there is no formal connection request pending.
         if they_follow_me and not i_follow_them:
             return "follows_you"
 
-        # 4. Default: Strangers
+        # 6. Default: Strangers
         return "none"
 
 

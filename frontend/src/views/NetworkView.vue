@@ -19,6 +19,7 @@ const profileStore = useProfileStore()
 const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
 const { followers, following, connections, pending, isLoading, error } = storeToRefs(networkStore)
+const { currentUser, isAuthenticated } = storeToRefs(authStore)
 const route = useRoute()
 
 // 2. State for Tabs and Search (Added 'pending')
@@ -63,7 +64,6 @@ useInfiniteScroll(
   nextCursorUrl,
 )
 
-// 3. Fetch data whenever the tab changes
 const fetchData = async () => {
   // GUARD: If the store didn't load, stop here.
   if (!networkStore) return
@@ -71,11 +71,12 @@ const fetchData = async () => {
   if (activeTab.value === 'connections') await networkStore.fetchConnections()
   else if (activeTab.value === 'followers') await networkStore.fetchFollowers()
   else if (activeTab.value === 'following') await networkStore.fetchFollowing()
-  else if (activeTab.value === 'pending') await networkStore.fetchPending()
+  else if (activeTab.value === 'pending') {
+    await networkStore.fetchPending()
+    // PRINT THE EXACT DATA COMING FROM THE SERVER:
+    console.log('👥 LIVE SERVER PENDING DATA:', JSON.parse(JSON.stringify(networkStore.pending)))
+  }
 }
-
-// Watch for tab changes and fetch immediately on load
-watch(activeTab, fetchData, { immediate: true })
 
 // 4. Filter the list based on the search bar
 const filteredList = computed(() => {
@@ -189,6 +190,26 @@ const handleMessage = (user: any) => {
   console.log('Opening chat with:', user.username)
   // Example: router.push({ name: 'messages', query: { user: user.username }})
 }
+
+// Watch for tab changes, authentication, and user load
+watch(
+  [activeTab, isAuthenticated, currentUser],
+  async ([newTab, isAuth, user]) => {
+    console.log(
+      '🔍 [NetworkView Watcher] Tab:',
+      newTab,
+      '| Auth:',
+      isAuth,
+      '| User:',
+      user ? user.username : 'null',
+    )
+
+    if (isAuth && user) {
+      await fetchData()
+    }
+  },
+  { immediate: true },
+)
 
 // --- DEEP LINKING LOGIC ---
 onMounted(() => {
@@ -318,7 +339,12 @@ onMounted(() => {
 
               <!-- 2. TAB-SPECIFIC ACTIONS (Accept/Decline/Pending) -->
               <template v-if="activeTab === 'pending'">
-                <template v-if="user.connection_status === 'pending_received'">
+                <template
+                  v-if="
+                    user.connection_status === 'pending_received' ||
+                    user.connection_status === 'none'
+                  "
+                >
                   <div class="flex gap-2">
                     <!-- Accept Button -->
                     <button
