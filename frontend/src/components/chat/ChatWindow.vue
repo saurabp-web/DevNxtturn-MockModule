@@ -134,14 +134,18 @@
                   {{ item.label }}
                 </span>
               </div>
-              <div v-else-if="item.type === 'unread-divider'" class="flex items-center gap-3 py-2">
-                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              <div
+                v-else-if="item.type === 'unread-divider'"
+                data-unread-divider
+                class="relative z-20 flex items-center gap-4 py-5"
+              >
+                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300/70 to-transparent"></div>
                 <span
-                  class="rounded-full bg-[#202124] px-4 py-2 text-[13px] font-semibold leading-none text-white shadow-[0_10px_24px_rgba(0,0,0,0.35)]"
+                  class="rounded-full bg-slate-900 px-4 py-2 text-[12px] font-semibold leading-none text-white shadow-[0_10px_24px_rgba(15,23,42,0.28)] ring-1 ring-black/10 backdrop-blur-md"
                 >
                   {{ item.label }}
                 </span>
-                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300/70 to-transparent"></div>
               </div>
               <MessageBubble
                 v-else
@@ -996,11 +1000,18 @@ export default {
 
       const unreadInfo = this.getUnreadDividerInfo()
       const targetMessage = unreadInfo.index >= 0 ? this.messages[unreadInfo.index] || null : null
-      const targetId = targetMessage?.id != null ? String(targetMessage.id) : ''
       let didScroll = false
 
-      if (targetId) {
-        const targetEl = el.querySelector(`[data-message-id="${targetId}"]`)
+      const dividerEl = el.querySelector('[data-unread-divider]')
+      if (dividerEl?.scrollIntoView) {
+        const listRect = el.getBoundingClientRect()
+        const dividerRect = dividerEl.getBoundingClientRect()
+        const offsetTop = dividerRect.top - listRect.top
+        const nextTop = el.scrollTop + offsetTop - 72
+        el.scrollTop = Math.max(0, nextTop)
+        didScroll = true
+      } else if (targetMessage?.id != null) {
+        const targetEl = el.querySelector(`[data-message-id="${String(targetMessage.id)}"]`)
         if (targetEl?.scrollIntoView) {
           const listRect = el.getBoundingClientRect()
           const targetRect = targetEl.getBoundingClientRect()

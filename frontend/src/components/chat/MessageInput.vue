@@ -329,7 +329,6 @@ export default {
       if (!emoji) return
       this.message = `${this.message}${emoji}`
       this.$nextTick(() => this.adjustHeight())
-      this.showEmoji = false
       this.$nextTick(() => this.$refs.inputArea?.focus())
     },
     removeAttachment(index) {

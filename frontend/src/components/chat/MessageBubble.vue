@@ -106,7 +106,20 @@
                 isEmojiOnlyMessage ? 'emoji-only-message' : '',
               ]"
             >
-              <AnimatedMessage :text="message.content" />
+              <template v-if="isEmojiOnlyMessage">
+                <div class="emoji-only-message__row">
+                  <AnimatedEmoji
+                    v-for="(emoji, index) in emojiOnlyEmojis"
+                    :key="`${emoji}-${index}`"
+                    :emoji="emoji"
+                    :size="emojiOnlySize"
+                    :animated="true"
+                  />
+                </div>
+              </template>
+              <template v-else>
+                <AnimatedMessage :text="message.content" />
+              </template>
             </div>
 
             <!-- Media Content -->
@@ -501,6 +514,21 @@ export default {
     isEmojiOnlyText() {
       return isEmojiOnlyMessage(this.emojiTokens)
     },
+    emojiOnlyEmojis() {
+      return this.emojiTokens.filter((token) => token.type === 'emoji').map((token) => token.value)
+    },
+    emojiOnlySize() {
+      switch (this.emojiOnlyEmojis.length) {
+        case 1:
+          return 58
+        case 2:
+          return 46
+        case 3:
+          return 38
+        default:
+          return 28
+      }
+    },
     reactions() {
       return this.message?.reactions || []
     },
@@ -786,10 +814,20 @@ export default {
 }
 
 .emoji-only-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.emoji-only-message__row {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 100%;
+  gap: 0.1rem;
+  flex-wrap: wrap;
 }
 
 .emoji-only-message :deep(.animated-message) {

@@ -47,6 +47,45 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = (emojiDataset.categories || [])
 export const QUICK_REACTIONS = ['👍', '❤️', '😂', '🔥', '😍', '🎉']
 export const RECENT_EMOJI_STORAGE_KEY = 'loopline.chat.recent-emojis'
 export const FAVORITE_EMOJIS = ['😀', '😂', '😍', '❤️', '🔥', '🎉', '👍', '🙏', '🥳', '😭', '😎', '🤔']
+export const HAND_ACTION_EMOJIS = [
+  '👋',
+  '🤚',
+  '🖐️',
+  '✋',
+  '🖖',
+  '🫱',
+  '🫲',
+  '🫳',
+  '🫴',
+  '🫰',
+  '🤞',
+  '✌️',
+  '🤟',
+  '🤘',
+  '🤙',
+  '👌',
+  '🤌',
+  '🤝',
+  '👍',
+  '👎',
+  '✊',
+  '👊',
+  '🤛',
+  '🤜',
+  '👏',
+  '🙌',
+  '👐',
+  '🤲',
+  '🙏',
+  '☝️',
+  '👈',
+  '👉',
+  '👆',
+  '👇',
+  '🫵',
+  '🫶',
+  '💅',
+]
 
 const skinToneOrder: EmojiToneIndex[] = [0, 1, 2, 3, 4, 5]
 
