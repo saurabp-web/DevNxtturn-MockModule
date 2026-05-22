@@ -209,6 +209,7 @@
 <script>
 import chatApi from '@/services/messageApi'
 import axiosInstance from '@/services/axiosInstance'
+import eventBus from '@/services/eventBus'
 import { mapActions, mapState } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/profile'
@@ -270,12 +271,19 @@ export default {
       this.startPolling()
       this.tryAutoSelectInitialUser()
     }
+    eventBus.on('messaging-read-updated', this.handleMessagingReadUpdated)
   },
   beforeUnmount() {
     this.stopPolling()
+    eventBus.off('messaging-read-updated', this.handleMessagingReadUpdated)
   },
   methods: {
     ...mapActions(useProfileStore, ['fetchProfile']),
+    handleMessagingReadUpdated() {
+      if (this.authToken) {
+        this.loadConversations({ silent: true })
+      }
+    },
     getConversationUsername(user) {
       return user?.username || user?.user?.username || ''
     },

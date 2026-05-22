@@ -13,7 +13,7 @@ RUN npm install
 FROM base AS develop-stage
 COPY . .
 # We use --host 0.0.0.0 so Vite is accessible via your Windows IP
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["sh", "-lc", "npm install && npm run dev -- --host 0.0.0.0"]
 
 # ==========================================
 # STAGE 3: Build (For PRODUCTION/CLOUD)

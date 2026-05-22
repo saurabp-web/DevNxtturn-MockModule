@@ -2,33 +2,33 @@
   <section class="relative flex-1 overflow-hidden">
     <!-- Dynamic Ambient Background -->
     <div
-      class="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-indigo-50/30"
+      class="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-purple-50/30"
     >
       <div
-        class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.08),transparent_24%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.06),transparent_26%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.04),transparent_22%)]"
+        class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.08),transparent_24%),radial-gradient(circle_at_top_right,rgba(20,184,166,0.06),transparent_26%),radial-gradient(circle_at_bottom_left,rgba(139,92,246,0.04),transparent_22%)]"
       ></div>
       <div
-        class="absolute -left-24 top-24 h-96 w-96 rounded-full bg-blue-400/10 blur-[120px]"
+        class="absolute -left-24 top-24 h-96 w-96 rounded-full bg-purple-400/10 blur-[120px]"
       ></div>
       <div
-        class="absolute right-10 top-40 h-80 w-80 rounded-full bg-violet-400/10 blur-[120px]"
+        class="absolute right-10 top-40 h-80 w-80 rounded-full bg-teal-400/10 blur-[120px]"
       ></div>
       <div
-        class="absolute bottom-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-indigo-400/5 blur-[100px]"
+        class="absolute bottom-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-purple-400/5 blur-[100px]"
       ></div>
     </div>
 
     <!-- Empty/No Selection State -->
     <div
       v-if="!user"
-      class="flex min-h-[calc(100vh-160px)] flex-col items-center justify-center gap-6 rounded-[2.5rem] border border-white/80 bg-white/90 p-10 text-center shadow-[0_30px_100px_rgba(79,70,229,0.08)] backdrop-blur-2xl"
+      class="flex min-h-[calc(100vh-160px)] flex-col items-center justify-center gap-6 rounded-[2rem] border border-white/80 bg-white/90 p-10 text-center shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl"
     >
       <div class="relative">
         <div
-          class="absolute -inset-8 rounded-full bg-gradient-to-r from-blue-100 via-indigo-100 to-cyan-100 blur-2xl"
+          class="absolute -inset-8 rounded-full bg-gradient-to-r from-purple-100 via-purple-100 to-teal-100 blur-2xl"
         ></div>
         <div
-          class="relative grid h-24 w-24 place-items-center rounded-[2rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 shadow-2xl shadow-blue-200 transition-all duration-300 hover:scale-105 hover:shadow-blue-300"
+          class="relative grid h-24 w-24 place-items-center rounded-[1.75rem] bg-purple-500 shadow-xl shadow-purple-200 transition-all duration-300 hover:scale-105 hover:shadow-purple-300"
         >
           <svg
             class="h-10 w-10 text-white"
@@ -46,14 +46,14 @@
         </div>
       </div>
       <div class="space-y-2">
-        <h3 class="text-2xl font-black tracking-tight text-slate-900">Your conversations</h3>
-        <p class="mx-auto max-w-xs text-sm font-medium text-slate-500">
+        <h3 class="text-2xl font-bold tracking-tight text-slate-800">Your conversations</h3>
+        <p class="mx-auto max-w-xs text-sm text-slate-500">
           Select a friend from the sidebar or search to start messaging
         </p>
         <div class="flex justify-center gap-2 pt-4">
-          <div class="h-1.5 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-          <div class="h-1.5 w-3 rounded-full bg-slate-200"></div>
-          <div class="h-1.5 w-2 rounded-full bg-slate-200"></div>
+          <div class="h-1.5 w-8 rounded-full bg-purple-500"></div>
+          <div class="h-1.5 w-3 rounded-full bg-purple-200"></div>
+          <div class="h-1.5 w-2 rounded-full bg-purple-100"></div>
         </div>
       </div>
     </div>
@@ -61,7 +61,8 @@
     <!-- Active Chat Window -->
     <div
       v-else
-      class="relative flex h-[calc(100vh-160px)] flex-col overflow-hidden rounded-[2.5rem] border border-white/80 bg-white/90 shadow-[0_28px_90px_rgba(79,70,229,0.08)] backdrop-blur-2xl"
+      data-chat-pane
+      class="relative flex h-[calc(100vh-160px)] flex-col overflow-hidden rounded-[2rem] border border-white/80 bg-white/90 shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl"
     >
       <!-- Chat Header -->
       <div
@@ -73,41 +74,37 @@
               v-if="chatAvatarUrl"
               :src="chatAvatarUrl"
               :alt="`${user.username} avatar`"
-              class="h-12 w-12 rounded-[1.25rem] object-cover shadow-md shadow-blue-200 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-300"
+              class="h-12 w-12 rounded-xl object-cover shadow-md shadow-purple-200 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-300"
             />
             <div
               v-else
-              class="grid h-12 w-12 place-items-center rounded-[1.25rem] bg-gradient-to-br from-blue-600 to-indigo-700 font-bold text-white shadow-md shadow-blue-200 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-300"
+              class="grid h-12 w-12 place-items-center rounded-xl bg-purple-500 font-bold text-white shadow-md shadow-purple-200 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-300"
             >
               {{ user.username?.[0]?.toUpperCase() || 'U' }}
             </div>
-            <!-- <div
-              class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-blue-500 shadow-sm ring-2 ring-blue-400/20"
-            ></div> -->
+            <div
+              class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-teal-500 shadow-sm"
+            ></div>
           </div>
           <div>
-            <div class="text-lg font-black tracking-tight text-slate-900">{{ user.username }}</div>
-            <!-- <div
-              class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500"
-            >
-              <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-              <span class="h-1.5 w-1.5 rounded-full bg-indigo-300"></span>
-              <span class="h-1.5 w-1.5 rounded-full bg-cyan-200"></span>
-              <span class="ml-1">Active now</span>
-            </div> -->
+            <div class="text-lg font-bold tracking-tight text-slate-800">{{ user.username }}</div>
+            <div class="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+              <span class="h-1.5 w-1.5 rounded-full bg-teal-500"></span>
+              <span>Active now</span>
+            </div>
           </div>
         </div>
 
         <!-- Header Actions -->
         <div class="flex gap-1">
           <button
-            class="group grid h-10 w-10 place-items-center rounded-[1.1rem] bg-slate-100/60 text-slate-500 transition-all duration-200 hover:bg-white hover:text-blue-600 hover:shadow-md active:scale-95"
+            class="group grid h-10 w-10 place-items-center rounded-xl bg-slate-100/60 text-slate-500 transition-all duration-200 hover:bg-white hover:text-purple-600 hover:shadow-md active:scale-95"
           >
             <svg
               class="h-5 w-5 transition-transform duration-200 group-hover:scale-110"
               fill="none"
               stroke="currentColor"
-              stroke-width="2.2"
+              stroke-width="2"
               viewBox="0 0 24 24"
             >
               <path
@@ -121,9 +118,9 @@
       <!-- Messages Area -->
       <div ref="messageList" class="message-area relative flex-1 overflow-y-auto px-5 py-5 lg:px-6">
         <div
-          class="pointer-events-none absolute inset-0 opacity-[0.03]"
+          class="pointer-events-none absolute inset-0 opacity-[0.02]"
           style="
-            background-image: radial-gradient(#4f46e5 1px, transparent 1px);
+            background-image: radial-gradient(#8b5cf6 1px, transparent 1px);
             background-size: 24px 24px;
           "
         ></div>
@@ -132,19 +129,37 @@
             <template v-for="item in groupedMessages" :key="item.key">
               <div v-if="item.type === 'date'" class="flex justify-center py-2">
                 <span
-                  class="rounded-full border border-slate-200/70 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 shadow-sm backdrop-blur-sm"
+                  class="rounded-full border border-slate-200/70 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 shadow-sm backdrop-blur-sm"
                 >
                   {{ item.label }}
                 </span>
               </div>
+              <div v-else-if="item.type === 'unread-divider'" class="flex items-center gap-3 py-2">
+                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                <span
+                  class="rounded-full bg-[#202124] px-4 py-2 text-[13px] font-semibold leading-none text-white shadow-[0_10px_24px_rgba(0,0,0,0.35)]"
+                >
+                  {{ item.label }}
+                </span>
+                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              </div>
               <MessageBubble
                 v-else
+                v-memo="[
+                  item.message.id,
+                  item.message.timestamp,
+                  item.message.is_read,
+                  item.message.is_deleted,
+                  item.message.edited_at,
+                  item.message.reactions?.length,
+                ]"
                 :message="item.message"
                 :isMe="String(item.message.sender) === String(currentUserId)"
                 @react="sendReaction"
                 @reply="beginReplyMessage"
                 @edit="beginEditMessage"
                 @delete="deleteMessage"
+                @open-reaction-picker="openReactionPicker"
               />
             </template>
           </div>
@@ -153,16 +168,18 @@
             v-if="!messages.length"
             class="flex flex-col items-center justify-center gap-4 py-20 opacity-70"
           >
-            <div class="text-5xl animate-bounce">👋</div>
-            <div class="text-center space-y-1">
-              <p class="text-sm font-black uppercase tracking-[0.18em] text-slate-500">
+            <div class="text-5xl">💬</div>
+            <div class="space-y-1 text-center">
+              <p class="text-sm font-bold uppercase tracking-wide text-slate-500">
                 Start the conversation here
               </p>
-              <p class="text-xs font-medium text-slate-400">Say hello to {{ user.username }}</p>
+              <p class="text-xs text-slate-400">Say hello to {{ user.username }}</p>
             </div>
           </div>
         </div>
       </div>
+
+      <FloatingEmojiLayer ref="emojiLayer" />
 
       <!-- Floating Scroll Button -->
       <transition
@@ -175,12 +192,12 @@
       >
         <button
           v-if="showScrollDown"
-          class="absolute bottom-28 right-6 z-30 grid h-11 w-11 place-items-center rounded-xl bg-white text-indigo-600 shadow-lg ring-1 ring-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-600 hover:text-white hover:shadow-indigo-200 active:scale-95"
+          class="absolute bottom-28 right-6 z-30 grid h-11 w-11 place-items-center rounded-xl bg-white text-purple-600 shadow-lg ring-1 ring-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:bg-purple-600 hover:text-white hover:shadow-purple-200 active:scale-95"
           type="button"
           @click="scrollToBottom(true)"
         >
           <svg
-            class="h-5 w-5 transition-transform duration-200 group-hover:translate-y-0.5"
+            class="h-5 w-5 transition-transform duration-200"
             fill="none"
             stroke="currentColor"
             stroke-width="2.5"
@@ -195,7 +212,7 @@
       <transition name="toast">
         <div
           v-if="sendError"
-          class="absolute bottom-28 left-6 right-6 z-40 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 p-4 text-sm font-semibold text-white shadow-xl shadow-rose-200/50 backdrop-blur-sm"
+          class="absolute bottom-28 left-6 right-6 z-40 rounded-xl bg-rose-500 p-4 text-sm font-semibold text-white shadow-xl shadow-rose-200/50 backdrop-blur-sm"
         >
           <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
@@ -216,7 +233,7 @@
             </div>
             <button
               @click="sendError = ''"
-              class="rounded-lg p-1 hover:bg-white/20 transition-colors"
+              class="rounded-lg p-1 transition-colors hover:bg-white/20"
             >
               ✕
             </button>
@@ -225,9 +242,7 @@
       </transition>
 
       <!-- Input Area -->
-      <div
-        class="relative z-10 border-t border-slate-200/60 bg-white/55 px-6 py-4 backdrop-blur-md"
-      >
+      <div class="relative z-10 border-t border-slate-200/60 bg-white/55 px-6 py-4 backdrop-blur-md">
         <MessageInput
           v-if="user"
           ref="messageInput"
@@ -273,12 +288,12 @@
 /* Custom scrollbar styles */
 .message-area {
   scrollbar-width: thin;
-  scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+  scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
 }
 
 .message-area::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 .message-area::-webkit-scrollbar-track {
@@ -287,13 +302,18 @@
 }
 
 .message-area::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(139, 92, 246, 0.3);
   border-radius: 10px;
   transition: background 0.2s;
 }
 
 .message-area::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.5);
+  background: rgba(139, 92, 246, 0.5);
+}
+
+/* Smooth scrolling */
+.message-area {
+  scroll-behavior: smooth;
 }
 </style>
 
@@ -301,18 +321,22 @@
 import chatApi from '@/services/messageApi'
 import MessageInput from './MessageInput.vue'
 import MessageBubble from './MessageBubble.vue'
+import FloatingEmojiLayer from './FloatingEmojiLayer.vue'
 import { mapState } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { mapActions } from 'pinia'
 import { useProfileStore } from '@/stores/profile'
 import { getAvatarUrl } from '@/utils/avatars'
 import eventBus from '@/services/eventBus'
+import { isCelebrationEmoji } from './emoji-catalog'
+import { getEmojiCount, isEmojiOnlyMessage, tokenizeMessageText } from './emoji-parser'
 
 export default {
   props: ['user'],
   components: {
     MessageBubble,
     MessageInput,
+    FloatingEmojiLayer,
   },
   data() {
     return {
@@ -320,6 +344,8 @@ export default {
       loading: false,
       sendError: '',
       pollTimer: null,
+      readSyncTimer: null,
+      readSyncInFlight: false,
       ws: null,
       wsConnected: false,
       showScrollDown: false,
@@ -329,6 +355,7 @@ export default {
       loadOffset: 0,
       editingMessage: null,
       replyingMessage: null,
+      revealUnreadOnLoad: false,
     }
   },
   computed: {
@@ -374,18 +401,40 @@ export default {
     groupedMessages() {
       const groups = []
       let lastDateKey = null
+      let unreadDividerAdded = false
+      const unreadInfo = this.getUnreadDividerInfo()
+      const unreadDividerLabel =
+        unreadInfo.count > 0
+          ? `${unreadInfo.count} unread message${unreadInfo.count === 1 ? '' : 's'}`
+          : 'Unread messages'
 
-      this.messages.forEach((message) => {
+      this.messages.forEach((message, index) => {
+        const isUnreadIncoming =
+          !unreadDividerAdded &&
+          !message?.is_deleted &&
+          index === unreadInfo.index
+
         const timestamp = message?.timestamp
-        const dateKey = timestamp ? this.getLocalDateKey(timestamp) : 'unknown'
+        if (timestamp) {
+          const dateKey = this.getLocalDateKey(timestamp)
 
-        if (dateKey !== lastDateKey) {
+          if (dateKey !== lastDateKey) {
+            groups.push({
+              type: 'date',
+              key: `date-${dateKey}-${groups.length}`,
+              label: this.getDateLabel(timestamp),
+            })
+            lastDateKey = dateKey
+          }
+        }
+
+        if (isUnreadIncoming) {
           groups.push({
-            type: 'date',
-            key: `date-${dateKey}-${groups.length}`,
-            label: this.getDateLabel(timestamp),
+            type: 'unread-divider',
+            key: `unread-divider-${message.id ?? groups.length}`,
+            label: unreadDividerLabel,
           })
-          lastDateKey = dateKey
+          unreadDividerAdded = true
         }
 
         groups.push({
@@ -407,29 +456,125 @@ export default {
         this.messages = []
         this.editingMessage = null
         this.replyingMessage = null
+        this.revealUnreadOnLoad = false
         this.stopPolling()
         this.closeWebSocket()
         this.detachScroll()
         return
       }
       this.editingMessage = null
+      this.revealUnreadOnLoad = true
       this.$nextTick(this.attachScroll)
       this.refreshThread()
       this.loadSelectedUserProfile()
     },
   },
   mounted() {
+    this.revealUnreadOnLoad = Boolean(this.user)
     this.refreshThread()
     this.$nextTick(this.attachScroll)
     this.loadSelectedUserProfile()
+    document.addEventListener('visibilitychange', this.handleVisibilityChange)
   },
   beforeUnmount() {
     this.stopPolling()
+    this.stopReadSyncTimer()
     this.closeWebSocket()
     this.detachScroll()
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange)
   },
   methods: {
     ...mapActions(useProfileStore, ['fetchProfile']),
+    stopReadSyncTimer() {
+      if (this.readSyncTimer) {
+        clearTimeout(this.readSyncTimer)
+        this.readSyncTimer = null
+      }
+    },
+    scheduleReadSync(delay = 150) {
+      if (!this.user || document.hidden) return
+      this.stopReadSyncTimer()
+      this.readSyncTimer = window.setTimeout(() => {
+        this.syncConversationReadState()
+      }, delay)
+    },
+    async syncConversationReadState() {
+      if (!this.user || !this.authToken || this.readSyncInFlight || document.hidden) return
+
+      this.readSyncInFlight = true
+      try {
+        const res = await chatApi.post(`messaging/conversations/${this.user.id}/read/`)
+        const updatedCount = Number(res.data?.updated_count || 0)
+        if (updatedCount > 0) {
+          this.messages = this.messages.map((message) => {
+            const isIncoming = String(message?.sender) !== String(this.currentUserId)
+            return isIncoming && !message?.is_deleted ? { ...message, is_read: true } : message
+          })
+        }
+        eventBus.emit('messaging-read-updated')
+      } catch {
+        // Ignore read-sync failures; the next refresh will retry.
+      } finally {
+        this.readSyncInFlight = false
+      }
+    },
+    handleVisibilityChange() {
+      if (!document.hidden && this.user) {
+        this.scheduleReadSync()
+      }
+    },
+    getUnreadDividerInfo() {
+      const currentUserId = String(this.currentUserId ?? '')
+      const messages = Array.isArray(this.messages) ? this.messages : []
+      const flaggedUnread = messages.filter(
+        (message) =>
+          !message?.is_deleted &&
+          !message?.is_read &&
+          String(message?.sender) !== currentUserId,
+      )
+
+      if (flaggedUnread.length > 0) {
+        const index = messages.findIndex(
+          (message) =>
+            !message?.is_deleted &&
+            !message?.is_read &&
+            String(message?.sender) !== currentUserId,
+        )
+        return { count: flaggedUnread.length, index }
+      }
+
+      const fallbackCount = Number(this.user?.unread_count || 0)
+      if (fallbackCount <= 0) {
+        return { count: 0, index: -1 }
+      }
+
+      let seenUnreadIncoming = 0
+      for (let index = messages.length - 1; index >= 0; index -= 1) {
+        const message = messages[index]
+        if (message?.is_deleted) continue
+        if (String(message?.sender) === currentUserId) continue
+
+        seenUnreadIncoming += 1
+        if (seenUnreadIncoming === fallbackCount) {
+          return { count: fallbackCount, index }
+        }
+      }
+
+      return { count: fallbackCount, index: -1 }
+    },
+    getCelebrationEmojiFromMessage(message) {
+      const raw = String(message?.content || '').trim()
+      if (!raw) return ''
+
+      const tokens = tokenizeMessageText(raw)
+      if (!isEmojiOnlyMessage(tokens) || getEmojiCount(tokens) !== 1) return ''
+
+      const celebrationEmoji = [...tokens]
+        .reverse()
+        .find((token) => token?.type === 'emoji' && isCelebrationEmoji(token.value))
+
+      return celebrationEmoji?.value || ''
+    },
     async loadSelectedUserProfile() {
       const username = this.user?.username
       if (!username) return
@@ -445,6 +590,7 @@ export default {
         this.messages = []
         this.editingMessage = null
         this.replyingMessage = null
+        this.revealUnreadOnLoad = false
         this.stopPolling()
         this.closeWebSocket()
         return
@@ -504,6 +650,9 @@ export default {
             this.applyMessagePatch(data.message)
           } else if (data?.message) {
             this.addMessageUnique(data.message, true)
+            if (String(data?.message?.sender) !== String(this.currentUserId)) {
+              this.scheduleReadSync()
+            }
           } else if (data?.reaction) {
             this.applyReactionUpdate(data.reaction)
           }
@@ -591,10 +740,17 @@ export default {
         this.hasMore = data.has_more || false
         this.loadOffset = this.messages.length
         eventBus.emit('messaging-read-updated')
+        this.scheduleReadSync(0)
 
         this.$nextTick(() => {
           const list = this.$refs.messageList
           if (!list) return
+
+          if (this.revealUnreadOnLoad) {
+            this.revealUnreadOnLoad = false
+            this.revealUnreadThreadPosition()
+            return
+          }
 
           if (wasNearBottom) {
             this.scrollToBottom(true)
@@ -720,6 +876,9 @@ export default {
         // ignore
       }
     },
+    openReactionPicker() {
+      this.$refs.messageInput?.openEmojiPicker?.()
+    },
     beginEditMessage(message) {
       if (
         !message ||
@@ -793,6 +952,7 @@ export default {
       const idx = this.messages.findIndex((msg) => String(msg.id) === String(message.id))
       if (idx === -1) {
         this.messages.push(message)
+        this.triggerEmojiEffectForMessage(message)
         return
       }
       this.messages[idx] = {
@@ -809,6 +969,10 @@ export default {
       if (!exists) {
         this.messages.push(message)
         this.totalCount += 1
+        this.triggerEmojiEffectForMessage(message)
+        if (String(message?.sender) !== String(this.currentUserId)) {
+          this.scheduleReadSync()
+        }
         if (this.shouldAutoScroll()) {
           this.$nextTick(() => this.scrollToBottom(true))
         } else {
@@ -825,6 +989,52 @@ export default {
       }
       el.scrollTop = el.scrollHeight
       this.showScrollDown = false
+    },
+    revealUnreadThreadPosition() {
+      const el = this.$refs.messageList
+      if (!el) return
+
+      const unreadInfo = this.getUnreadDividerInfo()
+      const targetMessage = unreadInfo.index >= 0 ? this.messages[unreadInfo.index] || null : null
+      const targetId = targetMessage?.id != null ? String(targetMessage.id) : ''
+      let didScroll = false
+
+      if (targetId) {
+        const targetEl = el.querySelector(`[data-message-id="${targetId}"]`)
+        if (targetEl?.scrollIntoView) {
+          const listRect = el.getBoundingClientRect()
+          const targetRect = targetEl.getBoundingClientRect()
+          const offsetTop = targetRect.top - listRect.top
+          const nextTop = el.scrollTop + offsetTop - 96
+          el.scrollTop = Math.max(0, nextTop)
+          didScroll = true
+        }
+      }
+
+      if (!didScroll) {
+        this.scrollToBottom(true)
+      } else {
+        const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+        this.showScrollDown = !nearBottom
+      }
+
+      const latestMessage = [...this.messages].reverse().find((message) => !message?.is_deleted) || null
+      const latestEmoji = this.getCelebrationEmojiFromMessage(latestMessage)
+      if (latestEmoji) {
+        this.$nextTick(() => {
+          this.triggerEmojiEffect(latestEmoji)
+        })
+      }
+    },
+    triggerEmojiEffect(emoji, origin) {
+      this.$refs.emojiLayer?.play?.(emoji, origin)
+    },
+    triggerEmojiEffectForMessage(message) {
+      const emoji = this.getCelebrationEmojiFromMessage(message)
+      if (!emoji) return
+      this.$nextTick(() => {
+        this.triggerEmojiEffect(emoji)
+      })
     },
   },
 }

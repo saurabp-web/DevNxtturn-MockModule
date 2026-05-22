@@ -157,34 +157,12 @@
               leave-from-class="translate-y-0 opacity-100 scale-100"
               leave-to-class="translate-y-4 opacity-0 scale-95"
             >
-              <div
-                v-if="showEmoji"
-                class="absolute bottom-14 right-0 z-[100] w-80 rounded-[2.5rem] bg-white/95 p-5 shadow-2xl shadow-blue-100 backdrop-blur-3xl"
-              >
-                <div class="mb-4 flex gap-2 overflow-x-auto border-b border-slate-100 pb-1 no-scrollbar">
-                  <button
-                    v-for="cat in Object.keys(emojiCategories)"
-                    :key="cat"
-                    class="whitespace-nowrap px-2 py-1 text-[10px] font-black uppercase tracking-tighter transition-colors"
-                    :class="activeCategory === cat ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'"
-                    type="button"
-                    @click="activeCategory = cat"
-                  >
-                    {{ cat }}
-                  </button>
-                </div>
-
-                <div class="custom-scrollbar grid max-h-56 grid-cols-6 gap-2 overflow-y-auto pr-1">
-                  <button
-                    v-for="emoji in emojiCategories[activeCategory]"
-                    :key="emoji"
-                    class="flex h-10 w-10 items-center justify-center rounded-xl text-xl transition-all duration-200 hover:bg-blue-50 hover:scale-125 active:scale-90"
-                    type="button"
-                    @click="pickEmoji(emoji)"
-                  >
-                    <EmojiGlyph :emoji="emoji" animated :size="26" />
-                  </button>
-                </div>
+              <div v-if="showEmoji" class="absolute bottom-14 right-0 z-[100]">
+                <EmojiPicker
+                  :open="showEmoji"
+                  @select="pickEmoji"
+                  @close="showEmoji = false"
+                />
               </div>
             </transition>
           </div>
@@ -222,12 +200,11 @@
 </template>
 
 <script>
-import EmojiGlyph from './EmojiGlyph.vue'
-import { EMOJI_CATEGORIES } from './emojis'
+import EmojiPicker from './EmojiPicker.vue'
 
 export default {
   components: {
-    EmojiGlyph,
+    EmojiPicker,
   },
   props: {
     disabled: {
@@ -249,8 +226,6 @@ export default {
       message: '',
       attachments: [],
       showEmoji: false,
-      activeCategory: 'Popular',
-      emojiCategories: EMOJI_CATEGORIES,
       errorMessage: '',
     }
   },
@@ -343,9 +318,19 @@ export default {
       if (this.disabled || this.isEditing) return
       this.showEmoji = !this.showEmoji
     },
+    openEmojiPicker() {
+      if (this.disabled || this.isEditing) return
+      this.showEmoji = true
+      this.$nextTick(() => {
+        this.$refs.inputArea?.focus()
+      })
+    },
     pickEmoji(emoji) {
+      if (!emoji) return
       this.message = `${this.message}${emoji}`
       this.$nextTick(() => this.adjustHeight())
+      this.showEmoji = false
+      this.$nextTick(() => this.$refs.inputArea?.focus())
     },
     removeAttachment(index) {
       const [removed] = this.attachments.splice(index, 1)

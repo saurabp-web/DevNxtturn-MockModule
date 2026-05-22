@@ -46,6 +46,14 @@ def broadcast_message(sender_id, receiver_id, data, event="created"):
     )
 
 
+def mark_conversation_read(user, other_user):
+    return Message.objects.filter(
+        sender=other_user,
+        receiver=user,
+        is_read=False,
+    ).update(is_read=True)
+
+
 def resolve_reply_target(sender, receiver, reply_to_message_id):
     if not reply_to_message_id:
         return None
@@ -235,11 +243,7 @@ def get_messages(request, user_id):
     user = request.user
     other_user = get_object_or_404(User, id=user_id)
 
-    Message.objects.filter(
-        sender=other_user,
-        receiver=user,
-        is_read=False
-    ).update(is_read=True)
+    mark_conversation_read(user, other_user)
 
     # Load latest messages first; allow older messages as offset increases
     offset = int(request.GET.get('offset', 0))
@@ -265,6 +269,21 @@ def get_messages(request, user_id):
         "total_count": total_count,
         "has_more": offset + limit < total_count
     })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def mark_conversation_as_read(request, user_id):
+    user = request.user
+    other_user = get_object_or_404(User, id=user_id)
+
+    updated_count = mark_conversation_read(user, other_user)
+    unread_count = Message.objects.filter(receiver=user, is_read=False).count()
+
+    return Response({
+        "updated_count": updated_count,
+        "unread_count": unread_count,
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

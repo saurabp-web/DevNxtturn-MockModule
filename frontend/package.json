@@ -24,6 +24,7 @@
     "@dicebear/avatars": "^4.10.8",
     "@dicebear/collection": "^9.2.4",
     "@dicebear/core": "^9.2.4",
+    "@emoji-mart/data": "^1.2.1",
     "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@formkit/auto-animate": "^0.9.0",
@@ -58,7 +59,9 @@
     "vue-masonry-css": "^1.0.3",
     "vue-router": "^4.5.0",
     "vue-toastification": "^2.0.0-rc.5",
-    "vue3-google-signin": "^2.1.1"
+    "vue3-google-signin": "^2.1.1",
+    "vue3-lottie": "^3.3.1",
+    "emoji-mart": "^5.6.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.10.0",
