@@ -44,10 +44,12 @@ steps:
             --set-secrets "DATABASE_URL=DATABASE_CONNECTION_NAME:latest,SECRET_KEY=SECRET_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest,REDIS_URL=REDIS_URL:latest,BREVO_API_KEY=BREVO_API_KEY:latest,GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest" \
             --allow-unauthenticated
         else
+          # Feature-branch previews still point at the live backend service URL
+          # from the frontend Nginx proxy, so the newest backend revision must
+          # receive traffic or the preview will keep hitting an old backend.
           gcloud run deploy nxtturn-backend-dev \
             --image us-central1-docker.pkg.dev/$PROJECT_ID/nxtturn-images/backend-dev:latest \
             --region us-central1 \
-            --no-traffic \
             --tag=$(cat _TAG_NAME) \
             --service-account nxtturn-dev-cloud-robot@$PROJECT_ID.iam.gserviceaccount.com \
             --set-env-vars ENVIRONMENT=development,IS_LOCAL=False,GS_BUCKET_NAME=nxtturn-media-dev-cloud,FRONTEND_URL=https://dev.nxtturn.com,BACKEND_URL=https://nxtturn-backend-dev-656842361738.us-central1.run.app,EMAIL_MODE=brevo \
