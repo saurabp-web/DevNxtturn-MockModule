@@ -50,6 +50,7 @@ USER django
 # Copy ONLY the essential app code (Physically isolates tests)
 COPY Loopline/community /app/community
 COPY Loopline/config /app/config
+COPY Loopline/messaging /app/messaging
 COPY Loopline/e2e_test_utils /app/e2e_test_utils
 COPY Loopline/manage.py /app/manage.py
 
