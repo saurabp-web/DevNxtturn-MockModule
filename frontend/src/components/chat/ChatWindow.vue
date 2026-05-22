@@ -332,6 +332,10 @@ import { mapActions } from 'pinia'
 import { useProfileStore } from '@/stores/profile'
 import { getAvatarUrl } from '@/utils/avatars'
 import eventBus from '@/services/eventBus'
+import {
+  getConversationMessages,
+  sendConversationMessage,
+} from '@/services/messagingCompat'
 import { isCelebrationEmoji } from './emoji-catalog'
 import { getEmojiCount, isEmojiOnlyMessage, tokenizeMessageText } from './emoji-parser'
 
@@ -507,8 +511,18 @@ export default {
 
       this.readSyncInFlight = true
       try {
-        const res = await chatApi.post(`messaging/conversations/${this.user.id}/read/`)
-        const updatedCount = Number(res.data?.updated_count || 0)
+        // Best-effort: the legacy backend does not expose a read endpoint.
+        const res = await fetch(
+          `${window.location.origin}/api/messaging/conversations/${this.user.id}/read/`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: this.authToken ? `Token ${this.authToken}` : '',
+            },
+          },
+        ).catch(() => null)
+        const payload = res?.ok ? await res.json().catch(() => null) : null
+        const updatedCount = Number(payload?.updated_count || 0)
         if (updatedCount > 0) {
           this.messages = this.messages.map((message) => {
             const isIncoming = String(message?.sender) !== String(this.currentUserId)
@@ -737,8 +751,7 @@ export default {
       const previousScrollTop = el ? el.scrollTop : 0
       const previousScrollHeight = el ? el.scrollHeight : 0
       try {
-        const res = await chatApi.get(`messaging/conversations/${this.user.id}/messages/?limit=50&offset=0`)
-        const data = res.data
+        const data = await getConversationMessages(this.user.id, { limit: 50, offset: 0 })
         this.messages = data.messages || []
         this.totalCount = data.total_count || 0
         this.hasMore = data.has_more || false
@@ -788,10 +801,10 @@ export default {
       const prevScrollTop = el.scrollTop
 
       try {
-        const res = await chatApi.get(
-          `messaging/conversations/${this.user.id}/messages/?limit=50&offset=${this.loadOffset}`,
-        )
-        const data = res.data
+        const data = await getConversationMessages(this.user.id, {
+          limit: 50,
+          offset: this.loadOffset,
+        })
         const newMessages = data.messages || []
 
         if (newMessages.length > 0) {
@@ -838,8 +851,21 @@ export default {
             if (replyToMessageId) {
               form.append('reply_to_message_id', replyToMessageId)
             }
-            const res = await chatApi.post(`messaging/conversations/${this.user.id}/media/`, form)
-            this.addMessageUnique(res.data)
+            const res = await fetch(
+              `${window.location.origin}/api/messaging/conversations/${this.user.id}/media/`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: this.authToken ? `Token ${this.authToken}` : '',
+                },
+                body: form,
+              },
+            ).catch(() => null)
+            if (!res || !res.ok) {
+              throw new Error('Media messages are not supported on this backend.')
+            }
+            const json = await res.json()
+            this.addMessageUnique(json)
           }
           this.replyingMessage = null
           return
@@ -854,11 +880,12 @@ export default {
               }),
             )
           } else {
-            const res = await chatApi.post(`messaging/conversations/${this.user.id}/send/`, {
+            const message = await sendConversationMessage(this.user.id, {
               content: text.trim(),
               reply_to_message_id: replyToMessageId,
+              recipientUsername: this.user.username,
             })
-            this.addMessageUnique(res.data)
+            this.addMessageUnique(message)
           }
           this.replyingMessage = null
         }

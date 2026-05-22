@@ -14,6 +14,7 @@ import { useGroupStore } from '@/stores/group'
 import { usePostsStore } from '@/stores/posts'
 import type { Post } from '@/types'
 import eventBus from '@/services/eventBus'
+import { getUnreadMessageCountFromConversations } from '@/services/messagingCompat'
 
 // Import animate.css ONLY for bell animation
 import 'animate.css'
@@ -197,8 +198,7 @@ const fetchUnreadMessages = async () => {
   }
 
   try {
-    const response = await axiosInstance.get('/messaging/messages/unread-count/')
-    unreadMessageCount.value = Number(response.data?.count || 0)
+    unreadMessageCount.value = await getUnreadMessageCountFromConversations()
   } catch (error) {
     console.error('TopNavBar: Failed to fetch unread messages:', error)
     unreadMessageCount.value = 0

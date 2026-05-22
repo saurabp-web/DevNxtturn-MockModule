@@ -207,9 +207,12 @@
 </template>
 
 <script>
-import chatApi from '@/services/messageApi'
 import axiosInstance from '@/services/axiosInstance'
 import eventBus from '@/services/eventBus'
+import {
+  getMessagingConversations,
+  getMessagingUsers,
+} from '@/services/messagingCompat'
 import { mapActions, mapState } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/profile'
@@ -340,8 +343,7 @@ export default {
         this.error = ''
       }
       try {
-        const res = await chatApi.get('messaging/conversations/')
-        this.conversations = res.data
+        this.conversations = await getMessagingConversations()
         await this.hydrateConversationProfiles()
         await this.hydrateConversationAvatars()
         this.tryAutoSelectInitialUser()
@@ -355,8 +357,8 @@ export default {
       if (!this.initialUsername || this.initialSelectionAttempted || this.selectedUserId) return
       this.initialSelectionAttempted = true
       try {
-        const res = await chatApi.get('messaging/users/')
-        const match = (res.data || []).find((user) => user.username === this.initialUsername)
+        const results = await getMessagingUsers(this.initialUsername)
+        const match = (results || []).find((user) => user.username === this.initialUsername)
         if (match) {
           await this.ensureProfileLoaded(match.username)
           this.$emit('selectUser', this.mergeProfileIntoConversation(match))
