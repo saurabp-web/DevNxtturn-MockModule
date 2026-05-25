@@ -247,6 +247,26 @@
 
       <!-- Input Area -->
       <div class="relative z-10 border-t border-slate-200/60 bg-white/55 px-6 py-4 backdrop-blur-md">
+        <transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="translate-y-1 opacity-0"
+          enter-to-class="translate-y-0 opacity-100"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="translate-y-0 opacity-100"
+          leave-to-class="translate-y-1 opacity-0"
+        >
+          <div
+            v-if="isPartnerTyping"
+            class="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 text-xs font-semibold text-slate-500 shadow-sm backdrop-blur-md"
+          >
+            <span class="flex items-center gap-1">
+              <span class="typing-dot"></span>
+              <span class="typing-dot typing-dot-delay-1"></span>
+              <span class="typing-dot typing-dot-delay-2"></span>
+            </span>
+            <span>{{ user.username }} is typing</span>
+          </div>
+        </transition>
         <MessageInput
           v-if="user"
           ref="messageInput"
@@ -256,6 +276,7 @@
           @send="sendMessage"
           @cancel-edit="cancelEditMessage"
           @cancel-reply="cancelReplyMessage"
+          @typing="handleTyping"
         />
       </div>
     </div>
@@ -319,6 +340,37 @@
 .message-area {
   scroll-behavior: smooth;
 }
+
+.typing-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: rgb(148 163 184);
+  animation: typingPulse 1.2s infinite ease-in-out;
+}
+
+.typing-dot-delay-1 {
+  animation-delay: 0.15s;
+}
+
+.typing-dot-delay-2 {
+  animation-delay: 0.3s;
+}
+
+@keyframes typingPulse {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+
+  40% {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+}
 </style>
 
 <script>
@@ -364,6 +416,10 @@ export default {
       editingMessage: null,
       replyingMessage: null,
       revealUnreadOnLoad: false,
+      isPartnerTyping: false,
+      typingIndicatorTimer: null,
+      isLocallyTyping: false,
+      typingSendTimer: null,
     }
   },
   computed: {
@@ -465,6 +521,7 @@ export default {
         this.editingMessage = null
         this.replyingMessage = null
         this.revealUnreadOnLoad = false
+        this.clearTypingIndicator()
         this.stopPolling()
         this.closeWebSocket()
         this.detachScroll()
@@ -487,6 +544,7 @@ export default {
   beforeUnmount() {
     this.stopPolling()
     this.stopReadSyncTimer()
+    this.clearTypingIndicator()
     this.closeWebSocket()
     this.detachScroll()
     document.removeEventListener('visibilitychange', this.handleVisibilityChange)
@@ -498,6 +556,38 @@ export default {
         clearTimeout(this.readSyncTimer)
         this.readSyncTimer = null
       }
+    },
+    clearTypingIndicator() {
+      this.isPartnerTyping = false
+      if (this.typingIndicatorTimer) {
+        clearTimeout(this.typingIndicatorTimer)
+        this.typingIndicatorTimer = null
+      }
+    },
+    clearTypingSenderTimer() {
+      if (this.typingSendTimer) {
+        clearTimeout(this.typingSendTimer)
+        this.typingSendTimer = null
+      }
+    },
+    scheduleTypingIndicatorReset() {
+      if (this.typingIndicatorTimer) {
+        clearTimeout(this.typingIndicatorTimer)
+      }
+      this.typingIndicatorTimer = window.setTimeout(() => {
+        this.isPartnerTyping = false
+        this.typingIndicatorTimer = null
+      }, 2500)
+    },
+    sendTypingState(isTyping) {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
+      this.ws.send(
+        JSON.stringify({
+          event: 'typing',
+          is_typing: Boolean(isTyping),
+        }),
+      )
+      return true
     },
     scheduleReadSync(delay = 150) {
       if (!this.user || document.hidden) return
@@ -626,6 +716,9 @@ export default {
       this.ws.onopen = () => {
         this.wsConnected = true
         this.stopPolling()
+        if (this.isLocallyTyping) {
+          this.sendTypingState(true)
+        }
       }
       this.ws.onclose = () => {
         this.wsConnected = false
@@ -645,10 +738,13 @@ export default {
           } else if (data?.message) {
             this.addMessageUnique(data.message, true)
             if (String(data?.message?.sender) !== String(this.currentUserId)) {
+              this.clearTypingIndicator()
               this.scheduleReadSync()
             }
           } else if (data?.reaction) {
             this.applyReactionUpdate(data.reaction)
+          } else if (data?.typing) {
+            this.handleTypingEvent(data.typing)
           }
         } catch {
           // ignore
@@ -661,6 +757,8 @@ export default {
         this.ws = null
       }
       this.wsConnected = false
+      this.clearTypingIndicator()
+      this.clearTypingSenderTimer()
     },
     attachScroll() {
       this.detachScroll()
@@ -882,6 +980,34 @@ export default {
       } catch {
         // ignore
       }
+    },
+    handleTyping(isTyping) {
+      this.isLocallyTyping = Boolean(isTyping)
+      this.clearTypingSenderTimer()
+      if (!this.wsConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) return
+      this.sendTypingState(isTyping)
+      if (isTyping) {
+        this.typingSendTimer = window.setTimeout(() => {
+          this.typingSendTimer = null
+          if (this.isLocallyTyping) {
+            this.sendTypingState(true)
+          }
+        }, 1200)
+      }
+    },
+    handleTypingEvent(typing) {
+      const senderId = String(typing?.user_id ?? typing?.sender_id ?? '')
+      if (senderId && senderId === String(this.currentUserId)) {
+        return
+      }
+
+      if (typing?.is_typing) {
+        this.isPartnerTyping = true
+        this.scheduleTypingIndicatorReset()
+        return
+      }
+
+      this.clearTypingIndicator()
     },
     openReactionPicker() {
       this.$refs.messageInput?.openEmojiPicker?.()

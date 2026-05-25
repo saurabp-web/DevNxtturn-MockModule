@@ -122,8 +122,11 @@
             rows="1"
             :placeholder="isEditing ? 'Edit your message...' : 'Type a message...'"
             class="custom-scrollbar w-full max-h-32 resize-none rounded-[2rem] bg-white/90 py-4 pl-14 pr-14 text-[15px] font-medium leading-relaxed text-slate-800 shadow-sm outline-none transition-all placeholder:text-slate-400 hover:bg-white focus:shadow-md focus:ring-4 focus:ring-blue-500/10 disabled:opacity-50"
-            @input="adjustHeight"
+            @input="handleInput"
+            @keydown="handleKeydown"
+            @focus="handleFocus"
             @keydown.enter.prevent="send"
+            @blur="handleBlur"
           ></textarea>
 
           <button
@@ -220,13 +223,15 @@ export default {
       default: null,
     },
   },
-  emits: ['send', 'cancel-edit', 'cancel-reply'],
+  emits: ['send', 'cancel-edit', 'cancel-reply', 'typing'],
   data() {
     return {
       message: '',
       attachments: [],
       showEmoji: false,
       errorMessage: '',
+      lastTypingState: false,
+      typingIdleTimer: null,
     }
   },
   computed: {
@@ -258,10 +263,22 @@ export default {
         this.clearFiles()
         this.message = val?.content || ''
         this.$nextTick(() => this.adjustHeight())
+        this.syncTypingState(true)
       },
+    },
+    message() {
+      this.$nextTick(() => this.adjustHeight())
+      this.syncTypingState()
+    },
+    disabled() {
+      this.syncTypingState(true)
     },
   },
   beforeUnmount() {
+    if (this.typingIdleTimer) {
+      clearTimeout(this.typingIdleTimer)
+      this.typingIdleTimer = null
+    }
     this.attachments.forEach((attachment) => {
       if (attachment.previewUrl) {
         URL.revokeObjectURL(attachment.previewUrl)
@@ -269,6 +286,42 @@ export default {
     })
   },
   methods: {
+    syncTypingState(force = false) {
+      const isTyping = Boolean(this.message?.trim()) && !this.disabled && !this.isEditing
+      if (force || isTyping !== this.lastTypingState) {
+        this.lastTypingState = isTyping
+        this.$emit('typing', isTyping)
+      }
+      if (this.typingIdleTimer) {
+        clearTimeout(this.typingIdleTimer)
+        this.typingIdleTimer = null
+      }
+      if (isTyping) {
+        this.typingIdleTimer = window.setTimeout(() => {
+          this.typingIdleTimer = null
+          this.lastTypingState = false
+          this.$emit('typing', false)
+        }, 1800)
+      }
+    },
+    handleInput() {
+      this.syncTypingState()
+    },
+    handleKeydown(event) {
+      if (event?.key === 'Enter') return
+      this.syncTypingState(true)
+    },
+    handleFocus() {
+      this.syncTypingState()
+    },
+    handleBlur() {
+      if (this.typingIdleTimer) {
+        clearTimeout(this.typingIdleTimer)
+        this.typingIdleTimer = null
+      }
+      this.lastTypingState = false
+      this.$emit('typing', false)
+    },
     adjustHeight() {
       const el = this.$refs.inputArea
       if (el) {
@@ -362,6 +415,12 @@ export default {
         replyToMessageId: this.replyingMessage?.id || null,
       })
       this.message = ''
+      this.lastTypingState = false
+      if (this.typingIdleTimer) {
+        clearTimeout(this.typingIdleTimer)
+        this.typingIdleTimer = null
+      }
+      this.$emit('typing', false)
       this.$nextTick(() => {
         if (this.$refs.inputArea) this.$refs.inputArea.style.height = 'auto'
       })

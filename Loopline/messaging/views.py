@@ -40,10 +40,16 @@ def broadcast_message(sender_id, receiver_id, data, event="created"):
     user_ids = sorted([sender_id, receiver_id])
     room_group_name = f"chat_{user_ids[0]}_{user_ids[1]}"
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        room_group_name,
-        {"type": "chat.message", "message": data, "event": event}
-    )
+    payload = {"event": event}
+
+    if event == "reaction":
+        payload["type"] = "chat.reaction"
+        payload["reaction"] = data
+    else:
+        payload["type"] = "chat.message"
+        payload["message"] = data
+
+    async_to_sync(channel_layer.group_send)(room_group_name, payload)
 
 
 def mark_conversation_read(user, other_user):
@@ -232,7 +238,7 @@ def react_message(request):
     )
 
     payload = {"message_id": message.id, "reactions": reactions}
-    broadcast_message(message.sender_id, message.receiver_id, payload)
+    broadcast_message(message.sender_id, message.receiver_id, payload, event="reaction")
 
     return Response(payload)
 
