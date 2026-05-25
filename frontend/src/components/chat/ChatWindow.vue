@@ -508,33 +508,9 @@ export default {
     },
     async syncConversationReadState() {
       if (!this.user || !this.authToken || this.readSyncInFlight || document.hidden) return
-
-      this.readSyncInFlight = true
-      try {
-        // Best-effort: the legacy backend does not expose a read endpoint.
-        const res = await fetch(
-          `${window.location.origin}/api/messaging/conversations/${this.user.id}/read/`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: this.authToken ? `Token ${this.authToken}` : '',
-            },
-          },
-        ).catch(() => null)
-        const payload = res?.ok ? await res.json().catch(() => null) : null
-        const updatedCount = Number(payload?.updated_count || 0)
-        if (updatedCount > 0) {
-          this.messages = this.messages.map((message) => {
-            const isIncoming = String(message?.sender) !== String(this.currentUserId)
-            return isIncoming && !message?.is_deleted ? { ...message, is_read: true } : message
-          })
-        }
-        eventBus.emit('messaging-read-updated')
-      } catch {
-        // Ignore read-sync failures; the next refresh will retry.
-      } finally {
-        this.readSyncInFlight = false
-      }
+      // The legacy backend does not expose a read-state endpoint, so we keep
+      // local thread state authoritative and avoid noisy 404s here.
+      eventBus.emit('messaging-read-updated')
     },
     handleVisibilityChange() {
       if (!document.hidden && this.user) {
@@ -751,7 +727,7 @@ export default {
       const previousScrollTop = el ? el.scrollTop : 0
       const previousScrollHeight = el ? el.scrollHeight : 0
       try {
-        const data = await getConversationMessages(this.user.id, { limit: 50, offset: 0 })
+        const data = await getConversationMessages(this.user, { limit: 50, offset: 0 })
         this.messages = data.messages || []
         this.totalCount = data.total_count || 0
         this.hasMore = data.has_more || false
@@ -801,7 +777,7 @@ export default {
       const prevScrollTop = el.scrollTop
 
       try {
-        const data = await getConversationMessages(this.user.id, {
+        const data = await getConversationMessages(this.user, {
           limit: 50,
           offset: this.loadOffset,
         })
@@ -880,7 +856,7 @@ export default {
               }),
             )
           } else {
-            const message = await sendConversationMessage(this.user.id, {
+            const message = await sendConversationMessage(this.user, {
               content: text.trim(),
               reply_to_message_id: replyToMessageId,
               recipientUsername: this.user.username,
