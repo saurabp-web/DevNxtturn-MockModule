@@ -163,12 +163,16 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-center justify-between gap-1">
             <RouterLink
+              v-if="user.username"
               :to="{ name: 'profile', params: { username: user.username } }"
               class="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors hover:text-blue-600"
               @click.stop
             >
               {{ user.username }}
             </RouterLink>
+            <span v-else class="truncate text-sm font-bold tracking-tight text-slate-900">
+              Unknown user
+            </span>
             <span
               v-if="user.last_message_time && !search"
               class="flex-shrink-0 text-[10px] font-bold text-slate-400 uppercase"

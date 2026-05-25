@@ -37,9 +37,11 @@ function normalizeConversationRow(row: any) {
     participants.find((participant) => participant?.id !== currentUserId) ||
     participants[0] ||
     {}
+  const username = partner?.username || row?.username || partner?.user?.username || ''
 
   return {
     ...partner,
+    username,
     id: partner?.id ?? row?.id,
     conversation_id: row?.id,
     conversationId: row?.id,
