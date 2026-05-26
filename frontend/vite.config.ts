@@ -26,6 +26,13 @@ export default defineConfig(({ command, mode }) => {
       host: true,
       port: 5173,
       allowedHosts: true,
+      watch: {
+        // Docker bind mounts can make recursive directory scans expensive.
+        // Polling is a little noisier, but it is much more stable in this setup.
+        usePolling: true,
+        interval: 250,
+        ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/coverage/**', '**/.cache/**'],
+      },
       // --- NEW PROXY LOGIC (The "Senior Architect" Way) ---
       proxy: {
         // Any request to /api will be sent to the Django Backend container

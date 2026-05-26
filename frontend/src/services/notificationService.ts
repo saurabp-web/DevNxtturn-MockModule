@@ -4,6 +4,7 @@ import { useToast } from 'vue-toastification'
 class NotificationService {
   private socket: WebSocket | null = null
   private isConnecting: boolean = false
+  private heartbeatTimer: number | null = null
 
   // --- NEW: State for reconnection logic ---
   private reconnectAttempts = 0
@@ -49,6 +50,7 @@ class NotificationService {
       this.isConnecting = false
       // --- NEW: Reset reconnect attempts on a successful connection ---
       this.resetReconnectState()
+      this.startHeartbeat()
     }
 
     this.socket.onmessage = this.handleMessage.bind(this) // Use bound method for consistency
@@ -57,6 +59,7 @@ class NotificationService {
       console.warn('Service: WebSocket connection closed.')
       this.socket = null
       this.isConnecting = false
+      this.stopHeartbeat()
       // --- NEW: Instead of just stopping, schedule a reconnect attempt ---
       this.scheduleReconnect()
     }
@@ -76,7 +79,23 @@ class NotificationService {
       this.socket.close()
       this.socket = null
       this.isConnecting = false
+      this.stopHeartbeat()
       this.resetReconnectState()
+    }
+  }
+
+  private startHeartbeat(): void {
+    this.stopHeartbeat()
+    this.heartbeatTimer = window.setInterval(() => {
+      if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return
+      this.socket.send(JSON.stringify({ event: 'ping' }))
+    }, 25000)
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeatTimer) {
+      window.clearInterval(this.heartbeatTimer)
+      this.heartbeatTimer = null
     }
   }
 

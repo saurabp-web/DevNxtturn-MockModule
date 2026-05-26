@@ -150,6 +150,10 @@
             :alt="`${user.username} avatar`"
             class="relative z-10 h-12 w-12 rounded-[1.25rem] object-cover shadow-lg transition-transform duration-300 group-hover:scale-105"
           />
+          <div
+            v-if="user.is_online"
+            class="absolute -bottom-0.5 -right-0.5 z-20 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm"
+          ></div>
           <!-- Online/Unread Dot -->
           <div
             v-if="user.unread_count > 0"

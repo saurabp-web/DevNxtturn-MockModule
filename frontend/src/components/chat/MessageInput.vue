@@ -18,7 +18,7 @@
               Replying to {{ replyingMessage?.sender_username || 'message' }}
             </div>
             <div class="truncate text-sm font-medium text-indigo-900/80">
-              {{ replyingMessage?.content || 'Media message' }}
+              {{ replyPreviewText }}
             </div>
           </div>
           <button
@@ -142,6 +142,7 @@
 
           <div class="absolute right-3 bottom-2">
             <button
+              ref="emojiButton"
               class="flex h-11 w-11 items-center justify-center rounded-[1.25rem] text-2xl transition-all duration-300 hover:bg-violet-50 hover:scale-110 active:scale-90"
               :disabled="disabled || isEditing"
               type="button"
@@ -152,22 +153,31 @@
               </svg>
             </button>
 
-            <transition
-              enter-active-class="transition duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-              enter-from-class="translate-y-8 opacity-0 scale-90"
-              enter-to-class="translate-y-0 opacity-100 scale-100"
-              leave-active-class="transition duration-200 ease-in"
-              leave-from-class="translate-y-0 opacity-100 scale-100"
-              leave-to-class="translate-y-4 opacity-0 scale-95"
-            >
-              <div v-if="showEmoji" class="absolute bottom-14 right-0 z-[100]">
-                <EmojiPicker
-                  :open="showEmoji"
-                  @select="pickEmoji"
-                  @close="showEmoji = false"
-                />
-              </div>
-            </transition>
+            <teleport to="body">
+              <transition
+                enter-active-class="transition duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+                enter-from-class="translate-y-8 opacity-0 scale-90"
+                enter-to-class="translate-y-0 opacity-100 scale-100"
+                leave-active-class="transition duration-200 ease-in"
+                leave-from-class="translate-y-0 opacity-100 scale-100"
+                leave-to-class="translate-y-4 opacity-0 scale-95"
+              >
+                <div
+                  v-if="showEmoji"
+                  class="fixed z-[260]"
+                  :style="emojiPanelStyle"
+                  @click.stop
+                >
+                  <EmojiPicker
+                    :open="showEmoji"
+                    mode="composer"
+                    @select="pickEmoji"
+                    @pick-media="pickMedia"
+                    @close="showEmoji = false"
+                  />
+                </div>
+              </transition>
+            </teleport>
           </div>
         </div>
       </div>
@@ -204,6 +214,7 @@
 
 <script>
 import EmojiPicker from './EmojiPicker.vue'
+import { describeMediaItem } from './chatMediaCatalog'
 
 export default {
   components: {
@@ -229,6 +240,12 @@ export default {
       message: '',
       attachments: [],
       showEmoji: false,
+      emojiPanelStyle: {
+        left: '0px',
+        top: '0px',
+        width: '28rem',
+        maxHeight: '60vh',
+      },
       errorMessage: '',
       lastTypingState: false,
       typingIdleTimer: null,
@@ -240,6 +257,16 @@ export default {
     },
     isReplying() {
       return Boolean(this.replyingMessage)
+    },
+    replyPreviewText() {
+      const type = String(this.replyingMessage?.message_type || 'text').toLowerCase()
+      if (type === 'gif' || type === 'sticker') {
+        return describeMediaItem({
+          kind: type,
+          title: this.replyingMessage?.media_title || this.replyingMessage?.provider_id || type,
+        })
+      }
+      return this.replyingMessage?.content || 'Message'
     },
   },
   watch: {
@@ -273,6 +300,19 @@ export default {
     disabled() {
       this.syncTypingState(true)
     },
+    showEmoji(isOpen) {
+      if (!isOpen) {
+        window.removeEventListener('resize', this.repositionEmojiPanel)
+        window.removeEventListener('scroll', this.repositionEmojiPanel, true)
+        return
+      }
+
+      this.$nextTick(() => {
+        this.repositionEmojiPanel()
+        window.addEventListener('resize', this.repositionEmojiPanel)
+        window.addEventListener('scroll', this.repositionEmojiPanel, true)
+      })
+    },
   },
   beforeUnmount() {
     if (this.typingIdleTimer) {
@@ -284,6 +324,8 @@ export default {
         URL.revokeObjectURL(attachment.previewUrl)
       }
     })
+    window.removeEventListener('resize', this.repositionEmojiPanel)
+    window.removeEventListener('scroll', this.repositionEmojiPanel, true)
   },
   methods: {
     syncTypingState(force = false) {
@@ -378,11 +420,71 @@ export default {
         this.$refs.inputArea?.focus()
       })
     },
+    repositionEmojiPanel() {
+      const button = this.$refs.emojiButton
+      if (!(button instanceof HTMLElement)) return
+
+      const rect = button.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const panelWidth = Math.min(448, Math.max(280, viewportWidth - 16))
+      const panelHeight = Math.min(580, Math.max(380, Math.round(viewportHeight * 0.64)))
+      const gutter = 12
+
+      const left = Math.max(
+        gutter,
+        Math.min(rect.right - panelWidth, viewportWidth - panelWidth - gutter),
+      )
+      const aboveTop = rect.top - panelHeight - gutter
+      const belowTop = rect.bottom + gutter
+      const top = aboveTop >= gutter ? aboveTop : Math.min(belowTop, viewportHeight - panelHeight - gutter)
+
+      this.emojiPanelStyle = {
+        left: `${left}px`,
+        top: `${Math.max(gutter, top)}px`,
+        width: `${panelWidth}px`,
+        maxHeight: `${panelHeight}px`,
+      }
+    },
     pickEmoji(emoji) {
       if (!emoji) return
       this.message = `${this.message}${emoji}`
       this.$nextTick(() => this.adjustHeight())
       this.$nextTick(() => this.$refs.inputArea?.focus())
+    },
+    pickMedia(item) {
+      if (!item || this.disabled || this.isEditing) return
+      if (!item.sendUrl) return
+
+      this.$emit('send', {
+        text: '',
+        files: [],
+        editingMessageId: this.editingMessage?.id || null,
+        replyToMessageId: this.replyingMessage?.id || null,
+        media: {
+          kind: item.kind,
+          title: item.title,
+          provider: item.provider,
+          providerId: item.providerId,
+          previewUrl: item.previewUrl,
+          sendUrl: item.sendUrl,
+          stillUrl: item.stillUrl,
+          animated: item.animated,
+        },
+      })
+
+      this.message = ''
+      this.lastTypingState = false
+      if (this.typingIdleTimer) {
+        clearTimeout(this.typingIdleTimer)
+        this.typingIdleTimer = null
+      }
+      this.$emit('typing', false)
+      this.$nextTick(() => {
+        if (this.$refs.inputArea) this.$refs.inputArea.style.height = 'auto'
+      })
+      this.clearFiles()
+      this.showEmoji = false
     },
     removeAttachment(index) {
       const [removed] = this.attachments.splice(index, 1)

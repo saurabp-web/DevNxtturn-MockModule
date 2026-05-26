@@ -14,6 +14,8 @@ from rest_framework.decorators import parser_classes
 
 from .models import Message, MessageReaction, Follow
 from .serializers import MessageSerializer
+from .message_markers import build_chat_id, describe_message, normalize_message_type
+from community.presence import is_user_online
 
 
 def _serialize_chat_user(user_obj, request):
@@ -33,6 +35,7 @@ def _serialize_chat_user(user_obj, request):
         "first_name": user_obj.first_name,
         "last_name": user_obj.last_name,
         "picture": picture_url,
+        "is_online": is_user_online(user_obj.id),
     }
 
 
@@ -82,6 +85,40 @@ def resolve_reply_target(sender, receiver, reply_to_message_id):
     return reply
 
 
+def _clean_payload_value(value):
+    return str(value or "").strip()
+
+
+def _create_message_from_payload(sender, receiver, payload, reply_to_message=None):
+    message_type = normalize_message_type(payload.get("message_type") or payload.get("type"))
+    content = _clean_payload_value(payload.get("content"))
+    external_url = _clean_payload_value(payload.get("gif_url") or payload.get("sticker_url") or payload.get("external_url"))
+    provider = _clean_payload_value(payload.get("provider"))
+    provider_id = _clean_payload_value(payload.get("provider_id") or payload.get("id"))
+    media_title = _clean_payload_value(payload.get("title") or payload.get("media_title"))
+    animated = bool(payload.get("animated", False))
+
+    if message_type in {"gif", "sticker"}:
+        if not external_url:
+            return None, {"error": "gif_url or sticker_url is required"}
+    elif not content:
+        return None, {"error": "Message content is required"}
+
+    message = Message.objects.create(
+        sender=sender,
+        receiver=receiver,
+        content=content if message_type == "text" else "",
+        message_type=message_type,
+        media_title=media_title,
+        external_url=external_url,
+        provider=(provider or "giphy") if message_type in {"gif", "sticker"} else provider,
+        provider_id=provider_id,
+        animated=animated if message_type in {"gif", "sticker"} else False,
+        reply_to=reply_to_message,
+    )
+    return message, None
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def send_message(request, user_id):
@@ -93,16 +130,9 @@ def send_message(request, user_id):
         request.data.get("reply_to_message_id"),
     )
 
-    content = request.data.get("content", "").strip()
-    if not content:
-        return Response({"error": "Message content is required"})
-
-    message = Message.objects.create(
-        sender=sender,
-        receiver=receiver,
-        content=content,
-        reply_to=reply_to_message,
-    )
+    message, error = _create_message_from_payload(sender, receiver, request.data, reply_to_message)
+    if error:
+        return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = MessageSerializer(message, context={"request": request})
     broadcast_message(sender.id, receiver.id, serializer.data, event="created")
@@ -139,6 +169,7 @@ def send_media(request, user_id):
         sender=sender,
         receiver=receiver,
         content=content,
+        message_type="file",
         media=upload,
         media_type=media_type,
         reply_to=reply_to_message,
@@ -166,6 +197,8 @@ def message_detail(request, message_id):
             return Response({"error": "You can only edit your own messages"}, status=status.HTTP_403_FORBIDDEN)
         if message.is_deleted:
             return Response({"error": "Deleted messages cannot be edited"}, status=status.HTTP_400_BAD_REQUEST)
+        if normalize_message_type(message.message_type) != "text":
+            return Response({"error": "Only text messages can be edited"}, status=status.HTTP_400_BAD_REQUEST)
         if timezone.now() > message.timestamp + timedelta(minutes=30):
             return Response(
                 {"error": "Messages can only be edited within 30 minutes"},
@@ -191,11 +224,16 @@ def message_detail(request, message_id):
         message.media.delete(save=False)
 
     message.content = ""
+    message.message_type = "text"
+    message.external_url = ""
+    message.provider = ""
+    message.provider_id = ""
+    message.animated = False
     message.media = None
     message.media_type = ""
     message.is_deleted = True
     message.edited_at = timezone.now()
-    message.save(update_fields=["content", "media", "media_type", "is_deleted", "edited_at"])
+    message.save(update_fields=["content", "message_type", "external_url", "provider", "provider_id", "animated", "media", "media_type", "is_deleted", "edited_at"])
 
     serializer = MessageSerializer(message, context={"request": request})
     broadcast_message(message.sender_id, message.receiver_id, serializer.data, event="deleted")
@@ -370,9 +408,7 @@ def conversations(request):
             "is_followed_by": is_followed_by,
             "can_message": True,
             "unread_count": unread,
-            "last_message": (
-                "Message deleted" if last_msg and last_msg.is_deleted else last_msg.content
-            ) if last_msg else "",
+            "last_message": describe_message(last_msg, last_msg.is_deleted) if last_msg else "",
             "last_message_time": last_msg.timestamp.isoformat() if last_msg and last_msg.timestamp else None,
             "last_message_is_mine": last_msg.sender_id == user.id if last_msg else False,
         })

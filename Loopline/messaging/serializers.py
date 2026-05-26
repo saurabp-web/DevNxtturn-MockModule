@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from rest_framework import serializers
 from django.utils import timezone
 from .models import Message
+from .message_markers import build_chat_id, describe_message, get_message_media_url, normalize_message_type
 
 
 def _normalize_media_url(url):
@@ -41,6 +42,10 @@ class MessageSerializer(serializers.ModelSerializer):
     reply_to_message = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
     can_delete = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
+    gif_url = serializers.SerializerMethodField()
+    sticker_url = serializers.SerializerMethodField()
+    chat_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
@@ -55,6 +60,18 @@ class MessageSerializer(serializers.ModelSerializer):
         if not obj.media:
             return ""
         return _normalize_media_url(obj.media.url)
+
+    def get_type(self, obj):
+        return normalize_message_type(getattr(obj, "message_type", None))
+
+    def get_gif_url(self, obj):
+        return get_message_media_url(obj) if self.get_type(obj) == "gif" else ""
+
+    def get_sticker_url(self, obj):
+        return get_message_media_url(obj) if self.get_type(obj) == "sticker" else ""
+
+    def get_chat_id(self, obj):
+        return build_chat_id(obj.sender_id, obj.receiver_id)
 
     def get_reactions(self, obj):
         qs = obj.reactions.values("emoji").annotate(count=Count("id")).order_by("emoji")
@@ -71,7 +88,12 @@ class MessageSerializer(serializers.ModelSerializer):
             "id": reply.id,
             "sender_id": reply.sender_id,
             "sender_username": reply.sender.username,
-            "content": reply.content if not reply.is_deleted else "This message was deleted",
+            "content": describe_message(reply, reply.is_deleted),
+            "type": normalize_message_type(getattr(reply, "message_type", None)),
+            "gif_url": self.get_gif_url(reply),
+            "sticker_url": self.get_sticker_url(reply),
+            "animated": bool(getattr(reply, "animated", False)),
+            "chat_id": build_chat_id(reply.sender_id, reply.receiver_id),
             "is_deleted": reply.is_deleted,
             "timestamp": reply.timestamp.isoformat() if reply.timestamp else None,
         }

@@ -8,6 +8,13 @@ from channels.generic.websocket import WebsocketConsumer
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 
+from .presence import (
+    new_presence_connection_id,
+    refresh_user_presence,
+    set_user_offline,
+    set_user_online,
+)
+
 User = get_user_model()
 
 def get_user_from_token(token_key):
@@ -38,6 +45,8 @@ class UserActivityConsumer(WebsocketConsumer):
             return
 
         self.scope['user'] = user
+        self.presence_connection_id = new_presence_connection_id()
+        set_user_online(user.id, self.presence_connection_id)
         
         # [FIX] Keep track of the user-specific group name
         self.user_group_name = f'user_{user.id}'
@@ -58,6 +67,8 @@ class UserActivityConsumer(WebsocketConsumer):
         print(f"CONSUMER-DEBUG: User '{user.username}' CONNECTED. Joined groups: '{self.user_group_name}' and '{self.GLOBAL_GROUP_NAME}'.\n")
 
     def disconnect(self, close_code):
+        if hasattr(self, "scope") and self.scope.get("user") and hasattr(self, "presence_connection_id"):
+            set_user_offline(self.scope["user"].id, self.presence_connection_id)
         # [FIX] Unsubscribe from both groups on disconnect
         if hasattr(self, 'user_group_name'):
             async_to_sync(self.channel_layer.group_discard)(
@@ -79,6 +90,19 @@ class UserActivityConsumer(WebsocketConsumer):
         # The frontend now expects a flat structure, so we send the inner message directly
         self.send(text_data=json.dumps(message_data))
         print(f"!!! CONSUMER-DEBUG: Sent 'new_notification' to browser for group '{self.user_group_name}'")
+
+    def receive(self, text_data=None, bytes_data=None):
+        if not text_data:
+            return
+        try:
+            payload = json.loads(text_data)
+        except Exception:
+            return
+
+        event = payload.get("event") or payload.get("type")
+        if event == "ping":
+            refresh_user_presence(self.scope["user"].id, self.presence_connection_id)
+            self.send(text_data=json.dumps({"type": "pong"}))
 
     # --- EXISTING METHOD: Handles receiving new post events from signals ---
     def send_live_post(self, event):

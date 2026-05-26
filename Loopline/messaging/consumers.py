@@ -4,6 +4,7 @@ from django.contrib.auth.models import User, AnonymousUser
 
 from .models import Message
 from .serializers import MessageSerializer
+from .message_markers import normalize_message_type
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -50,12 +51,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             )
             return
 
-        text = content.get("content")
-        if not text:
-            return
-
         reply_to_message_id = content.get("reply_to_message_id")
-        message = await self.create_message(text, reply_to_message_id)
+        message = await self.create_message(content, reply_to_message_id)
         if not message:
             return
 
@@ -91,7 +88,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return None
 
     @database_sync_to_async
-    def create_message(self, text, reply_to_message_id=None):
+    def create_message(self, payload, reply_to_message_id=None):
         reply_to = None
         if reply_to_message_id:
             try:
@@ -104,10 +101,29 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             except (TypeError, ValueError):
                 reply_to = None
 
+        message_type = normalize_message_type(payload.get("message_type") or payload.get("type"))
+        content = str(payload.get("content") or "").strip()
+        external_url = str(payload.get("gif_url") or payload.get("sticker_url") or payload.get("external_url") or "").strip()
+        provider = str(payload.get("provider") or "").strip()
+        provider_id = str(payload.get("provider_id") or payload.get("id") or "").strip()
+        media_title = str(payload.get("title") or payload.get("media_title") or "").strip()
+        animated = bool(payload.get("animated", False))
+
+        if message_type in {"gif", "sticker"} and not external_url:
+            return None
+        if message_type == "text" and not content:
+            return None
+
         msg = Message.objects.create(
             sender=self.user,
             receiver=self.other_user,
-            content=text,
+            content=content if message_type == "text" else "",
+            message_type=message_type,
+            media_title=media_title,
+            external_url=external_url,
+            provider=provider or ("giphy" if message_type in {"gif", "sticker"} else ""),
+            provider_id=provider_id,
+            animated=animated if message_type in {"gif", "sticker"} else False,
             reply_to=reply_to,
         )
         return MessageSerializer(msg, context={"user": self.user}).data

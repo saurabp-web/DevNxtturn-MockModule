@@ -55,7 +55,7 @@
             Replying to {{ replyToMessage.sender_username }}
           </div>
           <div class="line-clamp-2 text-[11px] font-medium text-slate-600">
-            {{ replyToMessage.content }}
+            {{ replyPreviewText(replyToMessage) }}
           </div>
         </div>
 
@@ -67,14 +67,16 @@
               ? 'bg-slate-100/80 px-4 py-2.5 backdrop-blur-sm'
               : isEmojiOnlyMessage
                 ? 'bg-transparent px-0 py-0 shadow-none overflow-visible'
+                : isChatMediaMessage
+                  ? 'bg-transparent px-0 py-0 shadow-none overflow-visible'
                 : 'px-4 py-2.5',
-            !isDeleted && !isMediaOnly && !isEmojiOnlyMessage && !isMe
+            !isDeleted && !isMediaOnly && !isEmojiOnlyMessage && !isChatMediaMessage && !isMe
               ? 'border border-slate-200/80 bg-white/90 backdrop-blur-sm'
               : '',
-            isMe && !isDeleted && !isMediaOnly && !isEmojiOnlyMessage
+            isMe && !isDeleted && !isMediaOnly && !isEmojiOnlyMessage && !isChatMediaMessage
               ? 'bg-purple-500 text-white shadow-md shadow-purple-200/40'
               : 'text-slate-900',
-            isMe && !isDeleted && !isMediaOnly && !isEmojiOnlyMessage
+            isMe && !isDeleted && !isMediaOnly && !isEmojiOnlyMessage && !isChatMediaMessage
               ? 'rounded-br-md'
               : 'rounded-bl-md',
           ]"
@@ -97,6 +99,18 @@
           </div>
 
           <template v-else>
+            <template v-if="isChatMediaMessage">
+              <ChatMediaMessage
+                :kind="messageType === 'gif' ? 'gif' : 'sticker'"
+                :source-url="chatMediaSourceUrl"
+                :title="chatMediaTitle"
+                :label="chatMediaLabel"
+                :animated="Boolean(message?.animated)"
+                :compact="isMe"
+                :show-meta="messageType === 'gif'"
+              />
+            </template>
+
             <!-- Text Content -->
             <div
               v-if="hasText"
@@ -362,7 +376,7 @@
           <div v-if="isMe && !isDeleted" class="my-1 border-t border-purple-100"></div>
 
           <button
-            v-if="isMe && !isDeleted && canEdit"
+            v-if="isMe && !isDeleted && canEdit && !isChatMediaMessage"
             class="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-purple-50"
             type="button"
             @click="emitEdit"
@@ -434,6 +448,8 @@
 import AnimatedEmoji from './AnimatedEmoji.vue'
 import AnimatedMessage from './AnimatedMessage.vue'
 import EmojiPicker from './EmojiPicker.vue'
+import ChatMediaMessage from './ChatMediaMessage.vue'
+import { describeMediaItem } from './chatMediaCatalog'
 import { buildMediaUrl } from '@/utils/avatars'
 import { isEmojiOnlyMessage, tokenizeMessageText } from './emoji-parser'
 
@@ -471,6 +487,7 @@ export default {
     AnimatedEmoji,
     AnimatedMessage,
     EmojiPicker,
+    ChatMediaMessage,
   },
   emits: ['react', 'reply', 'edit', 'delete', 'media-error', 'open-reaction-picker'],
   props: {
@@ -553,7 +570,7 @@ export default {
       return Boolean(this.message?.is_deleted)
     },
     hasText() {
-      return Boolean(this.message?.content?.trim()) && !this.isDeleted
+      return Boolean(this.message?.content?.trim()) && !this.isDeleted && !this.isChatMessage
     },
     isEmojiOnlyMessage() {
       return this.hasText && this.isEmojiOnlyText && !this.hasMedia
@@ -566,6 +583,33 @@ export default {
     },
     isMediaOnly() {
       return this.hasMedia && !this.hasText
+    },
+    messageType() {
+      return String(this.message?.message_type || 'text').toLowerCase()
+    },
+    isChatMessage() {
+      return this.messageType === 'gif' || this.messageType === 'sticker'
+    },
+    isChatMediaMessage() {
+      return this.isChatMessage && !this.isDeleted
+    },
+    chatMediaKindLabel() {
+      return this.messageType === 'gif' ? 'GIF' : this.messageType === 'sticker' ? 'Sticker' : ''
+    },
+    chatMediaTitle() {
+      if (!this.isChatMessage) return ''
+      return this.message?.media_title || this.message?.provider_id || this.message?.providerId || this.chatMediaKindLabel
+    },
+    chatMediaSourceUrl() {
+      if (this.messageType === 'gif') return this.message?.gif_url || this.message?.external_url || ''
+      if (this.messageType === 'sticker') return this.message?.sticker_url || this.message?.external_url || ''
+      return ''
+    },
+    chatMediaLabel() {
+      return describeMediaItem({
+        kind: this.messageType === 'gif' ? 'gif' : 'sticker',
+        title: this.chatMediaTitle,
+      })
     },
     formattedTime() {
       const ts = this.message?.timestamp
@@ -589,7 +633,7 @@ export default {
       }
     },
     canEdit() {
-      return Boolean(this.message?.can_edit)
+      return Boolean(this.message?.can_edit) && !this.isChatMediaMessage
     },
     replyToMessage() {
       return this.message?.reply_to_message || null
@@ -605,6 +649,17 @@ export default {
     },
   },
   methods: {
+    replyPreviewText(message) {
+      if (!message) return ''
+      const type = String(message?.message_type || 'text').toLowerCase()
+      if (type === 'gif' || type === 'sticker') {
+        return describeMediaItem({
+          kind: type,
+          title: message?.media_title || message?.provider_id || type,
+        })
+      }
+      return message.content || ''
+    },
     onContextMenu(event) {
       if (this.isDeleted) return
       event.preventDefault()
@@ -769,7 +824,12 @@ export default {
     },
     async copyMessage() {
       const text =
-        this.message?.content?.trim() ||
+        (this.isChatMediaMessage
+          ? describeMediaItem({
+              kind: this.messageType === 'gif' ? 'gif' : 'sticker',
+              title: this.chatMediaTitle,
+            })
+          : this.message?.content?.trim()) ||
         this.cachedMediaUrl ||
         this.message?.media_url ||
         this.message?.media ||
@@ -836,6 +896,51 @@ export default {
 
 .emoji-only-message :deep(.animated-emoji) {
   filter: drop-shadow(0 10px 26px rgba(59, 130, 246, 0.14));
+}
+
+.chat-media-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  max-width: min(100%, 18rem);
+}
+
+.chat-media-message--me {
+  margin-left: auto;
+}
+
+.chat-media-message--them {
+  margin-right: auto;
+}
+
+.chat-media-message__frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.4rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.92));
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  padding: 0.55rem;
+}
+
+.chat-media-message__image {
+  display: block;
+  width: min(18rem, 100%);
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 1.05rem;
+}
+
+.chat-media-message__fallback {
+  display: grid;
+  place-items: center;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 1.05rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(226, 232, 240, 0.92));
 }
 
 .reaction-emoji {

@@ -137,6 +137,13 @@ export async function sendConversationMessage(
     content: string
     reply_to_message_id?: number | string | null
     recipientUsername?: string
+    message_type?: 'text' | 'gif' | 'sticker' | 'file'
+    gif_url?: string
+    sticker_url?: string
+    provider?: string
+    provider_id?: string
+    animated?: boolean
+    media_title?: string
   },
 ) {
   const conversationId = await resolveConversationId(ref)
@@ -148,6 +155,13 @@ export async function sendConversationMessage(
     const response = await axiosInstance.post('/messages/send/', {
       recipient_username: recipientUsername,
       content: payload.content,
+      message_type: payload.message_type,
+      gif_url: payload.gif_url,
+      sticker_url: payload.sticker_url,
+      provider: payload.provider,
+      provider_id: payload.provider_id,
+      animated: payload.animated,
+      media_title: payload.media_title,
     })
     return response.data
   }
@@ -169,6 +183,13 @@ export async function sendConversationMessage(
     const response = await axiosInstance.post('/messages/send/', {
       recipient_username: recipientUsername,
       content: payload.content,
+      message_type: payload.message_type,
+      gif_url: payload.gif_url,
+      sticker_url: payload.sticker_url,
+      provider: payload.provider,
+      provider_id: payload.provider_id,
+      animated: payload.animated,
+      media_title: payload.media_title,
     })
     return response.data
   }

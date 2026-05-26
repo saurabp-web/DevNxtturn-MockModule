@@ -83,14 +83,18 @@
               {{ user.username?.[0]?.toUpperCase() || 'U' }}
             </div>
             <div
-              class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-teal-500 shadow-sm"
+              v-if="user?.is_online"
+              class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm"
             ></div>
           </div>
           <div>
             <div class="text-lg font-bold tracking-tight text-slate-800">{{ user.username }}</div>
-            <div class="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-              <span class="h-1.5 w-1.5 rounded-full bg-teal-500"></span>
-              <span>Active now</span>
+            <div class="flex items-center gap-1.5 text-xs font-medium" :class="userPresenceClass">
+              <span
+                class="h-1.5 w-1.5 rounded-full"
+                :class="userPresenceDotClass"
+              ></span>
+              <span>{{ userPresenceLabel }}</span>
             </div>
           </div>
         </div>
@@ -435,6 +439,16 @@ export default {
         this.profilesByUsername?.[username] ||
         (this.currentProfile?.user?.username === username ? this.currentProfile : null)
       )
+    },
+    userPresenceLabel() {
+      if (!this.user) return ''
+      return this.user.is_online ? 'Online' : 'Offline'
+    },
+    userPresenceClass() {
+      return this.user?.is_online ? 'text-emerald-600' : 'text-slate-500'
+    },
+    userPresenceDotClass() {
+      return this.user?.is_online ? 'bg-emerald-500' : 'bg-slate-400'
     },
     chatAvatarUrl() {
       const profile = this.selectedUserProfile
@@ -902,16 +916,42 @@ export default {
     async sendMessage(payload) {
       const text = typeof payload === 'string' ? payload : payload?.text || ''
       const files = typeof payload === 'string' ? [] : payload?.files || []
+      const media = typeof payload === 'string' ? null : payload?.media || null
       const editingMessageId =
         typeof payload === 'string' ? null : payload?.editingMessageId || null
       const replyToMessageId =
         typeof payload === 'string' ? null : payload?.replyToMessageId || null
 
-      if (!text.trim() && !files.length) return
+      if (!text.trim() && !files.length && !media) return
       try {
         this.sendError = ''
         if (editingMessageId) {
           await this.updateMessage(editingMessageId, text.trim())
+          return
+        }
+        if (media) {
+          const mediaPayload = {
+            content: text.trim(),
+            reply_to_message_id: replyToMessageId,
+            message_type: media.kind,
+            gif_url: media.kind === 'gif' ? media.sendUrl : '',
+            sticker_url: media.kind === 'sticker' ? media.sendUrl : '',
+            provider: media.provider || 'giphy',
+            provider_id: media.providerId,
+            animated: Boolean(media.animated),
+            media_title: media.title || '',
+          }
+
+          if (this.wsConnected && this.ws) {
+            this.ws.send(JSON.stringify(mediaPayload))
+          } else {
+            const message = await sendConversationMessage(this.user, {
+              ...mediaPayload,
+              recipientUsername: this.user.username,
+            })
+            this.addMessageUnique(message)
+          }
+          this.replyingMessage = null
           return
         }
         if (files.length) {
@@ -1017,7 +1057,8 @@ export default {
         !message ||
         String(message.sender) !== String(this.currentUserId) ||
         message.is_deleted ||
-        message.can_edit === false
+        message.can_edit === false ||
+        ['gif', 'sticker', 'file'].includes(String(message?.message_type || '').toLowerCase())
       )
         return
       this.replyingMessage = null
