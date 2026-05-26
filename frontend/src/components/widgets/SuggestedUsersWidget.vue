@@ -228,7 +228,7 @@ async function handleConnect(user: NetworkUser) {
 
       <div class="mt-3 pt-3 border-t border-gray-100">
         <RouterLink
-          to="/network"
+          to="/network?tab=discovery"
           class="block w-full text-center text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 py-2 rounded-xl transition-colors duration-200"
         >
           Show more suggestions
