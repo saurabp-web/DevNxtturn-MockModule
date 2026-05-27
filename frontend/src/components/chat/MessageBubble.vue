@@ -489,7 +489,7 @@ export default {
     EmojiPicker,
     ChatMediaMessage,
   },
-  emits: ['react', 'reply', 'edit', 'delete', 'media-error', 'open-reaction-picker'],
+  emits: ['react', 'reply', 'edit', 'delete', 'media-load', 'media-error', 'open-reaction-picker'],
   props: {
     message: {
       type: Object,
@@ -753,6 +753,7 @@ export default {
     onMediaLoad() {
       this.mediaLoading = false
       this.mediaError = false
+      this.$emit('media-load', { messageId: this.message.id })
     },
     onMediaError() {
       this.mediaLoading = false

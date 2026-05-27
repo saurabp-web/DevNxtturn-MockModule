@@ -131,6 +131,25 @@ export async function getConversationMessages(
   }
 }
 
+export async function markConversationAsRead(
+  ref: number | { id?: number; conversation_id?: number; conversationId?: number; username?: string },
+) {
+  const conversationId = await resolveConversationId(ref)
+  if (!conversationId) return null
+
+  const primary = `/messaging/conversations/${conversationId}/read/`
+  const fallback = `/conversations/${conversationId}/read/`
+
+  try {
+    const response = await axiosInstance.post(primary)
+    return response.data
+  } catch (error) {
+    if (!isNotFound(error)) throw error
+    const response = await axiosInstance.post(fallback)
+    return response.data
+  }
+}
+
 export async function sendConversationMessage(
   ref: number | { id?: number; conversation_id?: number; conversationId?: number; username?: string },
   payload: {

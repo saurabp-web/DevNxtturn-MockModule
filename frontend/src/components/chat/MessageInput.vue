@@ -162,11 +162,11 @@
                 leave-from-class="translate-y-0 opacity-100 scale-100"
                 leave-to-class="translate-y-4 opacity-0 scale-95"
               >
-                <div
-                  v-if="showEmoji"
-                  class="fixed z-[260]"
-                  :style="emojiPanelStyle"
-                  @click.stop
+      <div
+        v-if="showEmoji"
+        class="fixed z-[260]"
+        :style="emojiPanelStyle"
+        @click.stop
                 >
                   <EmojiPicker
                     :open="showEmoji"
@@ -225,6 +225,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    draftText: {
+      type: String,
+      default: '',
+    },
     editingMessage: {
       type: Object,
       default: null,
@@ -234,23 +238,23 @@ export default {
       default: null,
     },
   },
-  emits: ['send', 'cancel-edit', 'cancel-reply', 'typing'],
-  data() {
-    return {
-      message: '',
-      attachments: [],
-      showEmoji: false,
-      emojiPanelStyle: {
-        left: '0px',
-        top: '0px',
-        width: '28rem',
-        maxHeight: '60vh',
-      },
-      errorMessage: '',
-      lastTypingState: false,
-      typingIdleTimer: null,
-    }
-  },
+  emits: ['send', 'cancel-edit', 'cancel-reply', 'typing', 'draft-change'],
+    data() {
+      return {
+        message: '',
+        attachments: [],
+        showEmoji: false,
+        emojiPanelStyle: {
+          left: '0px',
+          top: '0px',
+          width: '28rem',
+          height: '60vh',
+        },
+        errorMessage: '',
+        lastTypingState: false,
+        typingIdleTimer: null,
+      }
+    },
   computed: {
     isEditing() {
       return Boolean(this.editingMessage)
@@ -288,9 +292,20 @@ export default {
         this.errorMessage = ''
         this.showEmoji = false
         this.clearFiles()
-        this.message = val?.content || ''
+        this.message = val?.content || this.draftText || ''
         this.$nextTick(() => this.adjustHeight())
         this.syncTypingState(true)
+      },
+    },
+    draftText: {
+      immediate: true,
+      handler(val) {
+        if (this.isEditing) return
+        const nextValue = val || ''
+        if (nextValue !== this.message) {
+          this.message = nextValue
+          this.$nextTick(() => this.adjustHeight())
+        }
       },
     },
     message() {
@@ -347,6 +362,7 @@ export default {
       }
     },
     handleInput() {
+      this.$emit('draft-change', this.message)
       this.syncTypingState()
     },
     handleKeydown(event) {
@@ -417,7 +433,7 @@ export default {
       if (this.disabled || this.isEditing) return
       this.showEmoji = true
       this.$nextTick(() => {
-        this.$refs.inputArea?.focus()
+        this.focusInputWithoutScroll()
       })
     },
     repositionEmojiPanel() {
@@ -427,8 +443,8 @@ export default {
       const rect = button.getBoundingClientRect()
       const viewportWidth = window.innerWidth
       const viewportHeight = window.innerHeight
-      const panelWidth = Math.min(448, Math.max(280, viewportWidth - 16))
-      const panelHeight = Math.min(580, Math.max(380, Math.round(viewportHeight * 0.64)))
+      const panelWidth = Math.min(420, Math.max(280, viewportWidth - 20))
+      const panelHeight = Math.min(Math.max(420, Math.round(viewportHeight * 0.7)), viewportHeight - 16)
       const gutter = 12
 
       const left = Math.max(
@@ -443,14 +459,15 @@ export default {
         left: `${left}px`,
         top: `${Math.max(gutter, top)}px`,
         width: `${panelWidth}px`,
-        maxHeight: `${panelHeight}px`,
+        height: `${panelHeight}px`,
       }
     },
     pickEmoji(emoji) {
       if (!emoji) return
       this.message = `${this.message}${emoji}`
+      this.$emit('draft-change', this.message)
       this.$nextTick(() => this.adjustHeight())
-      this.$nextTick(() => this.$refs.inputArea?.focus())
+      this.$nextTick(() => this.focusInputWithoutScroll())
     },
     pickMedia(item) {
       if (!item || this.disabled || this.isEditing) return
@@ -474,6 +491,7 @@ export default {
       })
 
       this.message = ''
+      this.$emit('draft-change', '')
       this.lastTypingState = false
       if (this.typingIdleTimer) {
         clearTimeout(this.typingIdleTimer)
@@ -508,6 +526,15 @@ export default {
       }
       this.errorMessage = ''
     },
+    focusInputWithoutScroll() {
+      const input = this.$refs.inputArea
+      if (!input || typeof input.focus !== 'function') return
+      try {
+        input.focus({ preventScroll: true })
+      } catch {
+        input.focus()
+      }
+    },
     send() {
       if (this.disabled || (!this.message.trim() && !this.attachments.length)) return
       this.$emit('send', {
@@ -517,6 +544,7 @@ export default {
         replyToMessageId: this.replyingMessage?.id || null,
       })
       this.message = ''
+      this.$emit('draft-change', '')
       this.lastTypingState = false
       if (this.typingIdleTimer) {
         clearTimeout(this.typingIdleTimer)

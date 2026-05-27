@@ -1,146 +1,122 @@
 <template>
-  <div class="emoji-picker-shell w-full max-w-[30rem] overflow-hidden rounded-[1.75rem] border border-slate-200/70 bg-white/96 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:border-slate-700/60 dark:bg-slate-950/96">
-    <div class="border-b border-slate-200/70 bg-white/70 px-4 py-4 dark:border-slate-700/60 dark:bg-slate-900/80">
-      <div class="flex items-start justify-between gap-3">
+  <div class="emoji-picker-shell flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900">
+    <!-- Header -->
+    <div class="border-b border-gray-100 px-4 py-4 dark:border-gray-800">
+      <div class="flex items-center justify-between gap-3">
         <div class="min-w-0">
-          <p class="text-[10px] font-black uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-500 dark:text-emerald-400">
             {{ eyebrow }}
           </p>
-          <h3 class="mt-1 text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h3 class="mt-1 text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
             {{ title }}
           </h3>
         </div>
 
         <button
-          class="grid h-9 w-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 active:scale-95 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          class="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
           type="button"
           aria-label="Close media picker"
           @click="$emit('close')"
         >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </button>
       </div>
 
-      <div class="mt-4 flex gap-2">
+      <!-- Tabs -->
+      <div class="mt-4 flex gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
         <button
           v-for="tab in tabs"
           :key="tab.id"
           type="button"
-          class="picker-tab flex-1 rounded-2xl px-3 py-2.5 text-xs font-black uppercase tracking-[0.18em] transition-all"
-          :class="activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-200/70 dark:shadow-none' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'"
+          class="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+          :class="activeTab === tab.id ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
           @click="setTab(tab.id)"
         >
-          {{ tab.label }}
+          <span>{{ tab.icon }}</span>
+          <span>{{ tab.label }}</span>
         </button>
       </div>
 
-      <div class="mt-3">
-        <div class="relative">
-          <svg
-            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path d="M21 21l-4.3-4.3" stroke-linecap="round" />
-            <circle cx="11" cy="11" r="7" />
+      <!-- Search -->
+      <div class="relative mt-3">
+        <svg
+          class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <path d="M21 21l-4.3-4.3" stroke-linecap="round" />
+          <circle cx="11" cy="11" r="7" />
+        </svg>
+        <input
+          v-model="searchQuery"
+          type="search"
+          :placeholder="searchPlaceholder"
+          class="h-10 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-9 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-emerald-500"
+        />
+        <button
+          v-if="searchQuery"
+          type="button"
+          aria-label="Clear search"
+          class="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+          @click="searchQuery = ''"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          <input
-            v-model="searchQuery"
-            type="search"
-            :placeholder="searchPlaceholder"
-            class="h-11 w-full rounded-2xl border border-slate-200 bg-white pl-9 pr-10 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-blue-500"
-          />
-          <button
-            v-if="searchQuery"
-            type="button"
-            aria-label="Clear search"
-            class="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            @click="searchQuery = ''"
-          >
-            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-              <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-        </div>
-        <div class="mt-2 flex items-center justify-between px-1">
-          <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
-            {{ searchHint }}
-          </span>
-          <span v-if="activeTab !== 'emoji'" class="text-[10px] font-bold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">
-            {{ displayedMedia.length }} items
-          </span>
-        </div>
+        </button>
+      </div>
+
+      <div v-if="activeTab !== 'emoji'" class="mt-2 flex items-center justify-end px-1">
+        <!-- <span v-if="activeTab !== 'emoji'" class="text-[10px] font-medium text-emerald-500 dark:text-emerald-400">
+          {{ displayedMedia.length }} items
+        </span> -->
       </div>
     </div>
 
-    <div ref="scrollEl" class="picker-scroll max-h-[70vh] overflow-y-auto overscroll-contain px-3 py-3">
+    <!-- Scrollable Content -->
+    <div ref="scrollEl" class="picker-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3">
+      <!-- Emoji Tab -->
       <template v-if="activeTab === 'emoji'">
-        <div class="mb-4 rounded-[1.5rem] border border-slate-200/80 bg-gradient-to-br from-slate-50 to-white p-3 shadow-[0_12px_28px_rgba(15,23,42,0.05)] dark:border-slate-700/70 dark:from-slate-900/80 dark:to-slate-900/60">
-          <div class="mb-3 flex items-center justify-between gap-2 px-1">
-            <div>
-              <h4 class="text-[10px] font-black uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">
-                Hands &amp; Gestures
-              </h4>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Quick reactions and hand signs for fast replies.
-              </p>
+        <!-- Recent Emojis -->
+        <div v-if="recentEmojis.length && !searchQuery.trim()" class="mb-5">
+          <div class="mb-2 flex items-center justify-between px-1">
+            <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300">Recent</h4>
+            <span class="text-[10px] text-gray-400 dark:text-gray-500">Frequently used</span>
+          </div>
+          <div class="flex flex-wrap gap-1">
+            <button
+              v-for="emoji in recentEmojis.slice(0, 12)"
+              :key="`recent-${emoji}`"
+              class="flex h-9 w-9 items-center justify-center rounded-lg text-xl transition-all hover:bg-gray-100 active:scale-95 dark:hover:bg-gray-800"
+              type="button"
+              :aria-label="`Insert ${emoji}`"
+              @click="selectEmoji(emoji)"
+            >
+              {{ emoji }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Smileys & People Section -->
+        <div v-if="!searchQuery.trim()" class="mb-5">
+          <div class="mb-2 flex items-center justify-between px-1">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">😀</span>
+              <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300">Smileys & People</h4>
             </div>
-            <span class="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[9px] font-black uppercase tracking-[0.22em] text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              {{ HAND_ACTION_EMOJIS.length }} items
+            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+              {{ categoryEmojis('people').length }}
             </span>
           </div>
-          <div class="emoji-grid grid grid-cols-[repeat(auto-fill,minmax(3rem,3.6rem))] gap-2 sm:gap-3">
+          <div class="emoji-grid grid grid-cols-8 gap-1">
             <button
-              v-for="emoji in HAND_ACTION_EMOJIS"
-              :key="`hands-${emoji}`"
-              class="emoji-card flex aspect-square items-center justify-center rounded-2xl bg-slate-50 text-2xl transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:scale-95 dark:bg-slate-800 dark:hover:bg-slate-700"
-              type="button"
-              :aria-label="`Insert ${emoji}`"
-              @click="selectEmoji(emoji)"
-            >
-              {{ emoji }}
-            </button>
-          </div>
-        </div>
-
-        <div v-if="recentEmojis.length && !searchQuery.trim()" class="mb-4">
-          <div class="mb-2 flex items-center justify-between px-1">
-            <h4 class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Recent</h4>
-            <span class="text-[10px] font-medium text-slate-400">Frequently used</span>
-          </div>
-          <div class="emoji-row flex flex-wrap gap-2">
-            <button
-              v-for="emoji in recentEmojis"
-              :key="`recent-${emoji}`"
-              class="emoji-chip flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-2xl transition-all hover:-translate-y-0.5 hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:hover:bg-slate-700"
-              type="button"
-              :aria-label="`Insert ${emoji}`"
-              @click="selectEmoji(emoji)"
-            >
-              {{ emoji }}
-            </button>
-          </div>
-        </div>
-
-        <div v-if="searchQuery.trim()" class="mb-4 rounded-[1.5rem] border border-slate-200 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/70">
-          <div class="mb-3 flex items-center justify-between gap-2">
-            <div>
-              <div class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Search results</div>
-              <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Emoji that match names or keywords</div>
-            </div>
-            <div class="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[9px] font-black uppercase tracking-[0.22em] text-slate-500 dark:border-slate-700 dark:bg-slate-800">
-              {{ searchResults.length }} found
-            </div>
-          </div>
-          <div class="emoji-grid grid grid-cols-[repeat(auto-fill,minmax(3rem,3.4rem))] gap-2 sm:gap-3">
-            <button
-              v-for="emoji in searchResults"
-              :key="`search-${emoji.alias}`"
-              class="emoji-card flex aspect-square items-center justify-center rounded-2xl bg-slate-50 text-2xl transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:scale-95 dark:bg-slate-800 dark:hover:bg-slate-700"
+              v-for="emoji in categoryEmojis('people')"
+              :key="`smileys-${emoji.alias}`"
+              class="flex aspect-square items-center justify-center rounded-lg text-xl transition-all hover:bg-gray-100 active:scale-95 dark:hover:bg-gray-800"
               type="button"
               :aria-label="`Insert ${emoji.native}`"
               @click="selectEmoji(resolveEmoji(emoji))"
@@ -148,116 +124,170 @@
               {{ resolveEmoji(emoji) }}
             </button>
           </div>
-          <div v-if="!searchResults.length" class="px-2 py-6 text-center">
-            <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-slate-100 text-2xl dark:bg-slate-800">🔎</div>
-            <p class="text-sm font-semibold text-slate-600 dark:text-slate-400">No emoji found</p>
+        </div>
+
+        <!-- Hand Gestures -->
+        <div v-if="!searchQuery.trim()" class="mb-5">
+          <div class="mb-2 flex items-center justify-between px-1">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🖐️</span>
+              <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300">Hands & Gestures</h4>
+            </div>
+            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+              {{ HAND_ACTION_EMOJIS.length }}
+            </span>
+          </div>
+          <div class="emoji-grid grid grid-cols-8 gap-1">
+            <button
+              v-for="emoji in HAND_ACTION_EMOJIS"
+              :key="`hands-${emoji}`"
+              class="flex aspect-square items-center justify-center rounded-lg text-xl transition-all hover:bg-gray-100 active:scale-95 dark:hover:bg-gray-800"
+              type="button"
+              :aria-label="`Insert ${emoji}`"
+              @click="selectEmoji(emoji)"
+            >
+              {{ emoji }}
+            </button>
           </div>
         </div>
 
+        <!-- Search Results -->
+        <div v-if="searchQuery.trim()" class="mb-5">
+          <div class="mb-2 flex items-center justify-between px-1">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🔍</span>
+              <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300">Search results</h4>
+            </div>
+            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+              {{ searchResults.length }}
+            </span>
+          </div>
+          <div class="emoji-grid grid grid-cols-8 gap-1">
+            <button
+              v-for="emoji in searchResults"
+              :key="`search-${emoji.alias}`"
+              class="flex aspect-square items-center justify-center rounded-lg text-xl transition-all hover:bg-gray-100 active:scale-95 dark:hover:bg-gray-800"
+              type="button"
+              :aria-label="`Insert ${emoji.native}`"
+              @click="selectEmoji(resolveEmoji(emoji))"
+            >
+              {{ resolveEmoji(emoji) }}
+            </button>
+          </div>
+          <div v-if="!searchResults.length" class="py-8 text-center">
+            <div class="mb-2 text-3xl">🔎</div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">No emoji found</p>
+            <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">Try a different keyword</p>
+          </div>
+        </div>
+
+        <!-- Other Categories (Virtualized with placeholder) -->
         <div v-else>
-          <section v-for="category in categories" :key="category.id" :ref="(el) => setSectionRef(category.id, el)" :data-category-id="category.id" class="mb-4">
+          <div
+            v-for="category in otherCategories"
+            :key="category.id"
+            :ref="(el) => setSectionRef(category.id, el)"
+            :data-category-id="category.id"
+            class="mb-5"
+          >
             <div class="mb-2 flex items-center gap-2 px-1">
               <span class="text-lg">{{ category.icon }}</span>
-              <h4 class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
+              <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300">
                 {{ category.label }}
               </h4>
             </div>
-            <div v-if="visibleSections.has(category.id)" class="emoji-grid grid grid-cols-[repeat(auto-fill,minmax(3rem,3.6rem))] gap-2 sm:gap-3">
+            <div v-if="visibleSections.has(category.id)" class="emoji-grid grid grid-cols-8 gap-1">
               <button
                 v-for="emoji in categoryEmojis(category.id)"
                 :key="`${category.id}-${emoji.alias}`"
-                class="emoji-card group relative flex aspect-square items-center justify-center rounded-2xl bg-slate-50 text-2xl transition-all hover:-translate-y-0.5 hover:bg-blue-50 active:scale-95 dark:bg-slate-800 dark:hover:bg-slate-700"
+                class="group relative flex aspect-square items-center justify-center rounded-lg text-xl transition-all hover:bg-gray-100 active:scale-95 dark:hover:bg-gray-800"
                 type="button"
                 :aria-label="`Insert ${emoji.native}`"
                 @click="selectEmoji(resolveEmoji(emoji))"
               >
                 <span>{{ resolveEmoji(emoji) }}</span>
-                <small v-if="emoji.hasSkinTones" class="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-blue-400 opacity-0 transition-opacity group-hover:opacity-100"></small>
+                <span v-if="emoji.hasSkinTones" class="absolute bottom-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-400 opacity-0 transition-opacity group-hover:opacity-100"></span>
               </button>
             </div>
-            <div v-else class="emoji-grid grid grid-cols-[repeat(auto-fill,minmax(3rem,3.6rem))] gap-2 sm:gap-3">
-              <div v-for="index in 20" :key="`${category.id}-placeholder-${index}`" class="aspect-square rounded-2xl bg-slate-100 dark:bg-slate-800"></div>
+            <div v-else class="emoji-grid grid grid-cols-8 gap-1">
+              <div v-for="i in 16" :key="`${category.id}-placeholder-${i}`" class="aspect-square rounded-lg bg-gray-100 dark:bg-gray-800"></div>
             </div>
-          </section>
+          </div>
         </div>
       </template>
 
+      <!-- GIF / Sticker Tab -->
       <template v-else>
-        <div v-if="recentMediaItems.length && !searchQuery.trim()" class="mb-4">
+        <!-- Recent Media -->
+        <div v-if="recentMediaItems.length && !searchQuery.trim()" class="mb-5">
           <div class="mb-2 flex items-center justify-between px-1">
-            <h4 class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
+            <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300">
               Recent {{ activeTab === 'gif' ? 'GIFs' : 'stickers' }}
             </h4>
-            <span class="text-[10px] font-medium text-slate-400">Quick picks</span>
+            <span class="text-[10px] text-gray-400 dark:text-gray-500">Quick picks</span>
           </div>
-          <div class="media-row flex gap-2 overflow-x-auto pb-1">
+          <div class="flex gap-2 overflow-x-auto pb-1">
             <button
-              v-for="item in recentMediaItems"
+              v-for="item in recentMediaItems.slice(0, 6)"
               :key="`recent-${item.kind}-${item.providerId}`"
-              class="media-card-shrink min-w-[7.25rem] max-w-[7.25rem] overflow-hidden rounded-[1.4rem] border border-slate-200 bg-white p-2 text-left transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
+              class="relative w-24 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:scale-[1.02] hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
               type="button"
               :aria-label="`Send ${item.title}`"
               @click="selectMedia(item)"
             >
-              <div class="media-preview-frame media-preview-frame--recent" :style="mediaAspectStyle(item)">
+              <div class="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
                 <img
                   :src="item.stillUrl || item.previewUrl"
                   :alt="item.title"
-                  class="media-preview"
+                  class="h-full w-full object-cover"
                   loading="lazy"
-                  decoding="async"
                 />
               </div>
-              <div class="mt-2 truncate px-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                {{ item.title }}
+              <div class="truncate px-2 py-1.5 text-center text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                {{ item.title.slice(0, 20) }}
               </div>
             </button>
           </div>
         </div>
 
-        <div class="mb-4 rounded-[1.5rem] border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-3 dark:border-slate-700 dark:from-slate-900/80 dark:to-slate-900/60">
-          <div class="mb-3 flex items-center justify-between gap-2">
+        <!-- Media Grid -->
+        <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-3 dark:border-gray-800 dark:bg-gray-800/30">
+          <div class="mb-3 flex items-center justify-between">
             <div>
-              <h4 class="text-[10px] font-black uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">
-                {{ activeTab === 'gif' ? 'GIF search' : 'Sticker search' }}
+              <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                {{ activeTab === 'gif' ? 'GIFs' : 'Stickers' }}
               </h4>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                {{ activeTab === 'gif' ? 'Search trending reaction GIFs from GIPHY.' : 'Search transparent sticker packs from GIPHY.' }}
+              <p class="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
+                {{ activeTab === 'gif' ? 'Powered by GIPHY' : 'Powered by GIPHY' }}
               </p>
             </div>
-            <div class="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[9px] font-black uppercase tracking-[0.22em] text-slate-500 dark:border-slate-700 dark:bg-slate-800">
-              {{ loading ? 'Loading' : hasMore ? 'More' : 'End' }}
-            </div>
+            <span v-if="loading" class="text-[10px] font-medium text-gray-400 dark:text-gray-500">Loading...</span>
+            <span v-else-if="hasMore" class="text-[10px] font-medium text-gray-400 dark:text-gray-500">Scroll for more</span>
           </div>
 
-          <div v-if="loadError" class="mb-3 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+          <div v-if="loadError" class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">
             {{ loadError }}
           </div>
 
+          <!-- GIF Grid -->
           <div v-if="activeTab === 'gif'">
-            <div v-if="!displayedMedia.length && loading" class="media-grid media-grid--gif">
-              <div v-for="index in 8" :key="`skeleton-${index}`" class="media-tile media-tile--gif media-tile--skeleton">
-                <div class="media-tile__preview animate-pulse"></div>
-                <div class="media-tile__meta">
-                  <div class="h-3 w-3/4 animate-pulse rounded-full bg-slate-200/90 dark:bg-slate-700/70"></div>
-                  <div class="mt-2 h-2.5 w-1/2 animate-pulse rounded-full bg-slate-200/90 dark:bg-slate-700/70"></div>
-                </div>
+            <div v-if="!displayedMedia.length && loading" class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div v-for="i in 6" :key="`skeleton-${i}`" class="overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-700">
+                <div class="aspect-square animate-pulse"></div>
               </div>
             </div>
-
-            <div v-else class="media-grid media-grid--gif">
+            <div v-else class="grid grid-cols-2 gap-2 sm:grid-cols-3">
               <button
                 v-for="item in displayedMedia"
                 :key="`${item.kind}-${item.providerId}`"
-                class="media-tile media-tile--gif group"
+                class="group relative overflow-hidden rounded-xl bg-gray-100 transition-all hover:scale-[1.02] hover:shadow-md dark:bg-gray-800"
                 type="button"
-                :aria-label="`Send ${item.title}`"
                 @click="selectMedia(item)"
               >
-                <div class="media-preview-frame media-preview-frame--gif" :style="mediaAspectStyle(item)">
+                <div class="relative aspect-square">
                   <video
-                    v-if="item.kind === 'gif' && item.sendUrl.toLowerCase().endsWith('.mp4')"
-                    class="media-preview"
+                    v-if="item.kind === 'gif' && item.sendUrl?.toLowerCase().endsWith('.mp4')"
+                    class="h-full w-full object-cover"
                     :src="item.sendUrl"
                     autoplay
                     loop
@@ -268,81 +298,57 @@
                   ></video>
                   <img
                     v-else
+                    class="h-full w-full object-cover"
                     :src="item.previewUrl"
                     :alt="item.title"
-                    class="media-preview"
                     loading="lazy"
-                    decoding="async"
                     @load="markLoaded(item.providerId)"
                   />
-
-                  <div v-if="!loadedItems.has(item.providerId)" class="absolute inset-0 bg-slate-100/80 backdrop-blur-sm dark:bg-slate-900/70">
-                    <div class="absolute inset-0 animate-pulse bg-gradient-to-br from-transparent via-white/50 to-transparent"></div>
+                  <div v-if="!loadedItems.has(item.providerId)" class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                    <div class="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent dark:border-gray-600"></div>
                   </div>
-
-                  <div class="media-tile__badge">GIF</div>
+                  <div class="absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">GIF</div>
                 </div>
-
-                <div class="media-tile__meta">
-                  <div class="truncate text-[11px] font-semibold text-slate-700 dark:text-slate-200">
-                    {{ item.title }}
-                  </div>
-                  <div class="mt-1 flex items-center justify-between gap-2 text-[10px] uppercase tracking-[0.16em] text-slate-400">
-                    <span>{{ item.animated ? 'Animated' : 'Static' }}</span>
-                    <span class="rounded-full bg-slate-100 px-2 py-0.5 dark:bg-slate-800">
-                      Send
-                    </span>
-                  </div>
+                <div class="truncate px-2 py-1.5 text-center text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                  {{ item.title }}
                 </div>
               </button>
             </div>
           </div>
 
+          <!-- Sticker Grid -->
           <div v-else>
-            <div v-if="!displayedMedia.length && loading" class="sticker-grid">
-              <div v-for="index in 12" :key="`sticker-skeleton-${index}`" class="sticker-tile sticker-tile--skeleton">
-                <div class="sticker-tile__preview animate-pulse"></div>
-              </div>
+            <div v-if="!displayedMedia.length && loading" class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+              <div v-for="i in 10" :key="`sticker-skeleton-${i}`" class="aspect-square rounded-xl bg-gray-200 dark:bg-gray-700"></div>
             </div>
-
-            <div v-else class="sticker-grid">
+            <div v-else class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
               <button
                 v-for="item in displayedMedia"
                 :key="`${item.kind}-${item.providerId}`"
-                class="sticker-tile group"
+                class="group flex aspect-square items-center justify-center rounded-xl bg-gray-100 p-2 transition-all hover:scale-[1.02] hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                 type="button"
-                :aria-label="`Send ${item.title}`"
                 @click="selectMedia(item)"
               >
-                <div class="sticker-preview-frame" :style="mediaAspectStyle(item)">
-                  <img
-                    :src="item.previewUrl"
-                    :alt="item.title"
-                    class="sticker-preview"
-                    loading="lazy"
-                    decoding="async"
-                    @load="markLoaded(item.providerId)"
-                  />
-                  <div v-if="!loadedItems.has(item.providerId)" class="absolute inset-0 grid place-items-center">
-                    <div class="h-6 w-6 animate-spin rounded-full border-2 border-slate-300/70 border-t-transparent dark:border-slate-600/70"></div>
-                  </div>
-                </div>
+                <img
+                  :src="item.previewUrl"
+                  :alt="item.title"
+                  class="max-h-full max-w-full object-contain"
+                  loading="lazy"
+                  @load="markLoaded(item.providerId)"
+                />
               </button>
             </div>
           </div>
 
-          <div v-if="!displayedMedia.length && !loading" class="px-2 py-8 text-center">
-            <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-slate-100 text-2xl dark:bg-slate-800">🔎</div>
-            <p class="text-sm font-semibold text-slate-600 dark:text-slate-400">No {{ activeTab === 'gif' ? 'GIF' : 'sticker' }} found</p>
-            <p class="mt-1 text-xs text-slate-400">Try a different keyword or browse trending items.</p>
+          <!-- Empty State -->
+          <div v-if="!displayedMedia.length && !loading" class="py-8 text-center">
+            <div class="mb-2 text-3xl">{{ activeTab === 'gif' ? '🎞' : '🎟' }}</div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">No {{ activeTab === 'gif' ? 'GIFs' : 'stickers' }} found</p>
+            <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">Try a different search term</p>
           </div>
 
-          <div ref="sentinel" class="h-8"></div>
-
-          <div class="mt-3 flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
-            <span>Powered by GIPHY</span>
-            <span v-if="loading">{{ activeTab === 'gif' ? 'Loading GIFs' : 'Loading stickers' }}</span>
-          </div>
+          <!-- Sentinel for infinite scroll -->
+          <div ref="sentinel" class="h-4"></div>
         </div>
       </template>
     </div>
@@ -354,7 +360,6 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   CATEGORY_EMOJIS,
   EMOJI_CATEGORIES,
-  FAVORITE_EMOJIS,
   HAND_ACTION_EMOJIS,
   getEmojiNative,
   getRecentEmojis,
@@ -376,13 +381,12 @@ import {
   type GiphyKind,
 } from '@/services/giphy'
 
-type PickerMode = 'emoji' | 'composer'
 type PickerTab = 'emoji' | 'gif' | 'sticker'
 
 const props = withDefaults(
   defineProps<{
     open: boolean
-    mode?: PickerMode
+    mode?: 'emoji' | 'composer'
   }>(),
   {
     mode: 'emoji',
@@ -414,51 +418,39 @@ const loadError = ref('')
 
 let searchTimer: number | null = null
 let scrollObserver: IntersectionObserver | null = null
+let sentinelObserver: IntersectionObserver | null = null
 
 const categories = EMOJI_CATEGORIES
-const favoriteEmojis = FAVORITE_EMOJIS
+const otherCategories = computed(() => categories.filter((category) => category.id !== 'people'))
 
-type PickerTabOption = {
-  id: PickerTab
-  label: string
-}
-
-const tabs = computed<PickerTabOption[]>(() => {
-  if (props.mode !== 'composer') return [{ id: 'emoji', label: '😀 Emoji' }]
+const tabs = computed(() => {
+  if (props.mode !== 'composer') return [{ id: 'emoji' as const, label: 'Emoji', icon: '😀' }]
   return [
-    { id: 'emoji', label: '😀 Emoji' },
-    { id: 'gif', label: '🎞 GIF' },
-    { id: 'sticker', label: '🎟 Sticker' },
-  ] as const
+    { id: 'emoji' as const, label: 'Emoji', icon: '😀' },
+    { id: 'gif' as const, label: 'GIF', icon: '🎞' },
+    { id: 'sticker' as const, label: 'Sticker', icon: '🎟' },
+  ]
 })
-
-const isComposerMode = computed(() => props.mode === 'composer')
 
 const searchResults = computed(() => searchEmojiCatalog(debouncedQuery.value))
 const displayedMedia = computed(() => mediaItems.value)
 
 const eyebrow = computed(() => {
-  if (activeTab.value === 'gif') return 'Gif mode'
-  if (activeTab.value === 'sticker') return 'Sticker mode'
-  return isComposerMode.value ? 'Compose' : 'React'
+  if (activeTab.value === 'gif') return 'GIFs'
+  if (activeTab.value === 'sticker') return 'Stickers'
+  return props.mode === 'composer' ? 'Compose' : 'React'
 })
 
 const title = computed(() => {
-  if (activeTab.value === 'gif') return 'Search and send GIFs'
-  if (activeTab.value === 'sticker') return 'Search and send stickers'
-  return isComposerMode.value ? 'Pick an emoji, GIF, or sticker' : 'Choose an emoji to react'
+  if (activeTab.value === 'gif') return 'Find the perfect GIF'
+  if (activeTab.value === 'sticker') return 'Find a sticker'
+  return props.mode === 'composer' ? 'Express yourself' : 'React with an emoji'
 })
 
 const searchPlaceholder = computed(() => {
-  if (activeTab.value === 'gif') return 'Search GIFs'
-  if (activeTab.value === 'sticker') return 'Search stickers'
-  return 'Search emoji or keyword'
-})
-
-const searchHint = computed(() => {
-  if (activeTab.value === 'gif') return 'Search the GIPHY GIF library'
-  if (activeTab.value === 'sticker') return 'Search the GIPHY sticker library'
-  return 'Search the emoji catalog'
+  if (activeTab.value === 'gif') return 'Search GIFs...'
+  if (activeTab.value === 'sticker') return 'Search stickers...'
+  return 'Search emojis...'
 })
 
 function setTab(tab: PickerTab) {
@@ -482,7 +474,7 @@ function resetMedia() {
 }
 
 function categoryEmojis(categoryId: string) {
-  return (CATEGORY_EMOJIS[categoryId] || []).slice(0, 84)
+  return (CATEGORY_EMOJIS[categoryId] || []).slice(0, 64)
 }
 
 function resolveEmoji(record: EmojiRecord) {
@@ -495,6 +487,7 @@ function selectEmoji(rawEmoji: string) {
   saveRecentEmoji(emoji)
   recentEmojis.value = getRecentEmojis()
   emit('select', emoji)
+  emit('close')
 }
 
 function selectMedia(item: ChatMediaItem) {
@@ -541,17 +534,8 @@ async function loadMedia(reset = false) {
 
 function markLoaded(providerId: string) {
   if (!providerId) return
-  const next = new Set(loadedItems.value)
-  next.add(providerId)
-  loadedItems.value = next
-}
-
-function mediaAspectStyle(item: ChatMediaItem) {
-  const ratio = Number(item?.layoutRatio || 1)
-  const clamped = Number.isFinite(ratio) && ratio > 0 ? Math.min(1.45, Math.max(0.72, ratio)) : 1
-  return {
-    aspectRatio: `${clamped} / 1`,
-  }
+  if (loadedItems.value.has(providerId)) return
+  loadedItems.value = new Set([...loadedItems.value, providerId])
 }
 
 function categorySectionCallback(entries: IntersectionObserverEntry[]) {
@@ -580,28 +564,26 @@ function setSectionRef(categoryId: string, el: HTMLElement | null | unknown) {
   sectionRefs.delete(categoryId)
 }
 
-function scrollToCategory(categoryId: string) {
-  const el = sectionRefs.get(categoryId)
-  if (!el) return
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
+function setupSentinelObserver() {
+  if (sentinelObserver) sentinelObserver.disconnect()
+  if (!sentinel.value) return
 
-function handleScroll() {
-  if (activeTab.value === 'emoji') return
-  const el = scrollEl.value
-  if (!el || loading.value || !hasMore.value) return
-
-  const remaining = el.scrollHeight - el.scrollTop - el.clientHeight
-  if (remaining < 220) {
-    void loadMedia()
-  }
+  sentinelObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && !loading.value && hasMore.value && activeTab.value !== 'emoji') {
+        void loadMedia()
+      }
+    },
+    { root: scrollEl.value, threshold: 0.1, rootMargin: '0px 0px 200px 0px' },
+  )
+  sentinelObserver.observe(sentinel.value)
 }
 
 watch(searchQuery, (value) => {
-  if (searchTimer) window.clearTimeout(searchTimer)
-  searchTimer = window.setTimeout(() => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
     debouncedQuery.value = value
-  }, 160)
+  }, 300)
 })
 
 watch(
@@ -621,6 +603,9 @@ watch(
     if (activeTab.value !== 'emoji') {
       resetMedia()
     }
+    nextTick(() => {
+      setupSentinelObserver()
+    })
   },
   { immediate: true },
 )
@@ -647,6 +632,9 @@ watch(
       return
     }
     resetMedia()
+    nextTick(() => {
+      setupSentinelObserver()
+    })
   },
 )
 
@@ -658,22 +646,28 @@ onMounted(async () => {
 
   scrollObserver = new IntersectionObserver(categorySectionCallback, {
     root: scrollEl.value,
-    threshold: 0.14,
+    threshold: 0.1,
   })
   sectionRefs.forEach((el) => scrollObserver?.observe(el))
+
+  setupSentinelObserver()
 
   if (props.mode === 'composer' && activeTab.value !== 'emoji') {
     resetMedia()
   }
 })
 
+function handleScroll() {
+  // Handled by sentinel observer now
+}
+
 onBeforeUnmount(() => {
-  if (searchTimer) window.clearTimeout(searchTimer)
+  if (searchTimer) clearTimeout(searchTimer)
   if (scrollEl.value) {
     scrollEl.value.removeEventListener('scroll', handleScroll)
   }
   scrollObserver?.disconnect()
-  scrollObserver = null
+  sentinelObserver?.disconnect()
   sectionRefs.clear()
 })
 </script>
@@ -683,358 +677,7 @@ onBeforeUnmount(() => {
   scroll-behavior: smooth;
 }
 
-.media-row {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
-}
-
-.media-row::-webkit-scrollbar {
-  height: 4px;
-}
-
-.media-row::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.28);
-  border-radius: 999px;
-}
-
-.media-row::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.dark .media-row::-webkit-scrollbar-thumb {
-  background: rgba(226, 232, 240, 0.16);
-}
-
-.media-card-shrink {
-  position: relative;
-  border: 1px solid rgba(226, 232, 240, 0.86) !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  box-shadow:
-    0 10px 24px rgba(15, 23, 42, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.45);
-}
-
-.dark .media-card-shrink {
-  border-color: rgba(51, 65, 85, 0.82) !important;
-  background: rgba(15, 23, 42, 0.96) !important;
-  box-shadow:
-    0 14px 28px rgba(0, 0, 0, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.media-card-shrink:hover {
-  border-color: rgba(96, 165, 250, 0.45) !important;
-  box-shadow: 0 18px 32px rgba(59, 130, 246, 0.12);
-}
-
-.media-card-shrink img,
-.media-card-shrink video {
-  display: block;
-  width: 100%;
-  height: 7.5rem;
-  object-fit: cover;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(241, 245, 249, 0.95), rgba(226, 232, 240, 0.92));
-}
-
-.media-card-shrink::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: 1.35rem;
-  background: linear-gradient(180deg, transparent 70%, rgba(15, 23, 42, 0.06));
-  opacity: 0;
-  transition: opacity 180ms ease;
-}
-
-.media-card-shrink:hover::after {
-  opacity: 1;
-}
-
-.media-card-shrink .truncate {
-  color: #334155;
-}
-
-.dark .media-card-shrink .truncate {
-  color: #e2e8f0;
-}
-
-.media-card {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(226, 232, 240, 0.88) !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  box-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-.dark .media-card {
-  border-color: rgba(51, 65, 85, 0.82) !important;
-  background: rgba(15, 23, 42, 0.96) !important;
-  box-shadow:
-    0 16px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.media-card:hover {
-  border-color: rgba(96, 165, 250, 0.45) !important;
-  box-shadow: 0 20px 36px rgba(59, 130, 246, 0.12);
-}
-
-.media-preview-frame {
-  position: relative;
-  overflow: hidden;
-  border-radius: 1rem;
-  background: radial-gradient(circle at top, rgba(59, 130, 246, 0.08), rgba(15, 23, 42, 0.03));
-}
-
-.media-preview-frame--gif {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.08), rgba(255, 255, 255, 0.8));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
-
-.media-preview-frame--recent {
-  border-radius: 0.95rem;
-}
-
-.media-preview {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.media-card > div:first-child {
-  overflow: hidden;
-}
-
-.media-card > div:last-child {
-  padding-top: 0.8rem;
-}
-
-.media-grid--gif {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
-}
-
-@media (min-width: 640px) {
-  .media-grid--gif {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.media-tile--gif {
-  overflow: hidden;
-  border: 1px solid rgba(226, 232, 240, 0.88) !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  box-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-.dark .media-tile--gif {
-  border-color: rgba(51, 65, 85, 0.82) !important;
-  background: rgba(15, 23, 42, 0.96) !important;
-}
-
-.media-tile--gif .media-tile__preview {
-  aspect-ratio: 1 / 1;
-}
-
-.media-tile__preview {
-  min-height: 7rem;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(226, 232, 240, 0.95), rgba(241, 245, 249, 0.95));
-}
-
-.media-tile__meta {
-  padding: 0.75rem 0.8rem 0.82rem;
-}
-
-.media-tile__badge {
-  position: absolute;
-  left: 0.6rem;
-  top: 0.6rem;
-  border-radius: 999px;
-  background: rgba(59, 130, 246, 0.92);
-  padding: 0.28rem 0.5rem;
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  color: #fff;
-  text-transform: uppercase;
-}
-
-.media-tile--skeleton .media-tile__preview {
-  min-height: 9rem;
-}
-
-.sticker-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.6rem;
-}
-
-@media (min-width: 480px) {
-  .sticker-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.7rem;
-  }
-}
-
-@media (min-width: 640px) {
-  .sticker-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.75rem;
-  }
-}
-
-.sticker-tile {
-  display: grid;
-  place-items: center;
-  min-height: 5.5rem;
-  padding: 0.12rem;
-  border-radius: 1.2rem;
-  border: 1px solid transparent;
-  background: transparent;
-  box-shadow: none;
-  transition:
-    transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 180ms cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 180ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sticker-tile:hover {
-  transform: translateY(-2px) scale(1.01);
-  border-color: rgba(96, 165, 250, 0.18);
-  background: rgba(148, 163, 184, 0.04);
-}
-
-.dark .sticker-tile:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.sticker-preview-frame {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  background: transparent;
-}
-
-.sticker-preview {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.12));
-}
-
-.sticker-tile--skeleton {
-  min-height: 5.5rem;
-}
-
-.sticker-tile--skeleton .sticker-tile__preview {
-  width: 58%;
-  height: 58%;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(226, 232, 240, 0.72), rgba(241, 245, 249, 0.72));
-}
-
-.dark .sticker-tile--skeleton .sticker-tile__preview {
-  background: linear-gradient(135deg, rgba(51, 65, 85, 0.72), rgba(30, 41, 59, 0.72));
-}
-
-.media-card .truncate {
-  color: #334155;
-}
-
-.dark .media-card .truncate {
-  color: #e2e8f0;
-}
-
-.media-card .mt-2.h-3,
-.media-card .mt-2.h-3.w-2\/3,
-.media-card .h-40 {
-  border-radius: 0.85rem;
-}
-
-.media-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: 1.4rem;
-  background: linear-gradient(180deg, transparent 72%, rgba(15, 23, 42, 0.05));
-  opacity: 0;
-  transition: opacity 180ms ease;
-}
-
-.media-card:hover::before {
-  opacity: 1;
-}
-
-.media-empty {
-  margin-top: 1rem;
-  display: grid;
-  place-items: center;
-  padding: 2.25rem 1rem 2.4rem;
-  border-radius: 1.5rem;
-  border: 1px dashed rgba(148, 163, 184, 0.42);
-  background: rgba(248, 250, 252, 0.7);
-  text-align: center;
-}
-
-.dark .media-empty {
-  border-color: rgba(71, 85, 105, 0.7);
-  background: rgba(15, 23, 42, 0.72);
-}
-
-.media-empty__icon {
-  margin-bottom: 0.8rem;
-  display: grid;
-  height: 3rem;
-  width: 3rem;
-  place-items: center;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  font-size: 1.25rem;
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
-}
-
-.dark .media-empty__icon {
-  background: rgba(15, 23, 42, 0.95);
-}
-
-.dark .media-empty__icon,
-.dark .media-card-shrink,
-.dark .media-card {
-  color: #e2e8f0;
-}
-
-.picker-tab,
-.emoji-card,
-.emoji-chip,
-.media-card,
-.media-card-shrink {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.emoji-card:hover,
-.emoji-chip:hover,
-.media-card:hover,
-.media-card-shrink:hover {
-  transform: translateY(-2px);
-}
-
-button:active {
-  transform: scale(0.96);
-}
-
-.dark .picker-scroll::-webkit-scrollbar,
+/* Custom scrollbar */
 .picker-scroll::-webkit-scrollbar {
   width: 4px;
 }
@@ -1044,11 +687,40 @@ button:active {
 }
 
 .picker-scroll::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.28);
+  background: #cbd5e1;
   border-radius: 999px;
 }
 
 .dark .picker-scroll::-webkit-scrollbar-thumb {
-  background: rgba(226, 232, 240, 0.18);
+  background: #334155;
+}
+
+/* Smooth transitions */
+.emoji-grid button,
+.media-grid button,
+.sticker-grid button {
+  transition: all 0.15s ease;
+}
+
+/* Recent media horizontal scroll */
+.flex.gap-2.overflow-x-auto {
+  scrollbar-width: thin;
+}
+
+.flex.gap-2.overflow-x-auto::-webkit-scrollbar {
+  height: 3px;
+}
+
+.flex.gap-2.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.flex.gap-2.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.dark .flex.gap-2.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #475569;
 }
 </style>

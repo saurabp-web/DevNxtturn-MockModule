@@ -1,9 +1,9 @@
 <template>
   <aside
-    class="flex h-[calc(100vh-160px)] min-h-0 min-w-[300px] flex-col gap-4 overflow-hidden rounded-[2.5rem] border border-white/60 bg-gradient-to-b from-white/95 to-slate-50/95 p-4 shadow-[0_28px_90px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-all duration-300"
+    class="flex h-full min-h-0 min-w-[300px] flex-col gap-4 overflow-hidden rounded-[2.5rem] border border-white/60 bg-gradient-to-b from-white/95 to-slate-50/95 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-all duration-300"
   >
     <!-- Header -->
-    <div class="flex items-end justify-between px-2 pt-1">
+    <div class="flex items-end justify-between px-1 pt-1">
       <div>
         <div class="flex items-center gap-2">
           <div
@@ -76,10 +76,10 @@
     </div>
 
     <!-- Empty state -->
-    <div
-      v-if="!loading && !search && conversations.length === 0"
-      class="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center"
-    >
+      <div
+        v-if="!loading && !search && conversations.length === 0"
+        class="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-4 text-center"
+      >
       <div class="relative">
         <div class="absolute -inset-4 rounded-full bg-blue-100/50 blur-xl"></div>
         <div
@@ -125,7 +125,7 @@
       <div
         v-for="user in displayedUsers"
         :key="user.id"
-        class="group relative mx-1 flex cursor-pointer items-center gap-4 rounded-[1.75rem] border border-slate-200/60 bg-white/80 p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200/70 hover:bg-white hover:shadow-[0_16px_40px_rgba(59,130,246,0.08)]"
+        class="group relative mx-0.5 flex cursor-pointer items-center gap-4 rounded-[1.75rem] border border-slate-200/60 bg-white/80 p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200/70 hover:bg-white hover:shadow-[0_16px_40px_rgba(59,130,246,0.08)]"
         :class="[
           user.unread_count > 0 && !search ? 'bg-blue-50/60' : '',
           selectedUserId === user.id

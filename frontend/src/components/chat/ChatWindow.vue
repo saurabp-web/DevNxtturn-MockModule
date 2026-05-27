@@ -1,5 +1,5 @@
 <template>
-  <section class="relative flex-1 overflow-hidden">
+  <section class="relative min-h-0 flex-1 overflow-hidden">
     <!-- Dynamic Ambient Background -->
     <div
       class="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-purple-50/30"
@@ -21,7 +21,7 @@
     <!-- Empty/No Selection State -->
     <div
       v-if="!user"
-      class="flex min-h-[calc(100vh-160px)] flex-col items-center justify-center gap-6 rounded-[2rem] border border-white/80 bg-white/90 p-10 text-center shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl"
+      class="flex h-full min-h-0 flex-col items-center justify-center gap-6 rounded-[2.5rem] border border-white/80 bg-white/90 p-8 text-center shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl lg:p-10"
     >
       <div class="relative">
         <div
@@ -62,11 +62,11 @@
     <div
       v-else
       data-chat-pane
-      class="relative flex h-[calc(100vh-160px)] flex-col overflow-hidden rounded-[2rem] border border-white/80 bg-white/90 shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl"
+      class="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2.5rem] border border-white/80 bg-white/90 shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl"
     >
       <!-- Chat Header -->
       <div
-        class="relative z-10 flex items-center justify-between border-b border-slate-200/50 bg-white/70 px-6 py-4 backdrop-blur-xl"
+        class="relative z-10 flex items-center justify-between border-b border-slate-200/50 bg-white/70 px-5 py-4 backdrop-blur-xl lg:px-6"
       >
         <div class="flex items-center gap-4">
           <div class="relative group">
@@ -120,7 +120,12 @@
       </div>
 
       <!-- Messages Area -->
-      <div ref="messageList" class="message-area relative flex-1 overflow-y-auto px-5 py-5 lg:px-6">
+      <div
+        ref="messageList"
+        class="message-area relative flex-1 overflow-y-auto px-5 py-5 lg:px-6"
+        style="overflow-anchor: none;"
+        @scroll="onScroll"
+      >
         <div
           class="pointer-events-none absolute inset-0 opacity-[0.02]"
           style="
@@ -167,6 +172,8 @@
                 @reply="beginReplyMessage"
                 @edit="beginEditMessage"
                 @delete="deleteMessage"
+                @media-load="handleMessageMediaLoad"
+                @media-error="handleMessageMediaError"
                 @open-reaction-picker="openReactionPicker"
               />
             </template>
@@ -250,7 +257,7 @@
       </transition>
 
       <!-- Input Area -->
-      <div class="relative z-10 border-t border-slate-200/60 bg-white/55 px-6 py-4 backdrop-blur-md">
+      <div class="relative z-10 border-t border-slate-200/60 bg-white/55 px-5 py-4 backdrop-blur-md lg:px-6">
         <transition
           enter-active-class="transition duration-200 ease-out"
           enter-from-class="translate-y-1 opacity-0"
@@ -275,11 +282,13 @@
           v-if="user"
           ref="messageInput"
           :disabled="!user"
+          :draft-text="draftText"
           :editing-message="editingMessage"
           :replying-message="replyingMessage"
           @send="sendMessage"
           @cancel-edit="cancelEditMessage"
           @cancel-reply="cancelReplyMessage"
+          @draft-change="updateDraftText"
           @typing="handleTyping"
         />
       </div>
@@ -390,6 +399,7 @@ import { getAvatarUrl } from '@/utils/avatars'
 import eventBus from '@/services/eventBus'
 import {
   getConversationMessages,
+  markConversationAsRead,
   sendConversationMessage,
 } from '@/services/messagingCompat'
 import { isCelebrationEmoji } from './emoji-catalog'
@@ -424,6 +434,8 @@ export default {
       typingIndicatorTimer: null,
       isLocallyTyping: false,
       typingSendTimer: null,
+      draftsByConversation: {},
+      stickToBottom: true,
     }
   },
   computed: {
@@ -431,6 +443,13 @@ export default {
     ...mapState(useProfileStore, ['currentProfile', 'profilesByUsername']),
     currentUserId() {
       return this.currentUser?.id
+    },
+    conversationKey() {
+      return this.user ? String(this.user.id ?? this.user.username ?? '') : ''
+    },
+    draftText() {
+      if (!this.conversationKey) return ''
+      return this.draftsByConversation[this.conversationKey] || ''
     },
     selectedUserProfile() {
       const username = this.user?.username
@@ -542,15 +561,17 @@ export default {
         return
       }
       this.editingMessage = null
-      this.revealUnreadOnLoad = true
+      this.replyingMessage = null
+      this.revealUnreadOnLoad = false
+      this.clearTypingIndicator()
       this.$nextTick(this.attachScroll)
-      this.refreshThread()
+      this.refreshThread(true)
       this.loadSelectedUserProfile()
     },
   },
   mounted() {
-    this.revealUnreadOnLoad = Boolean(this.user)
-    this.refreshThread()
+    this.revealUnreadOnLoad = false
+    this.refreshThread(true)
     this.$nextTick(this.attachScroll)
     this.loadSelectedUserProfile()
     document.addEventListener('visibilitychange', this.handleVisibilityChange)
@@ -612,9 +633,16 @@ export default {
     },
     async syncConversationReadState() {
       if (!this.user || !this.authToken || this.readSyncInFlight || document.hidden) return
-      // The legacy backend does not expose a read-state endpoint, so we keep
-      // local thread state authoritative and avoid noisy 404s here.
-      eventBus.emit('messaging-read-updated')
+      this.readSyncInFlight = true
+      try {
+        await markConversationAsRead(this.user)
+        this.markThreadAsReadLocally()
+        eventBus.emit('messaging-read-updated')
+      } catch {
+        // keep the UI responsive even if the backend read call fails
+      } finally {
+        this.readSyncInFlight = false
+      }
     },
     handleVisibilityChange() {
       if (!document.hidden && this.user) {
@@ -640,25 +668,7 @@ export default {
         )
         return { count: flaggedUnread.length, index }
       }
-
-      const fallbackCount = Number(this.user?.unread_count || 0)
-      if (fallbackCount <= 0) {
-        return { count: 0, index: -1 }
-      }
-
-      let seenUnreadIncoming = 0
-      for (let index = messages.length - 1; index >= 0; index -= 1) {
-        const message = messages[index]
-        if (message?.is_deleted) continue
-        if (String(message?.sender) === currentUserId) continue
-
-        seenUnreadIncoming += 1
-        if (seenUnreadIncoming === fallbackCount) {
-          return { count: fallbackCount, index }
-        }
-      }
-
-      return { count: fallbackCount, index: -1 }
+      return { count: 0, index: -1 }
     },
     getCelebrationEmojiFromMessage(message) {
       const raw = String(message?.content || '').trim()
@@ -683,17 +693,19 @@ export default {
         // Keep the existing fallback avatar if profile loading fails.
       }
     },
-    refreshThread() {
+    refreshThread(forceScroll = false) {
       if (!this.user) {
         this.messages = []
         this.editingMessage = null
         this.replyingMessage = null
         this.revealUnreadOnLoad = false
+        this.stickToBottom = true
         this.stopPolling()
         this.closeWebSocket()
         return
       }
-      this.getMessages()
+      this.stickToBottom = true
+      this.getMessages({ forceScroll })
       this.connectWebSocket()
     },
     startPolling() {
@@ -750,7 +762,10 @@ export default {
           } else if (data?.event === 'edited' && data?.message?.id) {
             this.applyMessagePatch(data.message)
           } else if (data?.message) {
-            this.addMessageUnique(data.message, true)
+            this.addMessageUnique(
+              data.message,
+              String(data?.message?.sender) === String(this.currentUserId),
+            )
             if (String(data?.message?.sender) !== String(this.currentUserId)) {
               this.clearTypingIndicator()
               this.scheduleReadSync()
@@ -793,6 +808,7 @@ export default {
 
       const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
       this.showScrollDown = !nearBottom
+      this.stickToBottom = nearBottom
 
       if (el.scrollTop < 50 && this.hasMore && !this.loadingMore && !this.loading) {
         this.loadMoreMessages()
@@ -831,7 +847,8 @@ export default {
         year: 'numeric',
       })
     },
-    async getMessages() {
+    async getMessages(options = {}) {
+      const forceScroll = Boolean(options.forceScroll)
       if (!this.user || !this.authToken) return
       this.loading = true
       const el = this.$refs.messageList
@@ -844,20 +861,16 @@ export default {
         this.totalCount = data.total_count || 0
         this.hasMore = data.has_more || false
         this.loadOffset = this.messages.length
+        this.markThreadAsReadLocally()
         eventBus.emit('messaging-read-updated')
         this.scheduleReadSync(0)
+        this.stickToBottom = true
 
         this.$nextTick(() => {
           const list = this.$refs.messageList
           if (!list) return
 
-          if (this.revealUnreadOnLoad) {
-            this.revealUnreadOnLoad = false
-            this.revealUnreadThreadPosition()
-            return
-          }
-
-          if (wasNearBottom) {
+          if (forceScroll || wasNearBottom) {
             this.scrollToBottom(true)
             this.showScrollDown = false
             return
@@ -949,9 +962,12 @@ export default {
               ...mediaPayload,
               recipientUsername: this.user.username,
             })
-            this.addMessageUnique(message)
+            this.addMessageUnique(message, true)
           }
           this.replyingMessage = null
+          this.markThreadAsReadLocally()
+          this.$nextTick(() => this.scrollToBottom(true))
+          void this.syncConversationReadState()
           return
         }
         if (files.length) {
@@ -982,6 +998,9 @@ export default {
             this.addMessageUnique(json)
           }
           this.replyingMessage = null
+          this.markThreadAsReadLocally()
+          this.$nextTick(() => this.scrollToBottom(true))
+          void this.syncConversationReadState()
           return
         }
 
@@ -999,9 +1018,12 @@ export default {
               reply_to_message_id: replyToMessageId,
               recipientUsername: this.user.username,
             })
-            this.addMessageUnique(message)
+            this.addMessageUnique(message, true)
           }
           this.replyingMessage = null
+          this.markThreadAsReadLocally()
+          this.$nextTick(() => this.scrollToBottom(true))
+          void this.syncConversationReadState()
         }
       } catch (err) {
         this.sendError = err?.response?.data?.error || err?.message || 'Message failed to send.'
@@ -1137,7 +1159,7 @@ export default {
         this.editingMessage = null
       }
     },
-    addMessageUnique(message) {
+    addMessageUnique(message, forceScroll = false) {
       if (!message) return
       const exists = this.messages.some((msg) => String(msg.id) === String(message.id))
       if (!exists) {
@@ -1147,12 +1169,40 @@ export default {
         if (String(message?.sender) !== String(this.currentUserId)) {
           this.scheduleReadSync()
         }
-        if (this.shouldAutoScroll()) {
+        if (forceScroll || this.shouldAutoScroll() || String(message?.sender) === String(this.currentUserId)) {
+          this.stickToBottom = true
           this.$nextTick(() => this.scrollToBottom(true))
         } else {
           this.showScrollDown = true
         }
       }
+    },
+    markThreadAsReadLocally() {
+      const currentUserId = String(this.currentUserId ?? '')
+      this.messages = this.messages.map((message) => {
+        if (!message || String(message.sender) === currentUserId) {
+          return message
+        }
+        return {
+          ...message,
+          is_read: true,
+        }
+      })
+    },
+    updateDraftText(text) {
+      if (!this.conversationKey) return
+      this.draftsByConversation = {
+        ...this.draftsByConversation,
+        [this.conversationKey]: text || '',
+      }
+    },
+    handleMessageMediaLoad() {
+      if (!this.stickToBottom) return
+      this.$nextTick(() => this.scrollToBottom(true))
+    },
+    handleMessageMediaError() {
+      if (!this.stickToBottom) return
+      this.$nextTick(() => this.scrollToBottom(true))
     },
     scrollToBottom(force = false) {
       const el = this.$refs.messageList
@@ -1220,48 +1270,3 @@ export default {
   },
 }
 </script>
-<!--
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(203, 213, 225, 0.5);
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.message-list-enter-active,
-.message-list-leave-active {
-  transition: all 0.4s ease;
-}
-.message-list-enter-from,
-.message-list-leave-to {
-  opacity: 0;
-  transform: translateY(20px) scale(0.95);
-}
-
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-</style> -->
