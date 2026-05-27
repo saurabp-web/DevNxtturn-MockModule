@@ -147,9 +147,36 @@
               :disabled="disabled || isEditing"
               type="button"
               @click="toggleEmoji"
+              aria-label="Open emoji picker"
             >
-              <svg class="h-6 w-6 text-violet-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 8.25c-.414 0-.75-.336-.75-.75s.336-.75.75-.75.75.336.75.75-.336.75-.75.75zm-7.5 0c-.414 0-.75-.336-.75-.75s.336-.75.75-.75.75.336.75.75-.336.75-.75.75zm11.25 3.75a9 9 0 11-18 0 9 9 0 0118 0zm-6.44 2.96a3.75 3.75 0 01-5.31 0" />
+              <svg class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24">
+                <path
+                  d="M12 20.25c4.556 0 8.25-3.694 8.25-8.25S16.556 3.75 12 3.75 3.75 7.444 3.75 12c0 1.56.44 3.015 1.2 4.25L4 20l3.75-.95c1.22.75 2.65 1.2 4.25 1.2z"
+                  fill="currentColor"
+                  fill-opacity="0.12"
+                />
+                <path
+                  d="M9.25 9.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zm7 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M8.2 13.75c.95 1.1 2.1 1.65 3.8 1.65s2.85-.55 3.8-1.65"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M18.7 5.4l-.55-1.47L16.7 3.4l1.45-.53.55-1.47.55 1.47 1.45.53-1.45.53-.55 1.47z"
+                  fill="currentColor"
+                  opacity=".55"
+                />
+                <path
+                  d="M8.5 15.7c.9.8 2.1 1.2 3.5 1.2s2.6-.4 3.5-1.2"
+                  stroke="currentColor"
+                  stroke-width="1.1"
+                  stroke-linecap="round"
+                  opacity=".45"
+                />
               </svg>
             </button>
 

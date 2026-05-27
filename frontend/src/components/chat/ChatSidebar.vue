@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="flex h-full min-h-0 min-w-[300px] flex-col gap-4 overflow-hidden rounded-[2.5rem] border border-white/60 bg-gradient-to-b from-white/95 to-slate-50/95 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-all duration-300"
+    class="flex h-full min-h-0 w-full min-w-0 flex-col gap-4 overflow-hidden rounded-[1.75rem] border border-white/60 bg-gradient-to-b from-white/95 to-slate-50/95 p-4 shadow-[0_28px_90px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-all duration-300 sm:rounded-[2.5rem] sm:p-5 lg:min-w-[300px]"
   >
     <!-- Header -->
     <div class="flex items-end justify-between px-1 pt-1">
@@ -41,7 +41,7 @@
       </div>
       <input
         v-model.trim="search"
-        class="w-full rounded-[1.5rem] border border-slate-200/60 bg-white/90 py-3.5 pl-12 pr-10 text-sm font-medium text-slate-800 outline-none transition-all placeholder:text-slate-400 hover:bg-white hover:shadow-sm focus:border-blue-500/20 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+        class="w-full rounded-[1.35rem] border border-slate-200/60 bg-white/90 py-3.5 pl-12 pr-10 text-sm font-medium text-slate-800 outline-none transition-all placeholder:text-slate-400 hover:bg-white hover:shadow-sm focus:border-blue-500/20 focus:bg-white focus:ring-4 focus:ring-blue-500/10 sm:rounded-[1.5rem]"
         placeholder="Find someone..."
         aria-label="Search users"
       />
@@ -125,7 +125,7 @@
       <div
         v-for="user in displayedUsers"
         :key="user.id"
-        class="group relative mx-0.5 flex cursor-pointer items-center gap-4 rounded-[1.75rem] border border-slate-200/60 bg-white/80 p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200/70 hover:bg-white hover:shadow-[0_16px_40px_rgba(59,130,246,0.08)]"
+        class="group relative mx-0.5 flex cursor-pointer items-center gap-3 rounded-[1.45rem] border border-slate-200/60 bg-white/80 p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200/70 hover:bg-white hover:shadow-[0_16px_40px_rgba(59,130,246,0.08)] sm:gap-4 sm:rounded-[1.75rem] sm:p-3.5"
         :class="[
           user.unread_count > 0 && !search ? 'bg-blue-50/60' : '',
           selectedUserId === user.id

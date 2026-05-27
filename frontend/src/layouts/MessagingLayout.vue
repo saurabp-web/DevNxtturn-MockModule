@@ -31,10 +31,10 @@ watch(currentUser, async () => {
 </script>
 
 <template>
-  <div class="bg-gray-50 min-h-screen">
+  <div class="bg-gray-50 min-h-screen flex flex-col">
     <TopNavBar />
-    <main class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-safe-mobile lg:pb-4">
-      <div class="min-w-0">
+    <main class="container mx-auto flex min-h-0 flex-1 max-w-7xl overflow-hidden px-4 pt-20 pb-0 sm:px-6 lg:px-8 lg:pb-0">
+      <div class="min-h-0 min-w-0 flex-1">
         <RouterView />
       </div>
     </main>
@@ -43,12 +43,4 @@ watch(currentUser, async () => {
 </template>
 
 <style scoped>
-.pb-safe-mobile {
-  padding-bottom: 0;
-}
-@media (max-width: 1023px) {
-  .pb-safe-mobile {
-    padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0));
-  }
-}
 </style>

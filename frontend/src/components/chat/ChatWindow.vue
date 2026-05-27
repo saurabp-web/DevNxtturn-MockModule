@@ -1,5 +1,5 @@
 <template>
-  <section class="relative min-h-0 flex-1 overflow-hidden">
+  <section class="relative h-full min-h-0 flex-1 overflow-hidden">
     <!-- Dynamic Ambient Background -->
     <div
       class="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-purple-50/30"
@@ -21,7 +21,7 @@
     <!-- Empty/No Selection State -->
     <div
       v-if="!user"
-      class="flex h-full min-h-0 flex-col items-center justify-center gap-6 rounded-[2.5rem] border border-white/80 bg-white/90 p-8 text-center shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl lg:p-10"
+      class="flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-center gap-6 rounded-[1.75rem] border border-white/70 bg-white/90 p-6 text-center shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl sm:rounded-[2.5rem] sm:p-8 lg:p-10"
     >
       <div class="relative">
         <div
@@ -62,13 +62,30 @@
     <div
       v-else
       data-chat-pane
-      class="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2.5rem] border border-white/80 bg-white/90 shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl"
+      class="relative flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/90 shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl sm:rounded-[2.5rem]"
     >
       <!-- Chat Header -->
       <div
-        class="relative z-10 flex items-center justify-between border-b border-slate-200/50 bg-white/70 px-5 py-4 backdrop-blur-xl lg:px-6"
+        class="relative z-10 flex items-center justify-between gap-3 border-b border-slate-200/50 bg-white/70 px-4 py-4 backdrop-blur-xl sm:px-5 lg:px-6"
       >
-        <div class="flex items-center gap-4">
+        <div class="flex min-w-0 items-center gap-3 sm:gap-4">
+          <button
+            v-if="showMobileBack"
+            type="button"
+            class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-slate-100/70 text-slate-600 transition-all duration-200 hover:bg-white hover:text-purple-600 hover:shadow-md active:scale-95 lg:hidden"
+            @click="$emit('back')"
+            aria-label="Back to conversations"
+          >
+            <svg
+              class="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
           <div class="relative group">
             <img
               v-if="chatAvatarUrl"
@@ -207,7 +224,7 @@
       >
         <button
           v-if="showScrollDown"
-          class="absolute bottom-28 right-6 z-30 grid h-11 w-11 place-items-center rounded-xl bg-white text-purple-600 shadow-lg ring-1 ring-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:bg-purple-600 hover:text-white hover:shadow-purple-200 active:scale-95"
+          class="absolute bottom-24 right-4 z-30 grid h-11 w-11 place-items-center rounded-xl bg-white text-purple-600 shadow-lg ring-1 ring-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:bg-purple-600 hover:text-white hover:shadow-purple-200 active:scale-95 sm:bottom-28 sm:right-6"
           type="button"
           @click="scrollToBottom(true)"
         >
@@ -227,7 +244,7 @@
       <transition name="toast">
         <div
           v-if="sendError"
-          class="absolute bottom-28 left-6 right-6 z-40 rounded-xl bg-rose-500 p-4 text-sm font-semibold text-white shadow-xl shadow-rose-200/50 backdrop-blur-sm"
+          class="absolute bottom-24 left-4 right-4 z-40 rounded-xl bg-rose-500 p-4 text-sm font-semibold text-white shadow-xl shadow-rose-200/50 backdrop-blur-sm sm:bottom-28 sm:left-6 sm:right-6"
         >
           <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
@@ -257,7 +274,7 @@
       </transition>
 
       <!-- Input Area -->
-      <div class="relative z-10 border-t border-slate-200/60 bg-white/55 px-5 py-4 backdrop-blur-md lg:px-6">
+      <div class="relative z-10 border-t border-slate-200/60 bg-white/55 px-4 py-4 backdrop-blur-md sm:px-5 lg:px-6">
         <transition
           enter-active-class="transition duration-200 ease-out"
           enter-from-class="translate-y-1 opacity-0"
@@ -406,7 +423,17 @@ import { isCelebrationEmoji } from './emoji-catalog'
 import { getEmojiCount, isEmojiOnlyMessage, tokenizeMessageText } from './emoji-parser'
 
 export default {
-  props: ['user'],
+  props: {
+    user: {
+      type: Object,
+      default: null,
+    },
+    showMobileBack: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['back'],
   components: {
     MessageBubble,
     MessageInput,
