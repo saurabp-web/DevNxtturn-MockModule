@@ -10,7 +10,7 @@ import { getAvatarUrl } from '@/utils/avatars'
 import eventBus from '@/services/eventBus'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { onMounted } from 'vue' // Ensure onMounted is imported from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { XMarkIcon } from '@heroicons/vue/24/solid' // Ensure this is also here for your Decline feedback
 
 // 1. Setup the store we created yesterday
@@ -21,6 +21,7 @@ const authStore = useAuthStore()
 const { followers, following, connections, pending, isLoading, error } = storeToRefs(networkStore)
 const { currentUser, isAuthenticated } = storeToRefs(authStore)
 const route = useRoute()
+const router = useRouter()
 
 // 2. State for Tabs and Search (Added 'pending')
 const activeTab = ref<'connections' | 'followers' | 'following' | 'pending' | 'discovery'>(
@@ -70,10 +71,22 @@ const fetchData = async () => {
   // GUARD: If the store didn't load, stop here.
   if (!networkStore) return
 
-  if (activeTab.value === 'connections') await networkStore.fetchConnections()
-  else if (activeTab.value === 'followers') await networkStore.fetchFollowers()
-  else if (activeTab.value === 'following') await networkStore.fetchFollowing()
-  else if (activeTab.value === 'pending') {
+  if (activeTab.value === 'connections') {
+    const filter = route.query.filter as string
+    const targetUser = route.query.username as string
+
+    // THE MUTUAL FILTER HANDSHAKE:
+    // If the URL has ?filter=mutual, fetch shared connections using our new backend view!
+    if (filter === 'mutual' && targetUser) {
+      await networkStore.fetchMutualConnections(targetUser)
+    } else {
+      await networkStore.fetchConnections()
+    }
+  } else if (activeTab.value === 'followers') {
+    await networkStore.fetchFollowers()
+  } else if (activeTab.value === 'following') {
+    await networkStore.fetchFollowing()
+  } else if (activeTab.value === 'pending') {
     await networkStore.fetchPending()
     // PRINT THE EXACT DATA COMING FROM THE SERVER:
     console.log('👥 LIVE SERVER PENDING DATA:', JSON.parse(JSON.stringify(networkStore.pending)))
@@ -273,6 +286,23 @@ const handleConnect = async (user: any) => {
   }
 }
 
+const handleTabClick = (
+  tab: 'connections' | 'followers' | 'following' | 'pending' | 'discovery',
+) => {
+  activeTab.value = tab
+
+  // Keep the target username in the URL across all tabs so we don't lose the context!
+  if (route.query.username) {
+    router.replace({
+      name: 'network',
+      query: {
+        tab,
+        username: route.query.username,
+      },
+    })
+  }
+}
+
 // --- DEEP LINKING LOGIC ---
 onMounted(() => {
   // 1. Get the 'tab' from the URL: /network?tab=followers
@@ -299,12 +329,16 @@ onMounted(() => {
           <h1 class="text-2xl font-bold text-gray-900">
             {{
               activeTab === 'connections'
-                ? 'Your Connections'
+                ? route.query.filter === 'mutual'
+                  ? `Mutual Connections with @${route.query.username}`
+                  : 'Your Connections'
                 : activeTab === 'followers'
                   ? 'Your Followers'
                   : activeTab === 'following'
                     ? 'Following'
-                    : 'Pending Requests'
+                    : activeTab === 'pending'
+                      ? 'Pending Requests'
+                      : 'Discovery'
             }}
           </h1>
 
@@ -333,7 +367,7 @@ onMounted(() => {
               'discovery',
             ] as const"
             :key="tab"
-            @click="activeTab = tab"
+            @click="handleTabClick(tab)"
             :class="[
               'flex-1 text-center px-1.5 sm:px-4 py-2 text-[9.5px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap',
               activeTab === tab
@@ -342,6 +376,48 @@ onMounted(() => {
             ]"
           >
             {{ tab }}
+          </button>
+        </div>
+
+        <!-- The Sub-Pill Toggle (Only visible under Connections when a target username is present) -->
+        <div
+          v-if="activeTab === 'connections' && route.query.username"
+          class="mt-4 flex gap-2 px-1 animate-fadeIn"
+        >
+          <!-- Button 1: All Connections -->
+          <button
+            @click="
+              router.replace({
+                name: 'network',
+                query: { tab: 'connections', username: route.query.username },
+              })
+            "
+            :class="[
+              'px-4 py-1.5 text-xs font-bold rounded-lg border transition-all duration-200 shadow-sm',
+              route.query.filter !== 'mutual'
+                ? 'bg-blue-50 text-blue-600 border-blue-200'
+                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50',
+            ]"
+          >
+            All Connections
+          </button>
+
+          <!-- Button 2: Mutual Connections -->
+          <button
+            @click="
+              router.replace({
+                name: 'network',
+                query: { tab: 'connections', filter: 'mutual', username: route.query.username },
+              })
+            "
+            :class="[
+              'px-4 py-1.5 text-xs font-bold rounded-lg border transition-all duration-200 shadow-sm',
+              route.query.filter === 'mutual'
+                ? 'bg-blue-50 text-blue-600 border-blue-200'
+                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50',
+            ]"
+          >
+            👥 Mutual with @{{ route.query.username }}
           </button>
         </div>
       </div>

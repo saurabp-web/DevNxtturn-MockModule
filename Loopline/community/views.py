@@ -2153,3 +2153,50 @@ class GoogleLogin(SocialLoginView):
         """
         # .rstrip('/') ensures we don't end up with //login if the env var has a slash
         return f"{settings.FRONTEND_URL.rstrip('/')}/login"
+
+
+class MutualConnectionsListView(generics.ListAPIView):
+    """
+    Gold-Standard Hybrid View:
+    Returns a standard, paginated list of mutual connections between
+    the logged-in user and the target profile owner.
+    """
+
+    serializer_class = NetworkUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        target_username = self.kwargs.get("username")
+        current_user = self.request.user
+
+        # 1. Safely find the target profile owner
+        try:
+            target_user = User.objects.get(username=target_username)
+        except User.DoesNotExist:
+            return User.objects.none()
+
+        # 2. Fetch all accepted connection IDs for the logged-in user
+        current_connections = ConnectionRequest.objects.filter(
+            (Q(sender=current_user) | Q(receiver=current_user)), status="accepted"
+        )
+        current_ids = set()
+        for req in current_connections:
+            current_ids.add(
+                req.sender_id if req.receiver_id == current_user.id else req.receiver_id
+            )
+
+        # 3. Fetch all accepted connection IDs for the target user
+        target_connections = ConnectionRequest.objects.filter(
+            (Q(sender=target_user) | Q(receiver=target_user)), status="accepted"
+        )
+        target_ids = set()
+        for req in target_connections:
+            target_ids.add(
+                req.sender_id if req.receiver_id == target_user.id else req.receiver_id
+            )
+
+        # 4. Intersection of both sets yields the shared user IDs
+        mutual_ids = current_ids.intersection(target_ids)
+
+        # 5. Return an optimized, pre-joined queryset of those mutual users
+        return User.objects.filter(id__in=mutual_ids).select_related("profile")

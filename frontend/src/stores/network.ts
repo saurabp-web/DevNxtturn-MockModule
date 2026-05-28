@@ -12,6 +12,7 @@ export const useNetworkStore = defineStore('network', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const pending = ref<NetworkUser[]>([])
+  const mutualCache = ref<{ [username: string]: NetworkUser[] }>({})
 
   const nextUrls = ref({
     followers: null as string | null,
@@ -94,6 +95,38 @@ export const useNetworkStore = defineStore('network', () => {
     }
   }
 
+  async function fetchMutualConnections(username: string, url: string | null = null) {
+    // --- THE CACHE SHIELD ---
+    // If we already loaded this user's mutual connections, load them from memory instantly!
+    if (!url && mutualCache.value[username]) {
+      connections.value = mutualCache.value[username]
+      nextUrls.value.connections = null // No next page URL needed since they are pre-loaded
+      return
+    }
+
+    isLoading.value = true
+    error.value = null
+    const apiUrl = url || `/profiles/${username}/mutual-connections/`
+
+    try {
+      const response = await axiosInstance.get(apiUrl)
+      if (url) {
+        connections.value = [...connections.value, ...response.data.results]
+      } else {
+        connections.value = response.data.results
+        // Save to our memory bank for future fast clicks!
+        mutualCache.value[username] = response.data.results
+      }
+
+      nextUrls.value.connections = response.data.next
+    } catch (err: any) {
+      error.value = 'Failed to load mutual connections'
+      console.error(err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function fetchPending(url: string | null = null) {
     isLoading.value = true
     error.value = null
@@ -162,6 +195,8 @@ export const useNetworkStore = defineStore('network', () => {
     error.value = null
     isLoading.value = false
 
+    mutualCache.value = {}
+
     // Reset pagination URLs ---
     nextUrls.value = {
       followers: null,
@@ -185,6 +220,7 @@ export const useNetworkStore = defineStore('network', () => {
     fetchFollowers,
     fetchFollowing,
     fetchConnections,
+    fetchMutualConnections,
     fetchPending,
     fetchDiscover,
     reset,

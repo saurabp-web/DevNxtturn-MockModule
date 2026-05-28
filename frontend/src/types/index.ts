@@ -117,6 +117,7 @@ export interface UserProfile {
   following_count: number
   connections_count: number
   posts_count: number
+  mutual_connections_count: number
 }
 
 // --- UPDATED: The Payload for Profile Updates ---

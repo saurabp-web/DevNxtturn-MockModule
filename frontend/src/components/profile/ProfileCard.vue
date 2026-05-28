@@ -2,15 +2,17 @@
 import { ref, onUnmounted, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAvatarUrl } from '@/utils/avatars'
-import type { UserProfile } from '@/types'
+import type { UserProfile, NetworkUser } from '@/types'
 import { useProfileStore } from '@/stores/profile'
 import ProfileActions from '@/components/ProfileActions.vue'
 import { useAuthStore } from '@/stores/auth'
+import axiosInstance from '@/services/axiosInstance'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 import IdentityForm from '@/components/profile/forms/IdentityForm.vue'
 import { PencilIcon, XMarkIcon, CheckIcon } from '@heroicons/vue/24/solid'
 import eventBus from '@/services/eventBus'
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 
 // Import your avatar files - adjust the path according to your project structure
 import maleAvatar1 from '@/assets/avatars/male-1.png'
@@ -381,6 +383,27 @@ function handleEditProfile() {
   isModalOpen.value = true
 }
 
+// --- UPDATED CONNECTIONS CARD CLICK TRIGGER (With Route-Based Redirection) ---
+function handleConnectionsCardClick() {
+  if (!isComponentMounted.value) return
+
+  if (props.isOwnProfile) {
+    navigateToNetworkTab('connections')
+  } else if (props.profile.mutual_connections_count > 0) {
+    // THE REDIRECT HANDSHAKE:
+    // Go to the Network page, open the 'connections' tab,
+    // and pass the 'mutual' filter along with the username!
+    router.push({
+      name: 'network',
+      query: {
+        tab: 'connections',
+        filter: 'mutual',
+        username: props.profile.user.username,
+      },
+    })
+  }
+}
+
 // Handle posts card click - emits event to parent
 function handlePostsClick() {
   emit('postsClicked')
@@ -519,13 +542,26 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Social Stats reordered for consistency -->
+        <!-- Social Stats reordered for consistency (Updated to support Conditional Clicks & Mutual Badges) -->
         <div class="mt-2 pt-4 border-t border-gray-100">
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <!-- 1. Connections Card (Moved to First) -->
-            <div class="stats-card group" @click="navigateToNetworkTab('connections')">
+            <!-- 1. Connections Card (Clickable on own profile OR if mutual connections exist) -->
+            <div
+              class="stats-card group"
+              :class="[
+                isOwnProfile || profile.mutual_connections_count > 0
+                  ? 'cursor-pointer'
+                  : 'cursor-default pointer-events-none',
+              ]"
+              @click="handleConnectionsCardClick"
+            >
               <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
+                class="stats-card-inner transform transition-transform duration-300"
+                :class="
+                  isOwnProfile || profile.mutual_connections_count > 0
+                    ? 'group-hover:translate-y-[-2px]'
+                    : ''
+                "
               >
                 <div
                   class="stats-gradient bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50"
@@ -537,14 +573,27 @@ onUnmounted(() => {
                   <div class="text-xs font-medium text-violet-600/80 uppercase tracking-wider">
                     Connections
                   </div>
+                  <!-- NEW: Embedded Mutual Badge (Only visible on other profiles if mutual connections exist) -->
+                  <div
+                    v-if="!isOwnProfile && profile.mutual_connections_count > 0"
+                    class="text-[9px] font-bold text-green-600 flex items-center gap-0.5 mt-0.5"
+                  >
+                    <span>👥</span>
+                    <span>{{ profile.mutual_connections_count }} Mutual</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- 2. Followers Card (Now Second) -->
-            <div class="stats-card group" @click="navigateToNetworkTab('followers')">
+            <!-- 2. Followers Card (Read-only on other profiles) -->
+            <div
+              class="stats-card group"
+              :class="isOwnProfile ? 'cursor-pointer' : 'cursor-default pointer-events-none'"
+              @click="isOwnProfile ? navigateToNetworkTab('followers') : null"
+            >
               <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
+                class="stats-card-inner transform transition-transform duration-300"
+                :class="isOwnProfile ? 'group-hover:translate-y-[-2px]' : ''"
               >
                 <div
                   class="stats-gradient bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50"
@@ -560,10 +609,15 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- 3. Following Card (Now Third) -->
-            <div class="stats-card group" @click="navigateToNetworkTab('following')">
+            <!-- 3. Following Card (Read-only on other profiles) -->
+            <div
+              class="stats-card group"
+              :class="isOwnProfile ? 'cursor-pointer' : 'cursor-default pointer-events-none'"
+              @click="isOwnProfile ? navigateToNetworkTab('following') : null"
+            >
               <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
+                class="stats-card-inner transform transition-transform duration-300"
+                :class="isOwnProfile ? 'group-hover:translate-y-[-2px]' : ''"
               >
                 <div
                   class="stats-gradient bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50"
@@ -579,10 +633,15 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- 4. Posts Card (Stay Last) -->
-            <div class="stats-card group" @click="handlePostsClick">
+            <!-- 4. Posts Card (Read-only on other profiles) -->
+            <div
+              class="stats-card group"
+              :class="isOwnProfile ? 'cursor-pointer' : 'cursor-default pointer-events-none'"
+              @click="isOwnProfile ? handlePostsClick() : null"
+            >
               <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300 cursor-pointer"
+                class="stats-card-inner transform transition-transform duration-300"
+                :class="isOwnProfile ? 'group-hover:translate-y-[-2px]' : ''"
               >
                 <div
                   class="stats-gradient bg-gradient-to-br from-amber-50 via-orange-50 to-red-50"
@@ -641,6 +700,7 @@ onUnmounted(() => {
     </BaseModal>
 
     <!-- ALL MODALS with mount checks -->
+
     <BaseModal
       v-if="isComponentMounted"
       :show="isModalOpen"

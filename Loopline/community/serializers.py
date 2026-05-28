@@ -484,6 +484,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     social_links = SocialLinkSerializer(many=True, read_only=True)
     relationship_status = serializers.SerializerMethodField()
 
+    mutual_connections_count = serializers.SerializerMethodField()
+
     class Meta:
         model = UserProfile
         fields = [
@@ -514,6 +516,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "following_count",
             "connections_count",
             "posts_count",
+            "mutual_connections_count",
         ]
         read_only_fields = fields
 
@@ -620,6 +623,42 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_followed_by_request_user": i_follow_them,
             "is_following_viewer": they_follow_me,
         }
+
+    def get_mutual_connections_count(self, obj):
+        """
+        Calculates the number of mutual connections between the logged-in user
+        and the profile owner.
+        """
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated or request.user == obj.user:
+            return 0
+
+        current_user = request.user
+        target_user = obj.user
+
+        # 1. Fetch all connection IDs for the logged-in user (current_user)
+        current_connections = ConnectionRequest.objects.filter(
+            (Q(sender=current_user) | Q(receiver=current_user)), status="accepted"
+        )
+        current_ids = set()
+        for req in current_connections:
+            current_ids.add(
+                req.sender_id if req.receiver_id == current_user.id else req.receiver_id
+            )
+
+        # 2. Fetch all connection IDs for the profile owner (target_user)
+        target_connections = ConnectionRequest.objects.filter(
+            (Q(sender=target_user) | Q(receiver=target_user)), status="accepted"
+        )
+        target_ids = set()
+        for req in target_connections:
+            target_ids.add(
+                req.sender_id if req.receiver_id == target_user.id else req.receiver_id
+            )
+
+        # 3. Intersection of both sets gets the shared/mutual user IDs
+        mutual_ids = current_ids.intersection(target_ids)
+        return len(mutual_ids)
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
