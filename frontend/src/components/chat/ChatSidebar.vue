@@ -302,7 +302,15 @@ export default {
     mergeProfileIntoConversation(user) {
       const username = this.getConversationUsername(user)
       const profile = this.profilesByUsername?.[username]
-      const picture = this.getConversationAvatarUrl(user)
+      const picture =
+        user?.avatar_url ||
+        user?.picture ||
+        profile?.picture ||
+        user?.picture_url ||
+        user?.avatar ||
+        user?.user?.picture ||
+        user?.user?.picture_url ||
+        ''
       const displayName =
         profile?.display_name ||
         profile?.user?.first_name ||
@@ -315,6 +323,8 @@ export default {
         ...user,
         picture,
         avatar_url: picture,
+        picture_url: user?.picture_url || profile?.picture_url || '',
+        avatar: user?.avatar || profile?.avatar || '',
         first_name: displayName,
         last_name: profile?.user?.last_name || profile?.last_name || user.last_name || '',
       }
@@ -397,6 +407,9 @@ export default {
         return {
           ...user,
           picture: activeProfile.picture || user.picture || '',
+          avatar_url: activeProfile.avatar_url || activeProfile.picture || user.avatar_url || user.picture || '',
+          picture_url: activeProfile.picture_url || user.picture_url || '',
+          avatar: activeProfile.avatar || user.avatar || '',
           first_name: activeProfile.first_name || user.first_name || '',
           last_name: activeProfile.last_name || user.last_name || '',
         }
@@ -415,7 +428,15 @@ export default {
     getConversationAvatarUrl(user) {
       const username = this.getConversationUsername(user)
       const profile = this.profilesByUsername?.[username] || this.avatarCache[username]
-      const picture = profile?.picture || user.picture || ''
+      const picture =
+        user?.avatar_url ||
+        user?.picture ||
+        profile?.picture ||
+        user?.picture_url ||
+        user?.avatar ||
+        user?.user?.picture ||
+        user?.user?.picture_url ||
+        ''
       const displayName =
         profile?.display_name ||
         profile?.user?.first_name ||
@@ -423,10 +444,13 @@ export default {
         user.first_name ||
         user.username ||
         ''
+      const lastName =
+        profile?.user?.last_name || profile?.last_name || user.last_name || user?.user?.last_name || ''
       return getAvatarUrl(
         picture,
         displayName,
-        profile?.user?.last_name || profile?.last_name || user.last_name || '',
+        lastName,
+        username || profile?.user?.username || '',
       )
     },
     moveConversationToTop(userId, lastMessage, isMine = false) {
