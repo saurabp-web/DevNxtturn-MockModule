@@ -76,10 +76,10 @@
     </div>
 
     <!-- Empty state -->
-      <div
-        v-if="!loading && !search && conversations.length === 0"
-        class="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-4 text-center"
-      >
+    <div
+      v-if="!loading && !search && conversations.length === 0"
+      class="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-4 text-center"
+    >
       <div class="relative">
         <div class="absolute -inset-4 rounded-full bg-blue-100/50 blur-xl"></div>
         <div
@@ -124,7 +124,7 @@
 
       <div
         v-for="user in displayedUsers"
-        :key="user.id"
+        :key="getConversationKey(user)"
         class="group relative mx-0.5 flex cursor-pointer items-center gap-3 rounded-[1.45rem] border border-slate-200/60 bg-white/80 p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200/70 hover:bg-white hover:shadow-[0_16px_40px_rgba(59,130,246,0.08)] sm:gap-4 sm:rounded-[1.75rem] sm:p-3.5"
         :class="[
           user.unread_count > 0 && !search ? 'bg-blue-50/60' : '',
@@ -145,9 +145,9 @@
 
         <!-- Avatar -->
         <div class="relative flex-shrink-0">
-          <img
-            :src="getConversationAvatarUrl(user)"
-            :alt="`${user.username} avatar`"
+          <StableAvatar
+            :src="user.avatar_display_url || getConversationAvatarUrl(user)"
+            :alt="`${getConversationUsername(user) || 'user'} avatar`"
             class="relative z-10 h-12 w-12 rounded-[1.25rem] object-cover shadow-lg transition-transform duration-300 group-hover:scale-105"
           />
           <div
@@ -217,17 +217,18 @@
 <script>
 import axiosInstance from '@/services/axiosInstance'
 import eventBus from '@/services/eventBus'
-import {
-  getMessagingConversations,
-  getMessagingUsers,
-} from '@/services/messagingCompat'
+import { getMessagingConversations, getMessagingUsers } from '@/services/messagingCompat'
 import { mapActions, mapState } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/profile'
 import { getAvatarUrl } from '@/utils/avatars'
+import StableAvatar from './StableAvatar.vue'
 
 export default {
   emits: ['selectUser'],
+  components: {
+    StableAvatar,
+  },
   props: {
     selectedUserId: {
       type: Number,
@@ -247,12 +248,13 @@ export default {
       error: '',
       pollTimer: null,
       initialSelectionAttempted: false,
-      avatarCache: {},
+      profileFetchesInFlight: {},
+      profileFetchesAttempted: {},
     }
   },
   computed: {
     ...mapState(useAuthStore, ['currentUser', 'authToken']),
-    ...mapState(useProfileStore, ['profilesByUsername']),
+    ...mapState(useProfileStore, ['currentProfile', 'profilesByUsername']),
     totalUnread() {
       return this.conversations.reduce((sum, u) => sum + (u.unread_count || 0), 0)
     },
@@ -289,6 +291,7 @@ export default {
     eventBus.off('messaging-read-updated', this.handleMessagingReadUpdated)
   },
   methods: {
+    getAvatarUrl,
     ...mapActions(useProfileStore, ['fetchProfile']),
     handleMessagingReadUpdated() {
       if (this.authToken) {
@@ -298,48 +301,90 @@ export default {
     getConversationUsername(user) {
       return user?.username || user?.user?.username || ''
     },
-
-    mergeProfileIntoConversation(user) {
+    getConversationProfile(user) {
       const username = this.getConversationUsername(user)
-      const profile = this.profilesByUsername?.[username]
-      const picture =
-        user?.avatar_url ||
+      if (!username) return null
+      return (
+        this.profilesByUsername?.[username] ||
+        (this.currentProfile?.user?.username === username ? this.currentProfile : null)
+      )
+    },
+    getConversationPicture(user) {
+      const profile = this.getConversationProfile(user)
+      return (
         user?.picture ||
-        profile?.picture ||
+        user?.avatar_url ||
         user?.picture_url ||
         user?.avatar ||
         user?.user?.picture ||
         user?.user?.picture_url ||
+        user?.user?.avatar_url ||
+        profile?.picture ||
         ''
-      const displayName =
+      )
+    },
+    getConversationFirstName(user) {
+      const profile = this.getConversationProfile(user)
+      return (
         profile?.display_name ||
         profile?.user?.first_name ||
-        user.display_name ||
-        user.first_name ||
-        user.username ||
+        user?.first_name ||
+        user?.display_name ||
+        user?.user?.first_name ||
         ''
+      )
+    },
+    getConversationLastName(user) {
+      const profile = this.getConversationProfile(user)
+      return profile?.user?.last_name || user?.last_name || user?.user?.last_name || ''
+    },
+    getConversationAvatarUrl(user) {
+      const username = this.getConversationUsername(user)
+      return getAvatarUrl(
+        this.getConversationPicture(user),
+        this.getConversationFirstName(user) || username,
+        this.getConversationLastName(user),
+        username,
+      )
+    },
+    getConversationKey(user) {
+      return String(
+        user?.id ?? user?.conversation_id ?? user?.conversationId ?? this.getConversationUsername(user),
+      )
+    },
+    getExistingAvatarRow(user, rows = []) {
+      const username = this.getConversationUsername(user)
+      const key = this.getConversationKey(user)
+      return (rows || []).find((row) => {
+        return (
+          this.getConversationKey(row) === key ||
+          (username && this.getConversationUsername(row) === username)
+        )
+      })
+    },
+    hydrateUserAvatar(user, existingUser = null) {
+      const username = this.getConversationUsername(user)
+      const picture = this.getConversationPicture(user)
+      const firstName = this.getConversationFirstName(user) || username
+      const lastName = this.getConversationLastName(user)
+      const avatarUrl = getAvatarUrl(picture, firstName, lastName, username)
 
       return {
         ...user,
         picture,
         avatar_url: picture,
-        picture_url: user?.picture_url || profile?.picture_url || '',
-        avatar: user?.avatar || profile?.avatar || '',
-        first_name: displayName,
-        last_name: profile?.user?.last_name || profile?.last_name || user.last_name || '',
+        picture_url: user?.picture_url || '',
+        avatar: user?.avatar || '',
+        first_name: firstName,
+        last_name: lastName,
+        avatar_display_url: picture
+          ? avatarUrl
+          : existingUser?.avatar_display_url || user?.avatar_display_url || avatarUrl,
       }
     },
 
-    async ensureProfileLoaded(username) {
-      if (!username) return null
-      const cached = this.profilesByUsername?.[username]
-      if (cached) return cached
-      try {
-        await this.fetchProfile(username)
-        return this.profilesByUsername?.[username] || null
-      } catch {
-        return null
-      }
+    mergeProfileIntoConversation(user) {
+      return this.hydrateUserAvatar(user, this.getExistingAvatarRow(user, this.conversations))
     },
 
     timeAgo(isoString) {
@@ -354,21 +399,13 @@ export default {
     handleUserClick(user) {
       this.$emit('selectUser', this.mergeProfileIntoConversation(user))
     },
-    async loadConversations(opts = {}) {
-      if (!this.authToken) return
-      if (!opts.silent) {
-        this.loading = true
-        this.error = ''
-      }
+    async loadConversations() {
       try {
-        this.conversations = await getMessagingConversations()
-        await this.hydrateConversationProfiles()
-        await this.hydrateConversationAvatars()
-        this.tryAutoSelectInitialUser()
+        const rows = await getMessagingConversations()
+        this.hydrateConversationAvatars(rows)
+        this.prefetchProfilesForUsers(this.conversations)
       } catch (err) {
-        if (!opts.silent) this.error = 'Sync failed'
-      } finally {
-        if (!opts.silent) this.loading = false
+        console.error(err)
       }
     },
     async loadInitialUserByUsername() {
@@ -378,7 +415,6 @@ export default {
         const results = await getMessagingUsers(this.initialUsername)
         const match = (results || []).find((user) => user.username === this.initialUsername)
         if (match) {
-          await this.ensureProfileLoaded(match.username)
           this.$emit('selectUser', this.mergeProfileIntoConversation(match))
         }
       } catch {
@@ -391,67 +427,58 @@ export default {
           params: { q: query },
         })
         const results = res.data?.results || []
-        this.allUsers = results.filter((u) => u.id !== this.currentUser?.id)
+        this.allUsers = results
+          .filter((u) => u.id !== this.currentUser?.id)
+          .map((user) =>
+            this.hydrateUserAvatar(user, this.getExistingAvatarRow(user, this.allUsers)),
+          )
+        this.prefetchProfilesForUsers(this.allUsers)
       } catch {
         // silent
       }
     },
-    async hydrateConversationAvatars() {
-      const rows = this.conversations || []
-      this.conversations = rows.map((user) => {
+    hydrateConversationAvatars(rows = this.conversations || []) {
+      const previousRows = this.conversations || []
+      this.conversations = (rows || []).map((user) =>
+        this.hydrateUserAvatar(user, this.getExistingAvatarRow(user, previousRows)),
+      )
+    },
+    prefetchProfilesForUsers(users = []) {
+      ;(users || []).forEach((user) => {
         const username = this.getConversationUsername(user)
-        const storeProfile = this.profilesByUsername?.[username]
-        const profile = this.avatarCache[username]
-        const activeProfile = storeProfile || profile
-        if (!activeProfile) return user
-        return {
-          ...user,
-          picture: activeProfile.picture || user.picture || '',
-          avatar_url: activeProfile.avatar_url || activeProfile.picture || user.avatar_url || user.picture || '',
-          picture_url: activeProfile.picture_url || user.picture_url || '',
-          avatar: activeProfile.avatar || user.avatar || '',
-          first_name: activeProfile.first_name || user.first_name || '',
-          last_name: activeProfile.last_name || user.last_name || '',
+        if (
+          !username ||
+          this.profilesByUsername?.[username] ||
+          this.profileFetchesInFlight[username] ||
+          this.profileFetchesAttempted[username]
+        ) {
+          return
         }
+        this.profileFetchesInFlight = {
+          ...this.profileFetchesInFlight,
+          [username]: true,
+        }
+        this.profileFetchesAttempted = {
+          ...this.profileFetchesAttempted,
+          [username]: true,
+        }
+        this.fetchProfile(username)
+          .then(() => {
+            this.hydrateConversationAvatars()
+            this.allUsers = this.allUsers.map((row) =>
+              this.getConversationUsername(row) === username
+                ? this.hydrateUserAvatar(row, row)
+                : row,
+            )
+          })
+          .catch(() => {
+            // Keep the generated initials avatar if the profile request fails.
+          })
+          .finally(() => {
+            const { [username]: _done, ...rest } = this.profileFetchesInFlight
+            this.profileFetchesInFlight = rest
+          })
       })
-    },
-    async hydrateConversationProfiles() {
-      const rows = this.conversations || []
-      await Promise.all(
-        rows.map(async (user) => {
-          const username = this.getConversationUsername(user)
-          if (!username) return
-          await this.ensureProfileLoaded(username)
-        }),
-      )
-    },
-    getConversationAvatarUrl(user) {
-      const username = this.getConversationUsername(user)
-      const profile = this.profilesByUsername?.[username] || this.avatarCache[username]
-      const picture =
-        user?.avatar_url ||
-        user?.picture ||
-        profile?.picture ||
-        user?.picture_url ||
-        user?.avatar ||
-        user?.user?.picture ||
-        user?.user?.picture_url ||
-        ''
-      const displayName =
-        profile?.display_name ||
-        profile?.user?.first_name ||
-        user.display_name ||
-        user.first_name ||
-        user.username ||
-        ''
-      const lastName =
-        profile?.user?.last_name || profile?.last_name || user.last_name || user?.user?.last_name || ''
-      return getAvatarUrl(
-        picture,
-        displayName,
-        lastName,
-        username || profile?.user?.username || '',
-      )
     },
     moveConversationToTop(userId, lastMessage, isMine = false) {
       const idx = this.conversations.findIndex((c) => c.id === userId)

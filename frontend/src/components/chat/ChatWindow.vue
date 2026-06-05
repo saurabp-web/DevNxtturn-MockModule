@@ -87,18 +87,11 @@
             </svg>
           </button>
           <div class="relative group">
-            <img
-              v-if="chatAvatarUrl"
+            <StableAvatar
               :src="chatAvatarUrl"
-              :alt="`${user.username} avatar`"
+              :alt="`${user.username || 'user'} avatar`"
               class="h-12 w-12 rounded-xl object-cover shadow-md shadow-purple-200 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-300"
             />
-            <div
-              v-else
-              class="grid h-12 w-12 place-items-center rounded-xl bg-purple-500 font-bold text-white shadow-md shadow-purple-200 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-300"
-            >
-              {{ user.username?.[0]?.toUpperCase() || 'U' }}
-            </div>
             <div
               v-if="user?.is_online"
               class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm"
@@ -408,6 +401,7 @@ import chatApi from '@/services/messageApi'
 import MessageInput from './MessageInput.vue'
 import MessageBubble from './MessageBubble.vue'
 import FloatingEmojiLayer from './FloatingEmojiLayer.vue'
+import StableAvatar from './StableAvatar.vue'
 import { mapState } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { mapActions } from 'pinia'
@@ -438,6 +432,7 @@ export default {
     MessageBubble,
     MessageInput,
     FloatingEmojiLayer,
+    StableAvatar,
   },
   data() {
     return {
@@ -501,14 +496,12 @@ export default {
       const avatar =
         this.user?.avatar_url ||
         this.user?.picture ||
-        profile?.picture ||
         this.user?.picture_url ||
         this.user?.avatar ||
         this.user?.user?.picture ||
         this.user?.user?.picture_url ||
+        profile?.picture ||
         ''
-      if (!avatar) return ''
-
       const firstName =
         profile?.display_name ||
         profile?.user?.first_name ||
