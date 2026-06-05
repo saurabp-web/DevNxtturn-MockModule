@@ -123,4 +123,4 @@ export function buildMediaUrl(url: string | null | undefined): string {
     return url
   }
   return `${API_URL_BASE}${url}`
-}
+} 
