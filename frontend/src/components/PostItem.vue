@@ -1324,8 +1324,11 @@ const handleNavigation = () => {
 }
 onMounted(() => eventBus.on('navigation-started', handleNavigation))
 
-// MODIFIED: toggleCommentDisplay function for both desktop and mobile
 async function toggleCommentDisplay() {
+  if (!isAuthenticated.value) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
   const wasShowingComments = showComments.value
   showComments.value = !showComments.value
 
@@ -1365,7 +1368,10 @@ async function toggleCommentDisplay() {
 
 async function handleReaction(reactionType: string) {
   // 1. Security check: Only logged-in users can react
-  if (!isAuthenticated.value) return alert('Please login to react to posts.')
+  if (!isAuthenticated.value) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
 
   // 2. Local guard: Prevent multiple simultaneous requests for the same post
   if (isLiking.value) return
@@ -1385,7 +1391,10 @@ async function handleReaction(reactionType: string) {
 }
 
 async function handleModalReaction(reactionType: string) {
-  if (!isAuthenticated.value) return alert('Please login to react to posts.')
+  if (!isAuthenticated.value) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
   if (reactionType === 'like') {
     await feedStore.toggleLike(props.post.id)
   } else {
@@ -1398,7 +1407,8 @@ async function handleModalReaction(reactionType: string) {
 async function toggleSave() {
   if (!isAuthenticated.value) {
     showOptionsMenu.value = false
-    return alert('Please login to save posts.')
+    ;(authStore as any).showAuthModal = true
+    return
   }
   showOptionsMenu.value = false
   await feedStore.toggleSavePost(props.post.id)
@@ -1700,7 +1710,10 @@ const postToPreview = computed(() => {
 
 // --- Part A: Open the preview modal ---
 function handleRepost() {
-  if (!isAuthenticated.value) return alert('Please login to repost.')
+  if (!isAuthenticated.value) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
   openRepostModal() // Just opens the UI
 }
 

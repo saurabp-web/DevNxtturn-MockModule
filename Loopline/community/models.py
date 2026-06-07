@@ -3,6 +3,7 @@ import uuid
 from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.indexes import GinIndex
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -40,10 +41,14 @@ def get_resume_path(instance, filename):
     return os.path.join("resumes", f"{uuid.uuid4()}.{ext}")
 
 
-# --- End Helper Function ---
-
-
-# --- MODELS START HERE ---
+# --- GLOBAL PRIVACY CHOICES ---
+VISIBILITY_CHOICES = [
+    ("public", "Everyone"),
+    ("members", "Registered Members"),
+    ("followers", "My Followers"),
+    ("connections", "Mutual Connections"),
+    ("self", "Only Me"),
+]
 
 
 class UserProfile(models.Model):
@@ -89,27 +94,25 @@ class UserProfile(models.Model):
     # Defines the user's PREFERENCE for future opportunities.
     is_open_to_relocation = models.BooleanField(default=False)
 
-    # --- END OF NEW STRUCTURE ---
-
     # NEW: Resume file upload field.
     resume = models.FileField(upload_to=get_resume_path, null=True, blank=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
 
     # --- PRIVACY SETTINGS ---
-    VISIBILITY_CHOICES = [
-        ("public", "Everyone"),
-        ("followers", "My Followers"),  # Broad private circle
-        ("connections", "Mutual Connections"),  # Tight private circle
-        ("self", "Only Me"),  # Private
-    ]
+    profile_visibility = models.CharField(
+        max_length=12, choices=VISIBILITY_CHOICES, default="public"
+    )
 
-    # ... update the fields to use the choices ...
     email_visibility = models.CharField(
         max_length=12, choices=VISIBILITY_CHOICES, default="connections"
     )
 
     phone_visibility = models.CharField(
         max_length=12, choices=VISIBILITY_CHOICES, default="connections"
+    )
+
+    message_visibility = models.CharField(
+        max_length=12, choices=VISIBILITY_CHOICES, default="members"
     )
 
     # DEPRECATED: These will be replaced by the new, more flexible models.
@@ -234,6 +237,23 @@ class StatusPost(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     likes = GenericRelation("Like", related_query_name="statuspost_likes")
 
+    # --- SYMMETRICAL POST PRIVACY ---
+    privacy_level = models.CharField(
+        max_length=12,
+        choices=VISIBILITY_CHOICES,
+        default="public",
+        help_text="Controls who can view this individual post.",
+    )
+
+    # --- AUTOMATED HASHTAG SYSTEM ---
+    tags = ArrayField(
+        models.CharField(max_length=50),
+        blank=True,
+        null=True,
+        default=list,
+        help_text="Automated hashtag storage for fast topic searches.",
+    )
+
     # --- REMOVED in favor of PostMedia model ---
     # image = models.ImageField(upload_to='post_images/', null=True, blank=True)
     # video = models.FileField(upload_to='post_videos/', null=True, blank=True)
@@ -241,6 +261,11 @@ class StatusPost(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            GinIndex(
+                fields=["tags"]
+            ),  # <-- Adds GIN Index for lightning-fast hashtag lookups [1.1.2]
+        ]
 
     def clean(self):
         """

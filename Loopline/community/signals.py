@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 import re
 from django.db.models import Q
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -102,7 +102,57 @@ def send_new_notification_signal(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User, dispatch_uid="create_user_profile_signal")
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
+        # 1. Create the new user's profile
         UserProfile.objects.get_or_create(user=instance)
+
+        # 2. AUTO-FOLLOW SYSTEM ACCOUNT (Way 4 Onboarding) [1]
+        # We use get_or_create to automatically set up the @nxtturn system account
+        # if it doesn't exist in the database, preventing any registration crashes [11]!
+        system_user, system_created = User.objects.get_or_create(
+            username="nxtturn",
+            defaults={
+                "first_name": "NxtTurn",
+                "last_name": "System",
+                "email": "system@nxtturn.com",
+                "is_active": True,
+            },
+        )
+
+        # Ensure the system user also has a UserProfile
+        if system_created:
+            UserProfile.objects.get_or_create(
+                user=system_user,
+                defaults={
+                    "display_name": "NxtTurn",
+                    "headline": "The Official NxtTurn System Account",
+                    "bio": "Welcome to NxtTurn! Start networking, following, and sharing.",
+                    "profile_visibility": "public",
+                },
+            )
+
+            # --- AUTO-SEED THE WELCOME POST --- [1]
+            # Automatically publishes the official "Welcome to NxtTurn" post under its name.
+            StatusPost.objects.get_or_create(
+                author=system_user,
+                content=(
+                    "Welcome to NxtTurn! 🚀\n\n"
+                    "We are thrilled to have you here. This is your professional home to "
+                    "connect with alumni, share research, and discover opportunities.\n\n"
+                    "Here are 3 quick steps to get started:\n"
+                    "1. Complete your profile to build trust.\n"
+                    "2. Search for your school, exams, or interests.\n"
+                    "3. Connect with 3-5 colleagues in the Network tab.\n\n"
+                    "Happy networking!"
+                ),
+                defaults={"privacy_level": "public"},
+            )
+
+        # Create the follow relationship (preventing nxtturn from following itself) [1]
+        if instance != system_user:
+            Follow.objects.get_or_create(follower=instance, following=system_user)
+            logger.info(
+                f"Signal: New user {instance.username} automatically followed @nxtturn"
+            )
 
 
 @receiver(post_save, sender=Like, dispatch_uid="create_like_notification_signal")
@@ -501,3 +551,21 @@ def send_live_post_to_followers(sender, instance, created, **kwargs):
         logger.info(
             f"Real-time: Dispatched new post ID {instance.id} to follower group {group_name} ({follower.username})."
         )
+
+
+# =================================================================================
+# === AUTOMATED HASHTAG EXTRACTOR SIGNAL === [1.2.1]
+# =================================================================================
+@receiver(pre_save, sender=StatusPost, dispatch_uid="auto_extract_hashtags_signal")
+def auto_extract_hashtags(sender, instance, **kwargs):
+    """
+    Automatically extracts hashtags from the post content (case-insensitive, normalized to lowercase)
+    and saves them directly into the tags ArrayField [4].
+    """
+    content_text = instance.content or ""
+
+    # Regex to find any words starting with # (e.g. #Coding, #Technology) [1.2.2]
+    raw_tags = re.findall(r"#(\w+)", content_text)
+
+    # Normalize to lowercase and remove duplicates for high-speed indexing [4]
+    instance.tags = list(set(tag.lower() for tag in raw_tags))

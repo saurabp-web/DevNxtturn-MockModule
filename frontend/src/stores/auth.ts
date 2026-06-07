@@ -38,6 +38,9 @@ export const useAuthStore = defineStore('auth', () => {
   const currentUser = ref<User | null>(null)
   const isLoading = ref<boolean>(false)
 
+  const showAuthModal = ref<boolean>(false)
+  const showSettingsModal = ref<boolean>(false)
+
   // --- Getters ---
   const isAuthenticated = computed(() => !!authToken.value)
   const userDisplay = computed(() => currentUser.value?.username || 'Guest')
@@ -222,6 +225,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     userDisplay,
     isLoading,
+    showAuthModal,
+    showSettingsModal,
     setToken,
     setUser,
     login,

@@ -217,19 +217,57 @@ function handleProfileClick(event: MouseEvent) {
   closeMobileSearch()
 }
 
-function handleNotificationsClick(event: MouseEvent) {
-  if (route.name === 'notifications') {
+function handleNotificationsClick(event?: MouseEvent) {
+  if (event) {
     event.preventDefault()
+    event.stopPropagation()
+  }
+
+  if (!authStore.isAuthenticated) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
+
+  if (route.name === 'notifications') {
     eventBus.emit('scroll-notifications-to-top')
   }
+
   isMobileMenuOpen.value = false
   closeMobileSearch()
+
+  // Navigate programmatically since we are now using a button [1]
+  router.push({ name: 'notifications' })
 
   stopBellAnimation()
   if (unreadCount.value > 0) {
     setTimeout(() => {
       startBellAnimation()
     }, 10000)
+  }
+}
+
+// Intercepts guest clicks on Network [1.1.2]
+const handleNetworkClick = () => {
+  if (!authStore.isAuthenticated) {
+    ;(authStore as any).showAuthModal = true
+  } else {
+    isMobileMenuOpen.value = false
+    closeMobileSearch()
+    router.push('/network')
+  }
+}
+
+const openSettingsPortal = () => {
+  isProfileMenuOpen.value = false
+  router.push('/settings')
+}
+
+// Intercepts guest clicks on restricted navbar tabs [1.1.2]
+const handleRestrictedLink = (event: MouseEvent) => {
+  if (!authStore.isAuthenticated) {
+    event.preventDefault()
+    event.stopPropagation()
+    authStore.showAuthModal = true
   }
 }
 
@@ -685,409 +723,403 @@ const currentUsername = computed(() => currentUser.value?.username || '')
 
         <!-- Desktop Navigation - Hidden on mobile -->
         <div class="hidden md:flex items-center gap-1 lg:gap-2 flex-shrink-0 mr-2 sm:mr-3 lg:mr-4">
-          <template v-if="authStore.isAuthenticated && currentUser">
-            <!-- EXPLORE with dropdown -->
-            <div class="relative group" ref="exploreMenuRef">
-              <button
-                type="button"
-                @click="isExploreMenuOpen = !isExploreMenuOpen"
-                class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px]"
-                :class="{
-                  'active-explore': isExploreMenuOpen,
-                  'hover:bg-explore-hover': !isExploreMenuOpen,
-                }"
-                aria-label="Explore"
-                aria-haspopup="true"
-                :aria-expanded="isExploreMenuOpen"
-              >
-                <font-awesome-icon
-                  :icon="['fas', 'compass']"
-                  class="icon icon-explore icon-fa"
-                  aria-hidden="true"
-                />
-                <span class="nav-label nav-label-explore">Explore</span>
-              </button>
-
-              <!-- Explore Dropdown -->
-              <div
-                v-if="isExploreMenuOpen"
-                class="menu-panel absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 overflow-hidden rounded-xl bg-white shadow-lg border border-gray-200"
-                role="menu"
-                aria-label="Explore menu"
-              >
-                <ul class="divide-y divide-gray-100 text-sm">
-                  <li>
-                    <a class="menu-item hover:bg-blue-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'school']" class="menu-ico" /><span
-                        >Schools</span
-                      ></a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-blue-50" href="#"
-                      ><font-awesome-icon
-                        :icon="['fas', 'building-columns']"
-                        class="menu-ico"
-                      /><span>Institutes</span></a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-blue-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'briefcase']" class="menu-ico" /><span
-                        >Enterprises</span
-                      ></a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-blue-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'landmark']" class="menu-ico" /><span
-                        >Government Enterprises</span
-                      ></a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-blue-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'pen-to-square']" class="menu-ico" /><span
-                        >Exams</span
-                      ></a
-                    >
-                  </li>
-                  <li class="pl-10 pr-4 py-2 flex gap-2">
-                    <a
-                      class="text-[13px] px-2 py-1 rounded hover:bg-green-100 text-green-600"
-                      href="#"
-                      ><font-awesome-icon :icon="['fas', 'clipboard-check']" class="mr-1" />Mock
-                      Test</a
-                    >
-                    <a
-                      class="text-[13px] px-2 py-1 rounded hover:bg-green-100 text-green-600"
-                      href="#"
-                      ><font-awesome-icon
-                        :icon="['fas', 'calendar-days']"
-                        class="mr-1"
-                      />Calendar</a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-blue-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'flask']" class="menu-ico" /><span
-                        >Research</span
-                      ></a
-                    >
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <!-- SEEKERS with dropdown -->
-            <div class="relative group" ref="seekersMenuRef">
-              <button
-                type="button"
-                @click="isSeekersMenuOpen = !isSeekersMenuOpen"
-                class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px]"
-                :class="{
-                  'active-seekers': isSeekersMenuOpen,
-                  'hover:bg-seekers-hover': !isSeekersMenuOpen,
-                }"
-                aria-label="Seekers"
-                aria-haspopup="true"
-                :aria-expanded="isSeekersMenuOpen"
-              >
-                <font-awesome-icon
-                  :icon="['fas', 'user-graduate']"
-                  class="icon icon-seekers icon-fa"
-                  aria-hidden="true"
-                />
-                <span class="nav-label nav-label-seekers">Seekers</span>
-              </button>
-
-              <!-- Seekers Dropdown -->
-              <div
-                v-if="isSeekersMenuOpen"
-                class="menu-panel absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 overflow-hidden rounded-xl bg-white shadow-lg border border-gray-200"
-                role="menu"
-                aria-label="Seekers menu"
-              >
-                <ul class="divide-y divide-gray-100 text-sm">
-                  <li>
-                    <a class="menu-item hover:bg-pink-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'user-graduate']" class="menu-ico" /><span
-                        >Internship</span
-                      ></a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-pink-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'helmet-safety']" class="menu-ico" /><span
-                        >Apprenticeship</span
-                      ></a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-pink-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'briefcase']" class="menu-ico" /><span
-                        >Job</span
-                      ></a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-pink-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'building-flag']" class="menu-ico" /><span
-                        >Government Openings</span
-                      ></a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-pink-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'earth-asia']" class="menu-ico" /><span
-                        >International Govt. Openings</span
-                      ></a
-                    >
-                  </li>
-                  <li>
-                    <a class="menu-item hover:bg-pink-50" href="#"
-                      ><font-awesome-icon :icon="['fas', 'laptop-code']" class="menu-ico" /><span
-                        >Freelances</span
-                      ></a
-                    >
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <!-- NETWORK -->
-            <RouterLink
-              to="/network"
-              class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px] hover:bg-network-hover"
-              active-class="active-network"
-              aria-label="My Network"
-            >
-              <font-awesome-icon
-                :icon="['fas', 'users']"
-                class="icon icon-network icon-fa"
-                aria-hidden="true"
-              />
-              <span class="nav-label nav-label-network">Network</span>
-            </RouterLink>
-
-            <!-- MESSAGES (Now with color-filled solid icon and slightly bigger) -->
+          <!-- EXPLORE with dropdown -->
+          <div class="relative group" ref="exploreMenuRef">
             <button
               type="button"
-              @click="handleNonNavigableClick"
-              class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px] hover:bg-messages-hover"
-              aria-label="Messaging"
+              @click="isExploreMenuOpen = !isExploreMenuOpen"
+              class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px]"
+              :class="{
+                'active-explore': isExploreMenuOpen,
+                'hover:bg-explore-hover': !isExploreMenuOpen,
+              }"
+              aria-label="Explore"
+              aria-haspopup="true"
+              :aria-expanded="isExploreMenuOpen"
             >
-              <ChatBubbleLeftRightIconSolid
-                class="icon icon-messages icon-messages-solid"
+              <font-awesome-icon
+                :icon="['fas', 'compass']"
+                class="icon icon-explore icon-fa"
                 aria-hidden="true"
               />
-              <span class="nav-label nav-label-messages">Messages</span>
-              <span class="notification-badge" aria-label="3 unread messages">3</span>
+              <span class="nav-label nav-label-explore">Explore</span>
             </button>
 
-            <!-- NOTIFICATIONS -->
-            <RouterLink
-              :to="{ name: 'notifications' }"
-              @click="handleNotificationsClick"
-              data-cy="navbar-notifications-link"
-              class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px] hover:bg-notifications-hover"
-              aria-label="Notifications"
+            <!-- Explore Dropdown -->
+            <div
+              v-if="isExploreMenuOpen"
+              class="menu-panel absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 overflow-hidden rounded-xl bg-white shadow-lg border border-gray-200"
+              role="menu"
+              aria-label="Explore menu"
             >
-              <!-- Bell animation wrapper -->
-              <div
-                :class="{ 'animate__animated animate__swing': isBellRinging }"
-                class="bell-animation-container"
-              >
-                <font-awesome-icon
-                  :icon="['fas', 'bell']"
-                  class="icon icon-notifications icon-fa"
-                  aria-hidden="true"
-                />
-              </div>
-              <span class="nav-label nav-label-notifications">Alerts</span>
-              <span
-                v-if="unreadCount > 0"
-                data-cy="notification-indicator"
-                class="notification-badge"
-                aria-label="12 notifications"
-              >
-                {{ unreadCount > 9 ? '9+' : unreadCount }}
-              </span>
-            </RouterLink>
+              <ul class="divide-y divide-gray-100 text-sm">
+                <li>
+                  <a class="menu-item hover:bg-blue-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'school']" class="menu-ico" /><span
+                      >Schools</span
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-blue-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'building-columns']" class="menu-ico" /><span
+                      >Institutes</span
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-blue-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'briefcase']" class="menu-ico" /><span
+                      >Enterprises</span
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-blue-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'landmark']" class="menu-ico" /><span
+                      >Government Enterprises</span
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-blue-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'pen-to-square']" class="menu-ico" /><span
+                      >Exams</span
+                    ></a
+                  >
+                </li>
+                <li class="pl-10 pr-4 py-2 flex gap-2">
+                  <a
+                    class="text-[13px] px-2 py-1 rounded hover:bg-green-100 text-green-600"
+                    href="#"
+                    ><font-awesome-icon :icon="['fas', 'clipboard-check']" class="mr-1" />Mock
+                    Test</a
+                  >
+                  <a
+                    class="text-[13px] px-2 py-1 rounded hover:bg-green-100 text-green-600"
+                    href="#"
+                    ><font-awesome-icon :icon="['fas', 'calendar-days']" class="mr-1" />Calendar</a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-blue-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'flask']" class="menu-ico" /><span
+                      >Research</span
+                    ></a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
 
-            <!-- Separator -->
-            <div class="mx-1 h-6 w-px bg-gray-300"></div>
+          <!-- SEEKERS with dropdown -->
+          <div class="relative group" ref="seekersMenuRef">
+            <button
+              type="button"
+              @click="isSeekersMenuOpen = !isSeekersMenuOpen"
+              class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px]"
+              :class="{
+                'active-seekers': isSeekersMenuOpen,
+                'hover:bg-seekers-hover': !isSeekersMenuOpen,
+              }"
+              aria-label="Seekers"
+              aria-haspopup="true"
+              :aria-expanded="isSeekersMenuOpen"
+            >
+              <font-awesome-icon
+                :icon="['fas', 'user-graduate']"
+                class="icon icon-seekers icon-fa"
+                aria-hidden="true"
+              />
+              <span class="nav-label nav-label-seekers">Seekers</span>
+            </button>
 
-            <!-- PROFILE - Adjusted positioning -->
-            <div class="relative profile-container" ref="profileMenuRef">
-              <div class="flex items-center profile-inner-container">
-                <!-- Profile Image Button -->
-                <button
-                  v-if="currentUsername"
-                  @click="handleProfileImageClick"
-                  data-cy="profile-link"
-                  class="rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 profile-image-btn"
+            <!-- Seekers Dropdown -->
+            <div
+              v-if="isSeekersMenuOpen"
+              class="menu-panel absolute left-1/2 z-50 mt-2 w-72 -translate-x-1/2 overflow-hidden rounded-xl bg-white shadow-lg border border-gray-200"
+              role="menu"
+              aria-label="Seekers menu"
+            >
+              <ul class="divide-y divide-gray-100 text-sm">
+                <li>
+                  <a class="menu-item hover:bg-pink-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'user-graduate']" class="menu-ico" /><span
+                      >Internship</span
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-pink-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'helmet-safety']" class="menu-ico" /><span
+                      >Apprenticeship</span
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-pink-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'briefcase']" class="menu-ico" /><span
+                      >Job</span
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-pink-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'building-flag']" class="menu-ico" /><span
+                      >Government Openings</span
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-pink-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'earth-asia']" class="menu-ico" /><span
+                      >International Govt. Openings</span
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a class="menu-item hover:bg-pink-50" href="#"
+                    ><font-awesome-icon :icon="['fas', 'laptop-code']" class="menu-ico" /><span
+                      >Freelances</span
+                    ></a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- NETWORK -->
+          <button
+            type="button"
+            @click="handleNetworkClick"
+            class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px] hover:bg-network-hover"
+            :class="{ 'active-network': route.name === 'network' }"
+            aria-label="My Network"
+          >
+            <font-awesome-icon
+              :icon="['fas', 'users']"
+              class="icon icon-network icon-fa"
+              aria-hidden="true"
+            />
+            <span class="nav-label nav-label-network">Network</span>
+          </button>
+
+          <!-- MESSAGES (Now with color-filled solid icon and slightly bigger) -->
+          <button
+            type="button"
+            @click="handleNonNavigableClick"
+            class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px] hover:bg-messages-hover"
+            aria-label="Messaging"
+          >
+            <ChatBubbleLeftRightIconSolid
+              class="icon icon-messages icon-messages-solid"
+              aria-hidden="true"
+            />
+            <span class="nav-label nav-label-messages">Messages</span>
+            <span class="notification-badge" aria-label="3 unread messages">3</span>
+          </button>
+
+          <!-- NOTIFICATIONS -->
+          <button
+            type="button"
+            @click="handleNotificationsClick"
+            data-cy="navbar-notifications-link"
+            class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px] hover:bg-notifications-hover"
+            :class="{ 'active-notifications': route.name === 'notifications' }"
+            aria-label="Notifications"
+          >
+            <!-- Bell animation wrapper -->
+            <div
+              :class="{ 'animate__animated animate__swing': isBellRinging }"
+              class="bell-animation-container"
+            >
+              <font-awesome-icon
+                :icon="['fas', 'bell']"
+                class="icon icon-notifications icon-fa"
+                aria-hidden="true"
+              />
+            </div>
+            <span class="nav-label nav-label-notifications">Alerts</span>
+            <span
+              v-if="unreadCount > 0"
+              data-cy="notification-indicator"
+              class="notification-badge"
+              aria-label="notifications count"
+            >
+              {{ unreadCount > 9 ? '9+' : unreadCount }}
+            </span>
+          </button>
+
+          <!-- Separator -->
+          <div class="mx-1 h-6 w-px bg-gray-300"></div>
+
+          <!-- PROFILE - Adjusted positioning -->
+          <div class="relative profile-container" ref="profileMenuRef">
+            <div class="flex items-center profile-inner-container">
+              <!-- Profile Image Button -->
+              <button
+                v-if="currentUsername"
+                @click="handleProfileImageClick"
+                data-cy="profile-link"
+                class="rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 profile-image-btn"
+                :class="{ 'profile-on-page': isOnOwnProfilePage }"
+              >
+                <span class="sr-only">View your profile</span>
+                <img
+                  :src="
+                    getAvatarUrl(
+                      currentUser?.picture,
+                      currentUser?.display_name,
+                      currentUser?.username,
+                    )
+                  "
+                  alt="Your avatar"
+                  class="h-9 w-9 rounded-full object-cover transition-all duration-200 profile-avatar"
                   :class="{ 'profile-on-page': isOnOwnProfilePage }"
-                >
-                  <span class="sr-only">View your profile</span>
-                  <img
-                    :src="
-                      getAvatarUrl(
-                        currentUser?.picture,
-                        currentUser?.display_name,
-                        currentUser?.username,
-                      )
-                    "
-                    alt="Your avatar"
-                    class="h-9 w-9 rounded-full object-cover transition-all duration-200 profile-avatar"
-                    :class="{ 'profile-on-page': isOnOwnProfilePage }"
-                    data-cy="navbar-avatar-main"
-                  />
-                </button>
+                  data-cy="navbar-avatar-main"
+                />
+              </button>
 
-                <button
-                  @click="isProfileMenuOpen = !isProfileMenuOpen"
-                  type="button"
-                  data-cy="profile-menu-button"
-                  class="ml-1 p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 profile-menu-toggle"
-                  :class="{
-                    'rotate-180 bg-blue-50 text-blue-600': isProfileMenuOpen,
-                    'hover:bg-gray-100': !isProfileMenuOpen,
-                  }"
-                >
-                  <span class="sr-only">Open user menu</span>
-                  <ChevronDownIcon
-                    class="h-5 w-5 transition-all duration-200"
-                    :class="
-                      isProfileMenuOpen ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-                    "
-                  />
-                </button>
-              </div>
-
-              <transition
-                enter-active-class="transition ease-out duration-100"
-                enter-from-class="transform opacity-0 scale-95"
-                enter-to-class="transform opacity-100 scale-100"
-                leave-active-class="transition ease-in duration-75"
-                leave-from-class="transform opacity-100 scale-100"
-                leave-to-class="transform opacity-0 scale-95"
+              <button
+                @click="isProfileMenuOpen = !isProfileMenuOpen"
+                type="button"
+                data-cy="profile-menu-button"
+                class="ml-1 p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 profile-menu-toggle"
+                :class="{
+                  'rotate-180 bg-blue-50 text-blue-600': isProfileMenuOpen,
+                  'hover:bg-gray-100': !isProfileMenuOpen,
+                }"
               >
+                <span class="sr-only">Open user menu</span>
+                <ChevronDownIcon
+                  class="h-5 w-5 transition-all duration-200"
+                  :class="isProfileMenuOpen ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'"
+                />
+              </button>
+            </div>
+
+            <transition
+              enter-active-class="transition ease-out duration-100"
+              enter-from-class="transform opacity-0 scale-95"
+              enter-to-class="transform opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-75"
+              leave-from-class="transform opacity-100 scale-100"
+              leave-to-class="transform opacity-0 scale-95"
+            >
+              <div
+                v-if="isProfileMenuOpen && currentUser"
+                class="profile-dropdown absolute right-0 z-50 mt-4 w-72 origin-top-right rounded-xl bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-200"
+              >
+                <!-- User Info Header -->
                 <div
-                  v-if="isProfileMenuOpen && currentUser"
-                  class="profile-dropdown absolute right-0 z-50 mt-4 w-72 origin-top-right rounded-xl bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-200"
+                  class="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50"
                 >
-                  <!-- User Info Header -->
+                  <div class="flex items-center gap-3">
+                    <img
+                      :src="
+                        getAvatarUrl(
+                          currentUser.picture,
+                          currentUser.display_name,
+                          currentUser.username,
+                        )
+                      "
+                      alt="Your avatar"
+                      class="h-12 w-12 rounded-full object-cover ring-2 ring-white shadow-sm"
+                      data-cy="navbar-avatar-dropdown"
+                    />
+                    <div>
+                      <p class="text-sm font-semibold text-gray-800">
+                        {{ currentUser.first_name }} {{ currentUser.last_name }}
+                      </p>
+                      <p class="text-xs text-gray-600">@{{ currentUser.username }}</p>
+                      <p class="text-xs text-amber-600 font-medium mt-0.5">Premium Member</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Menu Items with color-filled icons -->
+                <div class="py-1">
+                  <button
+                    type="button"
+                    @click="openSettingsPortal"
+                    class="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 transition-colors group focus:outline-none cursor-pointer"
+                  >
+                    <Cog6ToothIconSolid class="h-5 w-5 text-blue-600 group-hover:text-blue-700" />
+                    <span class="font-medium">Settings & Privacy</span>
+                  </button>
+                  <a
+                    href="#"
+                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 transition-colors group"
+                  >
+                    <QuestionMarkCircleIconSolid
+                      class="h-5 w-5 text-green-600 group-hover:text-green-700"
+                    />
+                    <span class="font-medium">Help & Support</span>
+                  </a>
+                  <a
+                    href="#"
+                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 transition-colors group"
+                  >
+                    <EyeIconSolid class="h-5 w-5 text-purple-600 group-hover:text-purple-700" />
+                    <span class="font-medium">Display & Accessibility</span>
+                  </a>
+                  <a
+                    href="#"
+                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 transition-colors group"
+                  >
+                    <!-- Give Feedback icon made smaller -->
+                    <font-awesome-icon
+                      :icon="['fas', 'message']"
+                      class="h-4 w-4 text-amber-600 group-hover:text-amber-700 give-feedback-icon"
+                    />
+                    <span class="font-medium">Give Feedback</span>
+                  </a>
+                </div>
+
+                <!-- Dark Mode -->
+                <div class="py-1 border-t border-gray-200">
                   <div
-                    class="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50"
+                    class="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 transition-colors group"
                   >
                     <div class="flex items-center gap-3">
-                      <img
-                        :src="
-                          getAvatarUrl(
-                            currentUser.picture,
-                            currentUser.display_name,
-                            currentUser.username,
-                          )
-                        "
-                        alt="Your avatar"
-                        class="h-12 w-12 rounded-full object-cover ring-2 ring-white shadow-sm"
-                        data-cy="navbar-avatar-dropdown"
-                      />
-                      <div>
-                        <p class="text-sm font-semibold text-gray-800">
-                          {{ currentUser.first_name }} {{ currentUser.last_name }}
-                        </p>
-                        <p class="text-xs text-gray-600">@{{ currentUser.username }}</p>
-                        <p class="text-xs text-amber-600 font-medium mt-0.5">Premium Member</p>
-                      </div>
+                      <MoonIconSolid class="h-5 w-5 text-indigo-600 group-hover:text-indigo-700" />
+                      <span class="font-medium">Dark Mode</span>
                     </div>
-                  </div>
-
-                  <!-- Menu Items with color-filled icons -->
-                  <div class="py-1">
-                    <a
-                      href="#"
-                      class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 transition-colors group"
-                    >
-                      <Cog6ToothIconSolid class="h-5 w-5 text-blue-600 group-hover:text-blue-700" />
-                      <span class="font-medium">Settings & Privacy</span>
-                    </a>
-                    <a
-                      href="#"
-                      class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 transition-colors group"
-                    >
-                      <QuestionMarkCircleIconSolid
-                        class="h-5 w-5 text-green-600 group-hover:text-green-700"
-                      />
-                      <span class="font-medium">Help & Support</span>
-                    </a>
-                    <a
-                      href="#"
-                      class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 transition-colors group"
-                    >
-                      <EyeIconSolid class="h-5 w-5 text-purple-600 group-hover:text-purple-700" />
-                      <span class="font-medium">Display & Accessibility</span>
-                    </a>
-                    <a
-                      href="#"
-                      class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 transition-colors group"
-                    >
-                      <!-- Give Feedback icon made smaller -->
-                      <font-awesome-icon
-                        :icon="['fas', 'message']"
-                        class="h-4 w-4 text-amber-600 group-hover:text-amber-700 give-feedback-icon"
-                      />
-                      <span class="font-medium">Give Feedback</span>
-                    </a>
-                  </div>
-
-                  <!-- Dark Mode -->
-                  <div class="py-1 border-t border-gray-200">
-                    <div
-                      class="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 transition-colors group"
-                    >
-                      <div class="flex items-center gap-3">
-                        <MoonIconSolid
-                          class="h-5 w-5 text-indigo-600 group-hover:text-indigo-700"
-                        />
-                        <span class="font-medium">Dark Mode</span>
-                      </div>
-                      <button
-                        type="button"
-                        class="bg-gray-200 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group-hover:bg-gray-300"
-                        role="switch"
-                        aria-checked="false"
-                      >
-                        <span
-                          class="pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"
-                        ></span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Logout -->
-                  <div class="py-1 border-t border-gray-200">
                     <button
-                      @click="handleLogout"
-                      data-cy="logout-button"
-                      class="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors group"
+                      type="button"
+                      class="bg-gray-200 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group-hover:bg-gray-300"
+                      role="switch"
+                      aria-checked="false"
                     >
-                      <ArrowLeftOnRectangleIconSolid class="h-5 w-5 group-hover:text-red-700" />
-                      <span class="font-medium">Log Out</span>
+                      <span
+                        class="pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"
+                      ></span>
                     </button>
                   </div>
                 </div>
-              </transition>
-            </div>
-          </template>
-          <template v-else>
-            <RouterLink
-              to="/login"
-              class="text-sm font-medium text-gray-600 hover:text-indigo-500 mr-2"
-              >Login</RouterLink
-            >
-          </template>
+
+                <!-- Logout -->
+                <div class="py-1 border-t border-gray-200">
+                  <button
+                    @click="handleLogout"
+                    data-cy="logout-button"
+                    class="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors group"
+                  >
+                    <ArrowLeftOnRectangleIconSolid class="h-5 w-5 group-hover:text-red-700" />
+                    <span class="font-medium">Log Out</span>
+                  </button>
+                </div>
+              </div>
+            </transition>
+          </div>
+
+          <RouterLink
+            v-if="!authStore.isAuthenticated"
+            to="/login"
+            class="text-sm font-medium text-gray-600 hover:text-indigo-500 mr-2"
+          >
+            Login
+          </RouterLink>
         </div>
 
         <!-- Mobile menu button and search icon - Visible only on mobile -->
@@ -1591,13 +1623,14 @@ const currentUsername = computed(() => currentUser.value?.username || '')
 
             <!-- Settings & Logout -->
             <div class="pt-4 border-t border-gray-200 space-y-2">
-              <a
+              <RouterLink
+                to="/settings"
                 @click="handleMobileNavigation"
                 class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <Cog6ToothIcon class="h-5 w-5 text-gray-500" />
                 <span class="font-medium text-gray-900">Settings</span>
-              </a>
+              </RouterLink>
               <button
                 @click="handleLogout"
                 class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors text-red-600"

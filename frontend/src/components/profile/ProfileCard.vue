@@ -35,6 +35,7 @@ const emit = defineEmits<{
 }>()
 
 const profileStore = useProfileStore()
+const isRestricted = computed(() => (props.profile as any)?.is_restricted || false)
 const authStore = useAuthStore()
 const router = useRouter()
 
@@ -143,8 +144,8 @@ async function handleSaveChanges(formData: IdentityFormData) {
 function handleProfilePictureClick() {
   if (props.isOwnProfile) {
     openPreviewModal()
-  } else {
-    // For other users, show preview with original resolution and no options
+  } else if (!isRestricted.value) {
+    // Only allow expanding the picture if the profile is NOT restricted
     isProfilePicturePreviewModalOpen.value = true
   }
 }
@@ -521,12 +522,36 @@ onUnmounted(() => {
             ]"
           >
             <div class="mb-4 px-2">
-              <!-- Display Name -->
-              <h1
-                class="text-xl sm:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent break-words"
-              >
-                {{ profile.display_name || `${profile.user.first_name} ${profile.user.last_name}` }}
-              </h1>
+              <!-- Display Name with Optional Private Badge -->
+              <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                <h1
+                  class="text-xl sm:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent break-words"
+                >
+                  {{
+                    profile.display_name || `${profile.user.first_name} ${profile.user.last_name}`
+                  }}
+                </h1>
+
+                <!-- Private Profile Badge -->
+                <span
+                  v-if="isRestricted"
+                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3.5 w-3.5 text-gray-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Private Profile
+                </span>
+              </div>
               <p class="text-base sm:text-lg text-gray-500 mt-1 break-words">
                 @{{ profile.user.username }}
               </p>

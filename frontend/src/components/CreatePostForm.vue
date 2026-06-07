@@ -429,6 +429,21 @@ const removePollOption = (index: number) => {
   }
 }
 
+// Intercepts guest clicks on any posting input or button [1.1.2]
+const handleInputClick = (event: MouseEvent) => {
+  if (!authStore.isAuthenticated) {
+    event.preventDefault()
+    event.stopPropagation()
+
+    // Blur any accidental focus
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+
+    ;(authStore as any).showAuthModal = true
+  }
+}
+
 // Cleanup
 onUnmounted(() => {
   // Revoke object URLs to prevent memory leaks
@@ -455,7 +470,7 @@ onUnmounted(() => {
           class="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover bg-gray-200 flex-shrink-0 -ml-2"
         />
         <div class="w-full">
-          <div v-if="!showPollCreator">
+          <div v-if="!showPollCreator" @click.capture="handleInputClick">
             <MentionAutocomplete
               v-model="postContent"
               placeholder="What's on your mind? Mention users with @"
@@ -679,7 +694,7 @@ onUnmounted(() => {
       <div
         class="mt-3 sm:mt-4 flex justify-between items-center pl-2 xl:pl-14 border-t border-gray-100 pt-3 sm:pt-4"
       >
-        <div class="flex gap-1 sm:gap-2 -ml-1 xl:ml-0">
+        <div class="flex gap-1 sm:gap-2 -ml-1 xl:ml-0" @click.capture="handleInputClick">
           <!-- Image Upload Button -->
           <div class="relative group">
             <label

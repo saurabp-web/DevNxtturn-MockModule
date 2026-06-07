@@ -3,6 +3,7 @@ import { watch, onMounted, onUnmounted } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import { notificationService } from '@/services/notificationService'
 import { useAuthStore } from '@/stores/auth'
+import AuthModal from '@/components/common/AuthModal.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -38,4 +39,5 @@ onUnmounted(() => {
 
 <template>
   <RouterView />
+  <AuthModal v-if="authStore.showAuthModal" />
 </template>

@@ -18,7 +18,7 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 
-from datetime import date
+from datetime import date, timedelta
 import random
 
 from channels.layers import get_channel_layer
@@ -1378,34 +1378,124 @@ class CommentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
 # ==================================
 class FeedListView(generics.ListAPIView):
     serializer_class = StatusPostSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Unlocks the feed for unauthenticated guests [3]
     pagination_class = PostCursorPagination
     authentication_classes = [TokenAuthentication]
 
-    # THIS IS THE NEW, FIXED CODE
     def get_queryset(self):
         user = self.request.user
+        one_week_ago = timezone.now() - timedelta(days=7)
 
-        # 1. Get the authors for the feed (unchanged)
+        # --- INTERESTS LOOKUP (HIGH-SPEED INDEXED) --- [4]
+        interest_list = []
+
+        # 1. If the user is logged in, read interests directly from their database profile! [4]
+        if user and user.is_authenticated:
+            try:
+                profile_interests = user.profile.interests or []
+                interest_list = [
+                    i.strip().lower() for i in profile_interests if i.strip()
+                ]
+            except Exception:
+                pass
+
+        # 2. If guest (or if profile interests is empty), fallback to query parameters [4]
+        if not interest_list:
+            interests_param = self.request.query_params.get("interests", "")
+            interest_list = [
+                i.strip().lower() for i in interests_param.split(",") if i.strip()
+            ]
+
+        # Define the strict public privacy filter [4]
+        public_privacy_q = (
+            Q(privacy_level="public")
+            & Q(author__profile__profile_visibility="public")
+            & (Q(group__isnull=True) | Q(group__privacy_level="public"))
+        )
+
+        # 1. GUEST USER (Unauthenticated) [3, 4]
+        if not user or not user.is_authenticated:
+            if interest_list:
+                # High-Speed Index Search: Match posts whose tags overlap with interests [4]
+                queryset = (
+                    StatusPost.objects.filter(public_privacy_q)
+                    .filter(tags__overlap=interest_list)
+                    .filter(created_at__gte=one_week_ago)
+                )
+                if not queryset.exists():
+                    queryset = StatusPost.objects.filter(public_privacy_q).filter(
+                        tags__overlap=interest_list
+                    )
+                    if not queryset.exists():
+                        queryset = StatusPost.objects.filter(public_privacy_q).filter(
+                            created_at__gte=one_week_ago
+                        )
+            else:
+                queryset = StatusPost.objects.filter(public_privacy_q).filter(
+                    created_at__gte=one_week_ago
+                )
+
+            # Dev safety fallback
+            if not queryset.exists():
+                queryset = StatusPost.objects.filter(public_privacy_q)
+
+            return (
+                queryset.select_related("author__profile", "group")
+                .prefetch_related("media", "likes", "poll__options", "poll__votes")
+                .order_by("-created_at", "-id")
+                .distinct()
+            )
+
+        # 2. LOGGED-IN MEMBER [4]
         following_user_ids = list(user.following.values_list("following_id", flat=True))
         user_ids_for_feed = following_user_ids + [user.id]
 
-        # 2. Define the privacy filter using Q objects
-        # A post is visible in the feed if:
-        # - It has no group (it's a personal, public wall post), OR
-        # - Its group is public, OR
-        # - Its group is private AND the current user is a member of that group.
-        privacy_q = (
+        member_privacy_q = (
             Q(group__isnull=True)
             | Q(group__privacy_level="public")
             | Q(group__members=user)
         )
 
-        # 3. Combine the filters and return the final queryset
+        # Fetch their standard feed (posts by people they follow)
+        standard_feed = StatusPost.objects.filter(
+            author_id__in=user_ids_for_feed
+        ).filter(member_privacy_q)
+
+        if standard_feed.exists():
+            return (
+                standard_feed.select_related("author__profile", "group")
+                .prefetch_related("media", "likes", "poll__options", "poll__votes")
+                .order_by("-created_at", "-id")
+                .distinct()
+            )
+
+        # Otherwise, if their feed is empty, fall back to showing the trending public posts [4]
+        # (Prioritizing their chosen interests if selected) [4]
+        if interest_list:
+            fallback_feed = (
+                StatusPost.objects.filter(public_privacy_q)
+                .filter(tags__overlap=interest_list)
+                .filter(created_at__gte=one_week_ago)
+            )
+            if not fallback_feed.exists():
+                fallback_feed = StatusPost.objects.filter(public_privacy_q).filter(
+                    tags__overlap=interest_list
+                )
+                if not fallback_feed.exists():
+                    fallback_feed = StatusPost.objects.filter(public_privacy_q).filter(
+                        created_at__gte=one_week_ago
+                    )
+        else:
+            fallback_feed = StatusPost.objects.filter(public_privacy_q).filter(
+                created_at__gte=one_week_ago
+            )
+
+        # Dev safety fallback
+        if not fallback_feed.exists():
+            fallback_feed = StatusPost.objects.filter(public_privacy_q)
+
         return (
-            StatusPost.objects.filter(author_id__in=user_ids_for_feed)
-            .filter(privacy_q)
-            .select_related("author__profile", "group")
+            fallback_feed.select_related("author__profile", "group")
             .prefetch_related("media", "likes", "poll__options", "poll__votes")
             .order_by("-created_at", "-id")
             .distinct()
@@ -2072,6 +2162,26 @@ class NetworkDiscoverView(generics.ListAPIView):
             )
 
             for candidate in local_candidates:
+                results["local_professionals"].append(candidate)
+                seen_ids.add(candidate.id)
+
+        # --- TIER 5: GLOBAL POPULARITY FALLBACK (Most Followed Users) --- [4]
+        # If we still don't have enough recommendations, fill the empty slots
+        # with the most followed public users across the platform [4]
+        total_recommendations_count = len(seen_ids) - len(block_list_ids)
+        if total_recommendations_count < 10:
+            slots_needed = 10 - total_recommendations_count
+            popular_candidates = list(
+                User.objects.filter(
+                    profile__profile_visibility="public"
+                )  # Secure public check [4]
+                .exclude(id__in=seen_ids)
+                .annotate(follower_count=Count("followers"))
+                .order_by("-follower_count")[:slots_needed]
+            )
+
+            for candidate in popular_candidates:
+                # We place them under local_professionals (or we can append them anywhere)
                 results["local_professionals"].append(candidate)
                 seen_ids.add(candidate.id)
 

@@ -2,6 +2,7 @@
 import { useProfileStore } from '@/stores/profile'
 import { useNotificationStore } from '@/stores/notification'
 import { useNetworkStore } from '@/stores/network'
+import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import eventBus from '@/services/eventBus'
@@ -22,6 +23,7 @@ import {
 const profileStore = useProfileStore()
 const notificationStore = useNotificationStore()
 const networkStore = useNetworkStore()
+const authStore = useAuthStore()
 const { relationshipStatus, currentProfile, isLoadingFollow } = storeToRefs(profileStore)
 
 const showDisconnectConfirm = ref(false)
@@ -99,8 +101,39 @@ const followIcon = computed(() => {
   return relationshipStatus.value?.is_followed_by_request_user ? HeartIconSolid : HeartIconSolid
 })
 
+// Dynamically calculates if the viewer is authorized to send a message [4]
+const canMessage = computed(() => {
+  const status = relationshipStatus.value
+  const visibility = (currentProfile.value as any)?.message_visibility || 'members'
+
+  // 1. You cannot message yourself
+  if (status?.connection_status === 'self') return false
+
+  // 2. 'self' means fully private - nobody can message
+  if (visibility === 'self') return false
+
+  // 3. 'public' or 'members' means any logged-in user can message
+  if (visibility === 'public' || visibility === 'members') return true
+
+  // 4. 'followers' means the viewer must follow the owner
+  if (visibility === 'followers') {
+    return status?.is_followed_by_request_user || false
+  }
+
+  // 5. 'connections' means they must be mutual connections [4]
+  if (visibility === 'connections') {
+    return status?.connection_status === 'connected'
+  }
+
+  return false
+})
+
 const handleConnect = (event: MouseEvent) => {
   event.stopPropagation()
+  if (!authStore.isAuthenticated) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
   if (currentProfile.value) {
     profileStore.sendConnectRequest(currentProfile.value.user.username)
   }
@@ -136,6 +169,10 @@ const handleCancel = (event: MouseEvent) => {
 
 const handleFollowToggle = async (event: MouseEvent) => {
   event.stopPropagation()
+  if (!authStore.isAuthenticated) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
   if (currentProfile.value) {
     try {
       if (relationshipStatus.value?.is_followed_by_request_user) {
@@ -165,6 +202,10 @@ const handleDisconnect = (event: MouseEvent) => {
 
 const handleMessage = (event: MouseEvent) => {
   event.stopPropagation()
+  if (!authStore.isAuthenticated) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
   console.log('Messaging functionality to be implemented.')
 }
 
@@ -468,7 +509,7 @@ onUnmounted(() => {
     </div>
 
     <!-- MESSAGE BUTTON -->
-    <div class="overflow-visible">
+    <div v-if="canMessage" class="overflow-visible">
       <button
         @click.stop="handleMessage"
         @mouseenter="isHovering.message = true"
