@@ -1940,6 +1940,83 @@ function fallbackCopyTextToClipboard(text: string) {
             <div class="flex items-center gap-1.5 mt-0.5">
               <p class="text-xs md:text-sm text-gray-500">{{ formattedTimestamp }}</p>
 
+              <!-- Symmetrical Post Privacy Indicator Icon [4] -->
+              <span class="text-gray-400" :title="`Visible to: ${(post as any).privacy_level}`">
+                <!-- Globe SVG (Everyone/Public) -->
+                <svg
+                  v-if="(post as any).privacy_level === 'public'"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 inline"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3.6 9h16.8M3.6 15h16.8"
+                  />
+                </svg>
+
+                <!-- Members SVG (Members Only) -->
+                <svg
+                  v-else-if="(post as any).privacy_level === 'members'"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 inline"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"
+                  />
+                </svg>
+
+                <!-- Users SVG (Followers or Connections Only) -->
+                <svg
+                  v-else-if="
+                    (post as any).privacy_level === 'followers' ||
+                    (post as any).privacy_level === 'connections'
+                  "
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 inline"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+
+                <!-- Lock SVG (Only Me / Self) -->
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 inline"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
+
               <!-- NEW: Industry Standard Attribution Label -->
               <template v-if="post.shared_via">
                 <span class="text-gray-400 text-[10px]">|</span>

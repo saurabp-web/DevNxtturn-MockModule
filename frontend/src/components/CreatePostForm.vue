@@ -94,6 +94,7 @@ const { currentUser } = storeToRefs(authStore)
 const postContent = ref('')
 const selectedImageFiles = ref<ProcessedFile[]>([])
 const selectedVideoFiles = ref<ProcessedFile[]>([])
+const privacyLevel = ref('public') // <-- Default to public
 const imagePreviewUrls = ref<string[]>([])
 const videoPreviewUrls = ref<string[]>([])
 const showPollCreator = ref(false)
@@ -401,6 +402,7 @@ const handleSubmit = async () => {
     if (postContent.value.trim()) {
       formData.append('content', postContent.value.trim())
     }
+    formData.append('privacy_level', privacyLevel.value) // <-- Added [4]
     selectedImageFiles.value.forEach((file) => formData.append('images', file))
     selectedVideoFiles.value.forEach((file) => formData.append('videos', file))
   }
@@ -692,7 +694,7 @@ onUnmounted(() => {
 
       <!-- Action Bar -->
       <div
-        class="mt-3 sm:mt-4 flex justify-between items-center pl-2 xl:pl-14 border-t border-gray-100 pt-3 sm:pt-4"
+        class="mt-3 sm:mt-4 flex justify-between items-center pl-10 sm:pl-[52px] pr-0 border-t border-gray-100 pt-3 sm:pt-4"
       >
         <div class="flex gap-1 sm:gap-2 -ml-1 xl:ml-0" @click.capture="handleInputClick">
           <!-- Image Upload Button -->
@@ -859,7 +861,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="flex items-center gap-2 sm:gap-4">
+        <div class="flex items-center gap-1.5 sm:gap-2">
           <div
             class="text-xs sm:text-sm text-gray-500 bg-gray-100 px-2 py-1 sm:px-3 sm:py-2 rounded-lg"
           >
@@ -867,6 +869,20 @@ onUnmounted(() => {
               {{ postContent.length }}/2000
             </span>
           </div>
+
+          <!-- Post Privacy Selector [4] -->
+          <select
+            v-model="privacyLevel"
+            class="px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] sm:text-xs font-semibold focus:border-blue-400 focus:ring-1 focus:ring-blue-50 transition outline-none cursor-pointer text-gray-600 h-7 sm:h-9 max-w-[85px] truncate"
+            title="Who can see this post?"
+          >
+            <option value="public">Everyone</option>
+            <option value="members">Members</option>
+            <option value="followers">Followers</option>
+            <option value="connections">Connections</option>
+            <option value="self">Only Me</option>
+          </select>
+
           <!-- Post Button -->
           <button
             type="submit"
