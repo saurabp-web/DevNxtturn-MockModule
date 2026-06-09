@@ -15,7 +15,7 @@
         <div class="flex items-center justify-between gap-3">
           <div class="min-w-0">
             <div class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-              Replying to {{ replyingMessage?.sender_username || 'message' }}
+              Replying to {{ replyingSenderName }}
             </div>
             <div class="truncate text-sm font-medium text-indigo-900/80">
               {{ replyPreviewText }}
@@ -290,7 +290,7 @@ export default {
       return Boolean(this.replyingMessage)
     },
     replyPreviewText() {
-      const type = String(this.replyingMessage?.message_type || 'text').toLowerCase()
+      const type = String(this.replyingMessage?.message_type || this.replyingMessage?.type || 'text').toLowerCase()
       if (type === 'gif' || type === 'sticker') {
         return describeMediaItem({
           kind: type,
@@ -298,6 +298,14 @@ export default {
         })
       }
       return this.replyingMessage?.content || 'Message'
+    },
+    replyingSenderName() {
+      return (
+        this.replyingMessage?.sender_username ||
+        this.replyingMessage?.sender?.username ||
+        this.replyingMessage?.sender_user?.username ||
+        'message'
+      )
     },
   },
   watch: {

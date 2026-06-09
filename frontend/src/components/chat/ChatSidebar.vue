@@ -65,7 +65,7 @@
 
     <!-- Loading / Error States -->
     <div v-if="loading" class="flex flex-col items-center justify-center gap-3 py-10 opacity-60">
-      <div class="h-6 w-6 rounded-full border-2 border-slate-300 border-t-blue-500"></div>
+      <div class="h-6 w-6 rounded-full border-2 border-slate-300 border-t-blue-500 animate-spin"></div>
       <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest"
         >Updating...</span
       >
@@ -140,24 +140,24 @@
         <!-- Selection Indicator -->
         <div
           v-if="selectedUserId === user.id"
-          class="absolute left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-blue-500"
+          class="absolute left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-gradient-to-b from-blue-500 to-indigo-500"
         ></div>
 
-        <!-- Avatar -->
+        <!-- Avatar Container - No hover effect here -->
         <div class="relative flex-shrink-0">
           <StableAvatar
             :src="user.avatar_display_url || getConversationAvatarUrl(user)"
             :alt="`${getConversationUsername(user) || 'user'} avatar`"
-            class="relative z-10 h-12 w-12 rounded-[1.25rem] object-cover shadow-lg transition-transform duration-300 group-hover:scale-105"
+            class="relative z-10 h-12 w-12 rounded-[1.25rem] object-cover shadow-lg transition-transform duration-300"
           />
           <div
             v-if="user.is_online"
-            class="absolute -bottom-0.5 -right-0.5 z-20 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm"
+            class="absolute -bottom-0.5 -right-0.5 z-20 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm ring-2 ring-white/20"
           ></div>
-          <!-- Online/Unread Dot -->
+          <!-- Unread Badge -->
           <div
             v-if="user.unread_count > 0"
-            class="absolute -right-1 -top-1 z-20 grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-blue-500 text-[10px] font-black text-white shadow-sm"
+            class="absolute -right-1 -top-1 z-20 grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-gradient-to-r from-blue-500 to-indigo-500 text-[10px] font-black text-white shadow-sm"
           >
             {{ user.unread_count > 9 ? '9+' : user.unread_count }}
           </div>
@@ -285,10 +285,14 @@ export default {
       this.tryAutoSelectInitialUser()
     }
     eventBus.on('messaging-read-updated', this.handleMessagingReadUpdated)
+    eventBus.on('messaging-presence-updated', this.handlePresenceUpdated)
+    eventBus.on('messaging-thread-read', this.handleThreadRead)
   },
   beforeUnmount() {
     this.stopPolling()
     eventBus.off('messaging-read-updated', this.handleMessagingReadUpdated)
+    eventBus.off('messaging-presence-updated', this.handlePresenceUpdated)
+    eventBus.off('messaging-thread-read', this.handleThreadRead)
   },
   methods: {
     getAvatarUrl,
@@ -297,6 +301,43 @@ export default {
       if (this.authToken) {
         this.loadConversations({ silent: true })
       }
+    },
+    handlePresenceUpdated(presence) {
+      const userId = String(presence?.user_id ?? '')
+      if (!userId) return
+      const applyPresence = (rows) =>
+        (rows || []).map((row) =>
+          String(row?.id) === userId
+            ? {
+                ...row,
+                is_online: Boolean(presence?.is_online),
+              }
+            : row,
+        )
+      this.conversations = applyPresence(this.conversations)
+      this.allUsers = applyPresence(this.allUsers)
+    },
+    handleThreadRead(read) {
+      const readerId = String(read?.reader_id ?? '')
+      if (!readerId || readerId !== String(this.currentUser?.id)) return
+      const senderId = String(read?.sender_id ?? '')
+      if (!senderId) return
+      this.conversations = this.conversations.map((row) =>
+        String(row?.id) === senderId
+          ? {
+              ...row,
+              unread_count: 0,
+            }
+          : row,
+      )
+      this.allUsers = this.allUsers.map((row) =>
+        String(row?.id) === senderId
+          ? {
+              ...row,
+              unread_count: 0,
+            }
+          : row,
+      )
     },
     getConversationUsername(user) {
       return user?.username || user?.user?.username || ''
@@ -397,7 +438,14 @@ export default {
       return new Date(isoString).toLocaleDateString()
     },
     handleUserClick(user) {
-      this.$emit('selectUser', this.mergeProfileIntoConversation(user))
+      const unreadCount = Number(user?.unread_count || 0)
+      this.$emit(
+        'selectUser',
+        this.mergeProfileIntoConversation({
+          ...user,
+          initial_unread_count: unreadCount,
+        }),
+      )
     },
     async loadConversations() {
       try {
@@ -533,8 +581,19 @@ export default {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #e2e8f0;
   border-radius: 10px;
+  transition: background 0.2s;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #cbd5e1;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 0.8s linear infinite;
 }
 </style>

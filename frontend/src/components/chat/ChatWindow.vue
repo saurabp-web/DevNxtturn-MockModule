@@ -48,7 +48,7 @@
       <div class="space-y-2">
         <h3 class="text-2xl font-bold tracking-tight text-slate-800">Your conversations</h3>
         <p class="mx-auto max-w-xs text-sm text-slate-500">
-          Select a friend from the sidebar or search to start messaging
+          Select a connection to get started ...
         </p>
         <div class="flex justify-center gap-2 pt-4">
           <div class="h-1.5 w-8 rounded-full bg-purple-500"></div>
@@ -73,7 +73,7 @@
             v-if="showMobileBack"
             type="button"
             class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-slate-100/70 text-slate-600 transition-all duration-200 hover:bg-white hover:text-purple-600 hover:shadow-md active:scale-95 lg:hidden"
-            @click="$emit('back')"
+            @click="handleBackToList"
             aria-label="Back to conversations"
           >
             <svg
@@ -93,18 +93,21 @@
               class="h-12 w-12 rounded-xl object-cover shadow-md shadow-purple-200 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-300"
             />
             <div
-              v-if="user?.is_online"
+              v-if="isSelectedUserOnline"
               class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm"
             ></div>
           </div>
           <div>
             <div class="text-lg font-bold tracking-tight text-slate-800">{{ user.username }}</div>
             <div class="flex items-center gap-1.5 text-xs font-medium" :class="userPresenceClass">
-              <span
-                class="h-1.5 w-1.5 rounded-full"
-                :class="userPresenceDotClass"
-              ></span>
+              <!-- <span class="h-1.5 w-1.5 rounded-full" :class="userPresenceDotClass"></span> -->
               <span>{{ userPresenceLabel }}</span>
+              <span
+                v-if="unreadInThreadCount > 0"
+                class="ml-1 rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm"
+              >
+                {{ unreadInThreadCount > 99 ? '99+' : unreadInThreadCount }} unread
+              </span>
             </div>
           </div>
         </div>
@@ -133,8 +136,11 @@
       <div
         ref="messageList"
         class="message-area relative flex-1 overflow-y-auto px-5 py-5 lg:px-6"
-        style="overflow-anchor: none;"
+        style="overflow-anchor: none"
         @scroll="onScroll"
+        @wheel="markManualHistoryScroll"
+        @touchstart="markManualHistoryScroll"
+        @pointerdown="markManualHistoryScroll"
       >
         <div
           class="pointer-events-none absolute inset-0 opacity-[0.02]"
@@ -158,13 +164,17 @@
                 data-unread-divider
                 class="relative z-20 flex items-center gap-4 py-5"
               >
-                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300/70 to-transparent"></div>
+                <div
+                  class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300/70 to-transparent"
+                ></div>
                 <span
                   class="rounded-full bg-slate-900 px-4 py-2 text-[12px] font-semibold leading-none text-white shadow-[0_10px_24px_rgba(15,23,42,0.28)] ring-1 ring-black/10 backdrop-blur-md"
                 >
                   {{ item.label }}
                 </span>
-                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300/70 to-transparent"></div>
+                <div
+                  class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300/70 to-transparent"
+                ></div>
               </div>
               <MessageBubble
                 v-else
@@ -177,7 +187,7 @@
                   item.message.reactions?.length,
                 ]"
                 :message="item.message"
-                :isMe="String(item.message.sender) === String(currentUserId)"
+                :isMe="String(getMessageSenderId(item.message)) === String(currentUserId)"
                 @react="sendReaction"
                 @reply="beginReplyMessage"
                 @edit="beginEditMessage"
@@ -267,7 +277,9 @@
       </transition>
 
       <!-- Input Area -->
-      <div class="relative z-10 border-t border-slate-200/60 bg-white/55 px-4 py-4 backdrop-blur-md sm:px-5 lg:px-6">
+      <div
+        class="relative z-10 border-t border-slate-200/60 bg-white/55 px-4 py-4 backdrop-blur-md sm:px-5 lg:px-6"
+      >
         <transition
           enter-active-class="transition duration-200 ease-out"
           enter-from-class="translate-y-1 opacity-0"
@@ -452,12 +464,18 @@ export default {
       editingMessage: null,
       replyingMessage: null,
       revealUnreadOnLoad: false,
+      unreadDividerSnapshot: null,
       isPartnerTyping: false,
       typingIndicatorTimer: null,
       isLocallyTyping: false,
       typingSendTimer: null,
       draftsByConversation: {},
       stickToBottom: true,
+      suppressLoadMoreUntil: 0,
+      initialScrollDone: false,
+      canLoadOlderFromUserScroll: false,
+      userPresenceOverride: null,
+      keepUnreadDividerVisible: false,
     }
   },
   computed: {
@@ -483,13 +501,18 @@ export default {
     },
     userPresenceLabel() {
       if (!this.user) return ''
-      return this.user.is_online ? 'Online' : 'Offline'
+      return this.isSelectedUserOnline ? 'Online' : 'Offline'
     },
     userPresenceClass() {
-      return this.user?.is_online ? 'text-emerald-600' : 'text-slate-500'
+      return this.isSelectedUserOnline ? 'text-emerald-600' : 'text-slate-500'
     },
     userPresenceDotClass() {
-      return this.user?.is_online ? 'bg-emerald-500' : 'bg-slate-400'
+      return this.isSelectedUserOnline ? 'bg-emerald-500' : 'bg-slate-400'
+    },
+    isSelectedUserOnline() {
+      if (!this.user) return false
+      if (this.userPresenceOverride !== null) return Boolean(this.userPresenceOverride)
+      return Boolean(this.user?.is_online)
     },
     chatAvatarUrl() {
       const profile = this.selectedUserProfile
@@ -513,7 +536,12 @@ export default {
       const lastName =
         profile?.user?.last_name || this.user?.last_name || this.user?.user?.last_name || ''
 
-      return getAvatarUrl(avatar, firstName, lastName, this.user?.username || profile?.user?.username || '')
+      return getAvatarUrl(
+        avatar,
+        firstName,
+        lastName,
+        this.user?.username || profile?.user?.username || '',
+      )
     },
     groupedMessages() {
       const groups = []
@@ -527,9 +555,7 @@ export default {
 
       this.messages.forEach((message, index) => {
         const isUnreadIncoming =
-          !unreadDividerAdded &&
-          !message?.is_deleted &&
-          index === unreadInfo.index
+          !unreadDividerAdded && !message?.is_deleted && index === unreadInfo.index
 
         const timestamp = message?.timestamp
         if (timestamp) {
@@ -563,6 +589,9 @@ export default {
 
       return groups
     },
+    unreadInThreadCount() {
+      return this.getUnreadDividerInfo().count
+    },
   },
   async created() {
     await this.loadSelectedUserProfile()
@@ -574,17 +603,28 @@ export default {
         this.editingMessage = null
         this.replyingMessage = null
         this.revealUnreadOnLoad = false
+        this.unreadDividerSnapshot = null
+        this.initialScrollDone = false
+        this.canLoadOlderFromUserScroll = false
+        this.userPresenceOverride = null
+        this.keepUnreadDividerVisible = false
+        this.stopReadSyncTimer()
         this.clearTypingIndicator()
         this.stopPolling()
         this.closeWebSocket()
-        this.detachScroll()
         return
       }
       this.editingMessage = null
       this.replyingMessage = null
       this.revealUnreadOnLoad = false
+      this.unreadDividerSnapshot = null
+      this.initialScrollDone = false
+      this.canLoadOlderFromUserScroll = false
+      this.suppressLoadMoreUntil = Date.now() + 1000
+      this.userPresenceOverride = null
+      this.keepUnreadDividerVisible = false
+      this.stopReadSyncTimer()
       this.clearTypingIndicator()
-      this.$nextTick(this.attachScroll)
       this.refreshThread(true)
       this.loadSelectedUserProfile()
     },
@@ -592,17 +632,18 @@ export default {
   mounted() {
     this.revealUnreadOnLoad = false
     this.refreshThread(true)
-    this.$nextTick(this.attachScroll)
     this.loadSelectedUserProfile()
     document.addEventListener('visibilitychange', this.handleVisibilityChange)
+    eventBus.on('messaging-presence-updated', this.handlePresenceBusEvent)
   },
   beforeUnmount() {
+    void this.syncConversationReadState({ requireVisible: false })
     this.stopPolling()
     this.stopReadSyncTimer()
     this.clearTypingIndicator()
     this.closeWebSocket()
-    this.detachScroll()
     document.removeEventListener('visibilitychange', this.handleVisibilityChange)
+    eventBus.off('messaging-presence-updated', this.handlePresenceBusEvent)
   },
   methods: {
     ...mapActions(useProfileStore, ['fetchProfile']),
@@ -644,20 +685,49 @@ export default {
       )
       return true
     },
-    scheduleReadSync(delay = 150) {
-      if (!this.user || document.hidden) return
+    scheduleReadSync(delay = 250, options = {}) {
+      if (!this.user || !this.authToken || document.hidden) return
       this.stopReadSyncTimer()
       this.readSyncTimer = window.setTimeout(() => {
-        this.syncConversationReadState()
+        this.readSyncTimer = null
+        void this.syncConversationReadState(options)
       }, delay)
     },
-    async syncConversationReadState() {
-      if (!this.user || !this.authToken || this.readSyncInFlight || document.hidden) return
+    sendReadStateOverSocket() {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
+      this.ws.send(
+        JSON.stringify({
+          event: 'read',
+        }),
+      )
+      return true
+    },
+    async syncConversationReadState(options = {}) {
+      const requireVisible = options?.requireVisible !== false
+      const activeUser = this.user
+      if (
+        !activeUser ||
+        !this.authToken ||
+        this.readSyncInFlight ||
+        (requireVisible && !this.isChatPaneVisible())
+      )
+        return
       this.readSyncInFlight = true
       try {
-        await markConversationAsRead(this.user)
+        let readState = null
+        const sentOverSocket = this.sendReadStateOverSocket()
+        if (!sentOverSocket) {
+          readState = await markConversationAsRead(activeUser)
+        }
         this.markThreadAsReadLocally()
-        eventBus.emit('messaging-read-updated')
+        eventBus.emit('messaging-thread-read', {
+          reader_id: this.currentUserId,
+          sender_id: activeUser.id,
+          updated_count:
+            readState?.updated_count === undefined ? undefined : Number(readState.updated_count),
+          unread_count:
+            readState?.unread_count === undefined ? undefined : Number(readState.unread_count),
+        })
       } catch {
         // keep the UI responsive even if the backend read call fails
       } finally {
@@ -665,27 +735,114 @@ export default {
       }
     },
     handleVisibilityChange() {
-      if (!document.hidden && this.user) {
-        this.scheduleReadSync()
+      if (document.hidden) this.stopReadSyncTimer()
+      else this.scheduleReadSync(150)
+    },
+    async handleBackToList() {
+      await this.syncConversationReadState({ requireVisible: false })
+      this.$emit('back')
+    },
+    isChatPaneVisible() {
+      if (document.hidden || !this.user) return false
+      const el = this.$refs.messageList
+      if (!el || !el.isConnected) return false
+      const rect = el.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight
+    },
+    getMessageUserId(value) {
+      if (value && typeof value === 'object') {
+        return value.id ?? value.user_id ?? value.pk ?? value.user?.id ?? ''
       }
+      return value ?? ''
+    },
+    getMessageSenderId(message) {
+      return this.getMessageUserId(message?.sender ?? message?.sender_id ?? message?.sender_user)
+    },
+    getMessageReceiverId(message) {
+      return this.getMessageUserId(
+        message?.receiver ?? message?.receiver_id ?? message?.recipient ?? message?.recipient_id,
+      )
+    },
+    isIncomingMessage(message) {
+      if (!message) return false
+      const currentUserId = String(this.currentUserId ?? '')
+      const senderId = String(this.getMessageSenderId(message) ?? '')
+      if (!currentUserId || !senderId) return false
+      return senderId !== currentUserId
+    },
+    isUnreadIncomingMessage(message) {
+      return !message?.is_deleted && !message?.is_read && this.isIncomingMessage(message)
+    },
+    captureUnreadDividerSnapshot() {
+      const messages = Array.isArray(this.messages) ? this.messages : []
+      const unreadMessages = messages.filter((message) => this.isUnreadIncomingMessage(message))
+
+      this.unreadDividerSnapshot = unreadMessages.length
+        ? {
+            count: unreadMessages.length,
+            firstMessageId: unreadMessages[0]?.id ?? null,
+          }
+        : this.getUnreadSnapshotFromInitialCount(messages)
+    },
+    clearUnreadDividerSnapshot() {
+      this.keepUnreadDividerVisible = false
+      this.unreadDividerSnapshot = null
+    },
+    rememberUnreadIncomingMessage(message) {
+      if (!message?.id || !this.isIncomingMessage(message)) return
+
+      if (!this.unreadDividerSnapshot?.count) {
+        this.unreadDividerSnapshot = {
+          count: 1,
+          firstMessageId: message.id,
+        }
+        this.keepUnreadDividerVisible = true
+        return
+      }
+
+      this.unreadDividerSnapshot = {
+        ...this.unreadDividerSnapshot,
+        count: this.unreadDividerSnapshot.count + 1,
+      }
+      this.keepUnreadDividerVisible = true
+    },
+    getInitialUnreadCount() {
+      return Number(this.user?.initial_unread_count || this.user?.unread_count || 0)
+    },
+    getUnreadSnapshotFromInitialCount(messages) {
+      const initialUnreadCount = this.getInitialUnreadCount()
+      if (initialUnreadCount <= 0) return null
+
+      const incomingMessages = messages.filter(
+        (message) => !message?.is_deleted && this.isIncomingMessage(message),
+      )
+      if (!incomingMessages.length) return null
+
+      const firstUnread =
+        incomingMessages[Math.max(0, incomingMessages.length - initialUnreadCount)] || null
+      return firstUnread
+        ? {
+            count: Math.min(initialUnreadCount, incomingMessages.length),
+            firstMessageId: firstUnread.id ?? null,
+          }
+        : null
     },
     getUnreadDividerInfo() {
-      const currentUserId = String(this.currentUserId ?? '')
+      if (this.unreadDividerSnapshot?.count > 0) {
+        const firstMessageId = this.unreadDividerSnapshot.firstMessageId
+        const index = this.messages.findIndex(
+          (message) => String(message?.id) === String(firstMessageId),
+        )
+        if (index >= 0) {
+          return { count: this.unreadDividerSnapshot.count, index }
+        }
+      }
+
       const messages = Array.isArray(this.messages) ? this.messages : []
-      const flaggedUnread = messages.filter(
-        (message) =>
-          !message?.is_deleted &&
-          !message?.is_read &&
-          String(message?.sender) !== currentUserId,
-      )
+      const flaggedUnread = messages.filter((message) => this.isUnreadIncomingMessage(message))
 
       if (flaggedUnread.length > 0) {
-        const index = messages.findIndex(
-          (message) =>
-            !message?.is_deleted &&
-            !message?.is_read &&
-            String(message?.sender) !== currentUserId,
-        )
+        const index = messages.findIndex((message) => this.isUnreadIncomingMessage(message))
         return { count: flaggedUnread.length, index }
       }
       return { count: 0, index: -1 }
@@ -719,12 +876,17 @@ export default {
         this.editingMessage = null
         this.replyingMessage = null
         this.revealUnreadOnLoad = false
+        this.unreadDividerSnapshot = null
+        this.keepUnreadDividerVisible = false
         this.stickToBottom = true
         this.stopPolling()
         this.closeWebSocket()
         return
       }
       this.stickToBottom = true
+      this.initialScrollDone = false
+      this.canLoadOlderFromUserScroll = false
+      this.suppressLoadMoreUntil = Date.now() + 1000
       this.getMessages({ forceScroll })
       this.connectWebSocket()
     },
@@ -784,16 +946,16 @@ export default {
           } else if (data?.message) {
             this.addMessageUnique(
               data.message,
-              String(data?.message?.sender) === String(this.currentUserId),
+              String(this.getMessageSenderId(data?.message)) === String(this.currentUserId),
             )
-            if (String(data?.message?.sender) !== String(this.currentUserId)) {
-              this.clearTypingIndicator()
-              this.scheduleReadSync()
-            }
           } else if (data?.reaction) {
             this.applyReactionUpdate(data.reaction)
           } else if (data?.typing) {
             this.handleTypingEvent(data.typing)
+          } else if (data?.read) {
+            this.handleReadEvent(data.read)
+          } else if (data?.presence) {
+            this.handlePresenceEvent(data.presence)
           }
         } catch {
           // ignore
@@ -809,18 +971,8 @@ export default {
       this.clearTypingIndicator()
       this.clearTypingSenderTimer()
     },
-    attachScroll() {
-      this.detachScroll()
-      const el = this.$refs.messageList
-      if (el) {
-        el.addEventListener('scroll', this.onScroll, { passive: true })
-      }
-    },
-    detachScroll() {
-      const el = this.$refs.messageList
-      if (el) {
-        el.removeEventListener('scroll', this.onScroll)
-      }
+    markManualHistoryScroll() {
+      this.canLoadOlderFromUserScroll = true
     },
     onScroll() {
       const el = this.$refs.messageList
@@ -829,8 +981,21 @@ export default {
       const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
       this.showScrollDown = !nearBottom
       this.stickToBottom = nearBottom
+      if (nearBottom) {
+        if (Date.now() > this.suppressLoadMoreUntil) {
+          this.clearUnreadDividerSnapshot()
+        }
+      }
 
-      if (el.scrollTop < 50 && this.hasMore && !this.loadingMore && !this.loading) {
+      if (
+        el.scrollTop < 50 &&
+        this.hasMore &&
+        !this.loadingMore &&
+        !this.loading &&
+        this.canLoadOlderFromUserScroll &&
+        Date.now() > this.suppressLoadMoreUntil
+      ) {
+        this.canLoadOlderFromUserScroll = false
         this.loadMoreMessages()
       }
     },
@@ -881,18 +1046,34 @@ export default {
         this.totalCount = data.total_count || 0
         this.hasMore = data.has_more || false
         this.loadOffset = this.messages.length
-        this.markThreadAsReadLocally()
-        eventBus.emit('messaging-read-updated')
-        this.scheduleReadSync(0)
-        this.stickToBottom = true
+        this.captureUnreadDividerSnapshot()
+        const shouldRevealUnread =
+          forceScroll && !this.initialScrollDone && this.unreadInThreadCount > 0
+        this.keepUnreadDividerVisible = shouldRevealUnread
+        this.stickToBottom = !shouldRevealUnread
 
         this.$nextTick(() => {
           const list = this.$refs.messageList
           if (!list) return
 
+          if (shouldRevealUnread) {
+            this.$nextTick(() => {
+              window.requestAnimationFrame(() => {
+                this.revealUnreadThreadPosition()
+                this.initialScrollDone = true
+                this.canLoadOlderFromUserScroll = false
+                this.scheduleReadSync(2500)
+              })
+            })
+            return
+          }
+
           if (forceScroll || wasNearBottom) {
             this.scrollToBottom(true)
+            this.initialScrollDone = true
+            this.canLoadOlderFromUserScroll = false
             this.showScrollDown = false
+            this.scheduleReadSync(150)
             return
           }
 
@@ -932,6 +1113,7 @@ export default {
           this.messages = [...newMessages, ...this.messages]
           this.loadOffset += newMessages.length
           this.hasMore = data.has_more || false
+          this.canLoadOlderFromUserScroll = false
 
           this.$nextTick(() => {
             const newScrollHeight = el.scrollHeight
@@ -1091,13 +1273,55 @@ export default {
 
       this.clearTypingIndicator()
     },
+    handleReadEvent(read) {
+      const readerId = String(read?.reader_id ?? read?.user_id ?? '')
+      if (!readerId) return
+
+      if (readerId === String(this.currentUserId)) {
+        this.markThreadAsReadLocally()
+        eventBus.emit('messaging-thread-read', read)
+        return
+      }
+
+      this.messages = this.messages.map((message) => {
+        const senderId = String(this.getMessageSenderId(message) ?? '')
+        const receiverId = String(this.getMessageReceiverId(message) ?? '')
+        if (
+          !message ||
+          senderId !== String(this.currentUserId) ||
+          (receiverId && receiverId !== readerId)
+        ) {
+          return message
+        }
+        return {
+          ...message,
+          is_read: true,
+        }
+      })
+      eventBus.emit('messaging-thread-read', read)
+    },
+    handlePresenceEvent(presence) {
+      const userId = String(presence?.user_id ?? '')
+      if (!userId) return
+      eventBus.emit('messaging-presence-updated', presence)
+      this.applyPresenceOverride(presence)
+    },
+    handlePresenceBusEvent(presence) {
+      this.applyPresenceOverride(presence)
+    },
+    applyPresenceOverride(presence) {
+      const userId = String(presence?.user_id ?? '')
+      if (this.user && userId === String(this.user.id)) {
+        this.userPresenceOverride = Boolean(presence?.is_online)
+      }
+    },
     openReactionPicker() {
       this.$refs.messageInput?.openEmojiPicker?.()
     },
     beginEditMessage(message) {
       if (
         !message ||
-        String(message.sender) !== String(this.currentUserId) ||
+        String(this.getMessageSenderId(message)) !== String(this.currentUserId) ||
         message.is_deleted ||
         message.can_edit === false ||
         ['gif', 'sticker', 'file'].includes(String(message?.message_type || '').toLowerCase())
@@ -1141,7 +1365,7 @@ export default {
     },
     async deleteMessage(message) {
       if (!message?.id) return
-      if (String(message.sender) !== String(this.currentUserId)) return
+      if (String(this.getMessageSenderId(message)) !== String(this.currentUserId)) return
       const confirmed = window.confirm('Delete this message?')
       if (!confirmed) return
       try {
@@ -1161,7 +1385,15 @@ export default {
       const idx = this.messages.findIndex((msg) => String(msg.id) === String(messageId))
       if (idx === -1) return
       const existing = this.messages[idx]
-      this.messages[idx] = { ...existing, reactions: update.reactions || [] }
+      const reactorId = String(update?.reactor_id ?? '')
+      const isCurrentUserReaction = reactorId && reactorId === String(this.currentUserId)
+      this.messages[idx] = {
+        ...existing,
+        reactions: update.reactions || [],
+        my_reaction: isCurrentUserReaction
+          ? update.selected_emoji || ''
+          : existing.my_reaction || '',
+      }
     },
     applyMessagePatch(message) {
       if (!message?.id) return
@@ -1183,24 +1415,43 @@ export default {
       if (!message) return
       const exists = this.messages.some((msg) => String(msg.id) === String(message.id))
       if (!exists) {
+        const wasNearBottom = this.shouldAutoScroll()
+        const isMine = String(this.getMessageSenderId(message)) === String(this.currentUserId)
+        const isIncoming = this.isIncomingMessage(message)
         this.messages.push(message)
         this.totalCount += 1
         this.triggerEmojiEffectForMessage(message)
-        if (String(message?.sender) !== String(this.currentUserId)) {
-          this.scheduleReadSync()
+
+        if (isIncoming) {
+          this.clearTypingIndicator()
+          if (this.isChatPaneVisible()) {
+            this.clearUnreadDividerSnapshot()
+            this.markThreadAsReadLocally()
+            this.scheduleReadSync(150, { requireVisible: false })
+          } else if (wasNearBottom) {
+            this.clearUnreadDividerSnapshot()
+            this.scheduleReadSync(200, { requireVisible: false })
+          } else {
+            this.rememberUnreadIncomingMessage(message)
+          }
         }
-        if (forceScroll || this.shouldAutoScroll() || String(message?.sender) === String(this.currentUserId)) {
+
+        if (forceScroll || wasNearBottom || isMine) {
           this.stickToBottom = true
           this.$nextTick(() => this.scrollToBottom(true))
         } else {
+          this.stickToBottom = false
           this.showScrollDown = true
         }
       }
     },
     markThreadAsReadLocally() {
+      if (!this.keepUnreadDividerVisible) {
+        this.clearUnreadDividerSnapshot()
+      }
       const currentUserId = String(this.currentUserId ?? '')
       this.messages = this.messages.map((message) => {
-        if (!message || String(message.sender) === currentUserId) {
+        if (!message || String(this.getMessageSenderId(message)) === currentUserId) {
           return message
         }
         return {
@@ -1231,8 +1482,11 @@ export default {
         this.showScrollDown = true
         return
       }
+      this.suppressLoadMoreUntil = Date.now() + 400
       el.scrollTop = el.scrollHeight
       this.showScrollDown = false
+      this.stickToBottom = true
+      this.clearUnreadDividerSnapshot()
     },
     revealUnreadThreadPosition() {
       const el = this.$refs.messageList
@@ -1248,6 +1502,7 @@ export default {
         const dividerRect = dividerEl.getBoundingClientRect()
         const offsetTop = dividerRect.top - listRect.top
         const nextTop = el.scrollTop + offsetTop - 72
+        this.suppressLoadMoreUntil = Date.now() + 400
         el.scrollTop = Math.max(0, nextTop)
         didScroll = true
       } else if (targetMessage?.id != null) {
@@ -1257,6 +1512,7 @@ export default {
           const targetRect = targetEl.getBoundingClientRect()
           const offsetTop = targetRect.top - listRect.top
           const nextTop = el.scrollTop + offsetTop - 96
+          this.suppressLoadMoreUntil = Date.now() + 400
           el.scrollTop = Math.max(0, nextTop)
           didScroll = true
         }
@@ -1267,9 +1523,11 @@ export default {
       } else {
         const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
         this.showScrollDown = !nearBottom
+        this.stickToBottom = nearBottom
       }
 
-      const latestMessage = [...this.messages].reverse().find((message) => !message?.is_deleted) || null
+      const latestMessage =
+        [...this.messages].reverse().find((message) => !message?.is_deleted) || null
       const latestEmoji = this.getCelebrationEmojiFromMessage(latestMessage)
       if (latestEmoji) {
         this.$nextTick(() => {

@@ -110,6 +110,9 @@ class NotificationService {
         console.warn("Service: Received malformed message, missing 'type'", data)
         return
       }
+      if (eventType === 'pong') {
+        return
+      }
       console.log(`Service: Received event type: '${eventType}'`, payload)
 
       switch (eventType) {
@@ -146,6 +149,11 @@ class NotificationService {
           useFeedStore().handlePostDeletedSignal(postId)
           useProfileStore().handlePostDeletedSignal(postId)
           useGroupStore().handlePostDeletedSignal(postId)
+          break
+        }
+        case 'presence_update': {
+          const eventBus = (await import('@/services/eventBus')).default
+          eventBus.emit('messaging-presence-updated', payload)
           break
         }
         default:

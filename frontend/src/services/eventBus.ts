@@ -13,6 +13,13 @@ type Events = {
   'trigger-profile-edit': string
   'connection-established': number
   'messaging-read-updated': void
+  'messaging-presence-updated': { user_id: number; username?: string; is_online: boolean }
+  'messaging-thread-read': {
+    reader_id: number
+    sender_id?: number
+    updated_count?: number
+    unread_count?: number
+  }
 }
 
 const emitter = mitt<Events>()

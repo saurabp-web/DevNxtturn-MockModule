@@ -48,6 +48,9 @@ def broadcast_message(sender_id, receiver_id, data, event="created"):
     if event == "reaction":
         payload["type"] = "chat.reaction"
         payload["reaction"] = data
+    elif event == "read":
+        payload["type"] = "chat.read"
+        payload["read"] = data
     else:
         payload["type"] = "chat.message"
         payload["message"] = data
@@ -260,13 +263,17 @@ def react_message(request):
     if user.id not in [message.sender_id, message.receiver_id]:
         return Response({"error": "You cannot react to this message"})
 
-    reaction, created = MessageReaction.objects.get_or_create(
+    existing_same_reaction = MessageReaction.objects.filter(
         message=message,
         user=user,
-        emoji=emoji
-    )
-    if not created:
-        reaction.delete()
+        emoji=emoji,
+    ).exists()
+
+    MessageReaction.objects.filter(message=message, user=user).delete()
+    selected_emoji = ""
+    if not existing_same_reaction:
+        MessageReaction.objects.create(message=message, user=user, emoji=emoji)
+        selected_emoji = emoji
 
     reactions = list(
         MessageReaction.objects.filter(message=message)
@@ -275,7 +282,13 @@ def react_message(request):
         .order_by("emoji")
     )
 
-    payload = {"message_id": message.id, "reactions": reactions}
+    payload = {
+        "message_id": message.id,
+        "reactions": reactions,
+        "reactor_id": user.id,
+        "selected_emoji": selected_emoji,
+        "my_reaction": selected_emoji,
+    }
     broadcast_message(message.sender_id, message.receiver_id, payload, event="reaction")
 
     return Response(payload)
@@ -286,8 +299,6 @@ def react_message(request):
 def get_messages(request, user_id):
     user = request.user
     other_user = get_object_or_404(User, id=user_id)
-
-    mark_conversation_read(user, other_user)
 
     # Load latest messages first; allow older messages as offset increases
     offset = int(request.GET.get('offset', 0))
@@ -323,6 +334,14 @@ def mark_conversation_as_read(request, user_id):
 
     updated_count = mark_conversation_read(user, other_user)
     unread_count = Message.objects.filter(receiver=user, is_read=False).count()
+    read_payload = {
+        "reader_id": user.id,
+        "sender_id": other_user.id,
+        "chat_id": build_chat_id(user.id, other_user.id),
+        "updated_count": updated_count,
+        "unread_count": unread_count,
+    }
+    broadcast_message(user.id, other_user.id, read_payload, event="read")
 
     return Response({
         "updated_count": updated_count,

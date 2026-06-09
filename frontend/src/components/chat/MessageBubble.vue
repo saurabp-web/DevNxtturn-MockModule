@@ -26,10 +26,11 @@
           <button
             v-for="emoji in quickEmojis"
             :key="emoji"
-            class="flex h-8 w-8 items-center justify-center rounded-full text-xl transition-transform duration-150 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/25"
+            class="flex h-8 w-8 items-center justify-center rounded-full text-xl transition-all duration-150 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/25"
+            :class="myReaction === emoji ? 'bg-white/20 ring-2 ring-white/30' : ''"
             type="button"
             :aria-label="`React with ${emoji} emoji`"
-            @click="selectReaction(emoji)"
+            @click.stop="selectReaction(emoji)"
           >
             <span class="reaction-emoji">{{ emoji }}</span>
           </button>
@@ -37,7 +38,7 @@
             class="flex h-8 w-8 items-center justify-center rounded-full text-[20px] font-medium leading-none text-white/90 transition-transform duration-150 hover:scale-110 hover:bg-white/10 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/25"
             type="button"
             aria-label="Open emoji palette"
-            @click="toggleEmojiPalette"
+            @click.stop="toggleEmojiPalette"
           >
             +
           </button>
@@ -61,6 +62,7 @@
 
         <!-- Main Message Card -->
         <div
+          data-message-card
           class="relative overflow-hidden rounded-2xl shadow-sm transition-all duration-200 group"
           :class="[
             isDeleted
@@ -256,8 +258,9 @@
               </span>
               <button
                 v-if="!isDeleted"
-                class="opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus:opacity-100"
+                class="opacity-70 transition-opacity duration-200 hover:opacity-100 focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                 type="button"
+                aria-label="Reply to message"
                 @click="emitReply"
               >
                 <svg
@@ -289,40 +292,44 @@
             v-for="reaction in visibleReactions"
             :key="reaction.emoji"
             class="flex cursor-pointer items-center gap-1 rounded-full border border-slate-200/80 bg-white/90 px-2 py-0.5 text-xs font-medium text-slate-600 shadow-sm backdrop-blur-sm transition-all hover:scale-105 hover:bg-white hover:shadow-md"
+            :class="myReaction === reaction.emoji ? '!border-blue-300 !bg-blue-50 text-blue-700 ring-1 ring-blue-200' : ''"
             type="button"
             :aria-label="`React with ${reaction.emoji}`"
-            @click="selectReaction(reaction.emoji)"
+            @click.stop="selectReaction(reaction.emoji)"
           >
             <span class="reaction-emoji reaction-emoji--small">{{ reaction.emoji }}</span>
             <span>{{ reaction.count }}</span>
           </button>
         </div>
 
-        <!-- More Reactions Panel -->
-        <transition
-          enter-active-class="transition duration-150 ease-out"
-          enter-from-class="opacity-0 translate-y-1 scale-95"
-          enter-to-class="opacity-100 translate-y-0 scale-100"
-          leave-active-class="transition duration-120 ease-in"
-          leave-from-class="opacity-100 translate-y-0 scale-100"
-          leave-to-class="opacity-0 translate-y-1 scale-95"
-        >
-          <div
-            v-if="showEmojiPalette"
-            ref="emojiPalette"
-            class="mt-2 flex"
-            :class="isMe ? 'justify-end' : 'justify-start'"
-            @click.stop
-          >
-            <EmojiPicker
-              :open="showEmojiPalette"
-              @select="selectReactionFromPalette"
-              @close="showEmojiPalette = false"
-            />
-          </div>
-        </transition>
       </div>
     </div>
+
+    <!-- More Reactions Panel -->
+    <teleport to="body">
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 translate-y-2 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+        leave-active-class="transition duration-120 ease-in"
+        leave-from-class="opacity-100 translate-y-0 scale-100"
+        leave-to-class="opacity-0 translate-y-2 scale-95"
+      >
+        <div
+          v-if="showEmojiPalette"
+          ref="emojiPalette"
+          class="fixed z-[260] h-[min(28rem,70vh)] w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/20"
+          :style="emojiPaletteStyle"
+          @click.stop
+        >
+          <EmojiPicker
+            :open="showEmojiPalette"
+            @select="selectReactionFromPalette"
+            @close="showEmojiPalette = false"
+          />
+        </div>
+      </transition>
+    </teleport>
 
     <!-- Context Menu -->
     <teleport to="body">
@@ -514,6 +521,8 @@ export default {
       showEmojiPalette: false,
       actionMenuX: 0,
       actionMenuY: 0,
+      emojiPaletteX: 12,
+      emojiPaletteY: 12,
       mediaLoading: true,
       mediaError: false,
       _cachedTimestamp: null,
@@ -550,7 +559,18 @@ export default {
       return this.message?.reactions || []
     },
     visibleReactions() {
-      return this.reactions.slice(0, 2)
+      const firstReactions = this.reactions.slice(0, 2)
+      if (!this.myReaction || firstReactions.some((reaction) => reaction.emoji === this.myReaction)) {
+        return firstReactions
+      }
+      const selectedReaction = this.reactions.find((reaction) => reaction.emoji === this.myReaction)
+      if (!selectedReaction) return firstReactions
+      return firstReactions.length >= 2
+        ? [firstReactions[0], selectedReaction]
+        : [...firstReactions, selectedReaction]
+    },
+    myReaction() {
+      return String(this.message?.my_reaction || '').trim()
     },
     deliveryState() {
       if (!this.isMe || this.isDeleted) return 'none'
@@ -632,6 +652,12 @@ export default {
         top: `${this.actionMenuY}px`,
       }
     },
+    emojiPaletteStyle() {
+      return {
+        left: `${this.emojiPaletteX}px`,
+        top: `${this.emojiPaletteY}px`,
+      }
+    },
     canEdit() {
       return Boolean(this.message?.can_edit) && !this.isChatMediaMessage
     },
@@ -651,7 +677,7 @@ export default {
   methods: {
     replyPreviewText(message) {
       if (!message) return ''
-      const type = String(message?.message_type || 'text').toLowerCase()
+      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
       if (type === 'gif' || type === 'sticker') {
         return describeMediaItem({
           kind: type,
@@ -786,9 +812,41 @@ export default {
     },
     toggleEmojiPalette() {
       if (this.isDeleted) return
-      this.showEmojiPalette = !this.showEmojiPalette
+      if (!this.showEmojiPalette) {
+        this.positionEmojiPalette()
+        this.showEmojiPalette = true
+      } else {
+        this.showEmojiPalette = false
+      }
       this.showReactions = true
       if (this.showActions) this.showActions = false
+    },
+    positionEmojiPalette() {
+      const bubble = this.$el?.querySelector?.('[data-message-card]') || this.$el
+      const rect = bubble?.getBoundingClientRect?.()
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const panelWidth = Math.min(352, viewportWidth - 24)
+      const panelHeight = Math.min(448, Math.round(viewportHeight * 0.7))
+      const gutter = 12
+
+      if (!rect) {
+        this.emojiPaletteX = gutter
+        this.emojiPaletteY = gutter
+        return
+      }
+
+      const preferredLeft = this.isMe ? rect.right - panelWidth : rect.left
+      const left = Math.max(gutter, Math.min(preferredLeft, viewportWidth - panelWidth - gutter))
+      const aboveTop = rect.top - panelHeight - gutter
+      const belowTop = rect.bottom + gutter
+      const top =
+        aboveTop >= gutter
+          ? aboveTop
+          : Math.min(belowTop, viewportHeight - panelHeight - gutter)
+
+      this.emojiPaletteX = left
+      this.emojiPaletteY = Math.max(gutter, top)
     },
     selectReactionFromPalette(emoji) {
       this.selectReaction(emoji)

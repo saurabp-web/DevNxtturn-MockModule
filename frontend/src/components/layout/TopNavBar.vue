@@ -191,6 +191,28 @@ const handleMessagingReadUpdated = async () => {
   await fetchUnreadMessages()
 }
 
+const handleMessagingThreadRead = (read: {
+  reader_id?: number
+  sender_id?: number
+  updated_count?: number
+  unread_count?: number
+}) => {
+  if (!read?.reader_id || read.reader_id !== currentUser.value?.id) return
+
+  if (typeof read.unread_count === 'number') {
+    unreadMessageCount.value = Math.max(0, read.unread_count)
+    return
+  }
+
+  const updatedCount = Number(read.updated_count || 0)
+  if (updatedCount > 0) {
+    unreadMessageCount.value = Math.max(0, unreadMessageCount.value - updatedCount)
+    return
+  }
+
+  fetchUnreadMessages()
+}
+
 const fetchUnreadMessages = async () => {
   if (!authStore.isAuthenticated) {
     unreadMessageCount.value = 0
@@ -242,6 +264,7 @@ onUnmounted(() => {
   stopBellAnimation()
   stopMessageUnreadPolling()
   eventBus.off('messaging-read-updated', handleMessagingReadUpdated)
+  eventBus.off('messaging-thread-read', handleMessagingThreadRead)
   document.removeEventListener('click', closeSearchDropdownOnClickOutside)
   document.removeEventListener('click', closeAllMenusOnClickOutside)
   document.removeEventListener('click', closeMobileMenuOnClickOutside)
@@ -430,6 +453,7 @@ watch([isProfileMenuOpen, isExploreMenuOpen, isSeekersMenuOpen, isMobileMenuOpen
 
 onMounted(async () => {
   eventBus.on('messaging-read-updated', handleMessagingReadUpdated)
+  eventBus.on('messaging-thread-read', handleMessagingThreadRead)
   await authStore.initializeAuth()
   if (unreadCount.value > 0) {
     startBellAnimation()

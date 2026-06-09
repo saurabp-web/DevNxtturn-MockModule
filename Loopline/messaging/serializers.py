@@ -38,6 +38,7 @@ class MessageSerializer(serializers.ModelSerializer):
     media = serializers.SerializerMethodField()
     media_url = serializers.SerializerMethodField()
     reactions = serializers.SerializerMethodField()
+    my_reaction = serializers.SerializerMethodField()
     sender_username = serializers.SerializerMethodField()
     reply_to_message = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
@@ -76,6 +77,15 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_reactions(self, obj):
         qs = obj.reactions.values("emoji").annotate(count=Count("id")).order_by("emoji")
         return list(qs)
+
+    def get_my_reaction(self, obj):
+        request = self.context.get("request") if self.context else None
+        context_user = self.context.get("user") if self.context else None
+        user = request.user if request and request.user.is_authenticated else context_user
+        if not user or not getattr(user, "is_authenticated", False):
+            return ""
+        reaction = obj.reactions.filter(user=user).order_by("-id").first()
+        return reaction.emoji if reaction else ""
 
     def get_sender_username(self, obj):
         return obj.sender.username if getattr(obj, "sender", None) else ""

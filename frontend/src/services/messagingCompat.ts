@@ -24,7 +24,7 @@ function unwrapList<T>(data: any): T[] {
 function getCurrentUserId() {
   try {
     const authStore = useAuthStore()
-    return authStore.currentUser?.id || authStore.user?.id || null
+    return authStore.currentUser?.id || (authStore as unknown as { user?: { id?: number } }).user?.id || null
   } catch {
     return null
   }
@@ -34,7 +34,7 @@ function normalizeConversationRow(row: any) {
   const participants = Array.isArray(row?.participants) ? row.participants : []
   const currentUserId = getCurrentUserId()
   const partner =
-    participants.find((participant) => participant?.id !== currentUserId) ||
+    participants.find((participant: any) => participant?.id !== currentUserId) ||
     participants[0] ||
     {}
   const username = partner?.username || row?.username || partner?.user?.username || ''
@@ -88,37 +88,41 @@ export async function getMessagingUsers(query?: string) {
   return unwrapList<any>(response.data)
 }
 
-async function resolveConversationId(
+async function resolveConversationUserId(
   ref: number | { id?: number; conversation_id?: number; conversationId?: number; username?: string },
 ) {
-  const conversationId =
+  const directUserId =
     typeof ref === 'number'
       ? ref
-      : ref?.conversation_id || ref?.conversationId || null
-  if (conversationId) return conversationId
+      : ref?.id || ref?.conversation_id || ref?.conversationId || null
+  if (directUserId) return directUserId
 
   const username = typeof ref === 'object' ? ref?.username : null
-  const userId = typeof ref === 'object' ? ref?.id : null
+  if (!username) return null
+
   const conversations = await getMessagingConversations()
   const match = conversations.find((conversation) => {
     if (username && conversation?.username === username) return true
-    if (userId && Number(conversation?.id) === Number(userId)) return true
     return false
   })
-  return match?.conversation_id || match?.conversationId || null
+  if (match?.id) return match.id
+
+  const users = await getMessagingUsers(username)
+  const userMatch = users.find((user) => user?.username === username)
+  return userMatch?.id || null
 }
 
 export async function getConversationMessages(
   ref: number | { id?: number; conversation_id?: number; conversationId?: number; username?: string },
   params?: Record<string, unknown>,
 ) {
-  const conversationId = await resolveConversationId(ref)
-  if (!conversationId) {
+  const userId = await resolveConversationUserId(ref)
+  if (!userId) {
     return { messages: [], total_count: 0, has_more: false }
   }
 
-  const primary = `/messaging/conversations/${conversationId}/messages/`
-  const fallback = `/conversations/${conversationId}/messages/`
+  const primary = `/messaging/conversations/${userId}/messages/`
+  const fallback = `/conversations/${userId}/messages/`
   const response = await requestWithFallback<any>(primary, fallback, params)
   const data = response.data || {}
   if (Array.isArray(data)) {
@@ -134,11 +138,11 @@ export async function getConversationMessages(
 export async function markConversationAsRead(
   ref: number | { id?: number; conversation_id?: number; conversationId?: number; username?: string },
 ) {
-  const conversationId = await resolveConversationId(ref)
-  if (!conversationId) return null
+  const userId = await resolveConversationUserId(ref)
+  if (!userId) return null
 
-  const primary = `/messaging/conversations/${conversationId}/read/`
-  const fallback = `/conversations/${conversationId}/read/`
+  const primary = `/messaging/conversations/${userId}/read/`
+  const fallback = `/conversations/${userId}/read/`
 
   try {
     const response = await axiosInstance.post(primary)
@@ -165,51 +169,17 @@ export async function sendConversationMessage(
     media_title?: string
   },
 ) {
-  const conversationId = await resolveConversationId(ref)
-  if (!conversationId) {
-    const recipientUsername = payload.recipientUsername
-    if (!recipientUsername) {
-      throw new Error('No conversation id or recipient username available')
-    }
-    const response = await axiosInstance.post('/messages/send/', {
-      recipient_username: recipientUsername,
-      content: payload.content,
-      message_type: payload.message_type,
-      gif_url: payload.gif_url,
-      sticker_url: payload.sticker_url,
-      provider: payload.provider,
-      provider_id: payload.provider_id,
-      animated: payload.animated,
-      media_title: payload.media_title,
-    })
-    return response.data
+  const userId = await resolveConversationUserId(ref)
+  if (!userId) {
+    throw new Error('No recipient user id available')
   }
 
   try {
-    const response = await axiosInstance.post(
-      `/messaging/conversations/${conversationId}/send/`,
-      payload,
-    )
+    const response = await axiosInstance.post(`/messaging/conversations/${userId}/send/`, payload)
     return response.data
   } catch (error) {
     if (!isNotFound(error)) throw error
-
-    const recipientUsername = payload.recipientUsername
-    if (!recipientUsername) {
-      throw error
-    }
-
-    const response = await axiosInstance.post('/messages/send/', {
-      recipient_username: recipientUsername,
-      content: payload.content,
-      message_type: payload.message_type,
-      gif_url: payload.gif_url,
-      sticker_url: payload.sticker_url,
-      provider: payload.provider,
-      provider_id: payload.provider_id,
-      animated: payload.animated,
-      media_title: payload.media_title,
-    })
+    const response = await axiosInstance.post(`/conversations/${userId}/send/`, payload)
     return response.data
   }
 }

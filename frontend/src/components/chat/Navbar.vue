@@ -53,6 +53,7 @@
 <script>
 import api from "../services/api"
 import { store, clearSession } from "../store"
+import eventBus from "@/services/eventBus"
 
 export default {
   data() {
@@ -63,6 +64,7 @@ export default {
     }
   },
   mounted() {
+    eventBus.on('messaging-thread-read', this.handleMessagingThreadRead)
     if (this.store.token) {
       this.refreshUnread()
       this.startPolling()
@@ -70,6 +72,7 @@ export default {
   },
   beforeUnmount() {
     this.stopPolling()
+    eventBus.off('messaging-thread-read', this.handleMessagingThreadRead)
   },
   watch: {
     "store.token"(value) {
@@ -83,6 +86,22 @@ export default {
     }
   },
   methods: {
+    handleMessagingThreadRead(read) {
+      if (!read?.reader_id || read.reader_id !== this.store.user?.id) return
+
+      if (typeof read.unread_count === 'number') {
+        this.unreadCount = Math.max(0, Number(read.unread_count || 0))
+        return
+      }
+
+      const updatedCount = Number(read.updated_count || 0)
+      if (updatedCount > 0) {
+        this.unreadCount = Math.max(0, this.unreadCount - updatedCount)
+        return
+      }
+
+      this.refreshUnread()
+    },
     startPolling() {
       this.stopPolling()
       if (!this.store.token) return
