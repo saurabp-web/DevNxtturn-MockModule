@@ -83,7 +83,6 @@ export const useNotificationStore = defineStore('notification', () => {
     isLoadingList.value = true
     error.value = null
     if (page === 1) {
-      notifications.value = []
     }
     try {
       const response = await axiosInstance.get<PaginatedNotificationResponse>('/notifications/', {
@@ -111,7 +110,7 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
-  async function markNotificationsAsRead(notificationIds: number[]) {
+  async function markNotificationsAsRead(notificationIds: number[], skipFetchCount = false) {
     if (!authStore.isAuthenticated) return { success: false }
     if (!notificationIds || notificationIds.length === 0) return { success: false }
     try {
@@ -123,7 +122,12 @@ export const useNotificationStore = defineStore('notification', () => {
           n.is_read = true
         }
       })
-      await fetchUnreadCount()
+
+      // Only fetch the unread count if we didn't explicitly ask to skip it
+      if (!skipFetchCount) {
+        await fetchUnreadCount()
+      }
+
       return { success: true }
     } catch (err: any) {
       console.error('NotificationStore: Error marking notifications as read:', err)
@@ -149,18 +153,34 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   function addLiveNotification(newNotification: Notification) {
-    // UI SCRUB: If this is a connection success, remove the old 'pending' row from this person
+    // 1. THE CLICKER'S SHIELD: Check if we already transformed a row for this user.
+    // If we have a row from this person that is already marked as 'is_following_back',
+    // it means WE were the one who clicked the button. We don't want a duplicate at the top.
+    const isSelfActionDuplicate = notifications.value.some(
+      (n) =>
+        Number(n.actor.id) === Number(newNotification.actor.id) && n.is_following_back === true,
+    )
+
+    if (isSelfActionDuplicate && newNotification.notification_type === 'connection_accepted') {
+      console.log('🚫 STORE: Ignoring duplicate WebSocket for clicker to preserve scroll position.')
+      return // EXIT HERE: User 2 stays looking at their row at position #20.
+    }
+
+    // 2. THE WAITER'S EXPERIENCE: If we reached here, this is a fresh alert for the user.
+    // We clean up any old 'pending' or 'follow' rows from this person first.
     if (newNotification.notification_type === 'connection_accepted') {
       notifications.value = notifications.value.filter((n) => {
-        const isSamePerson = n.actor.id === newNotification.actor.id
-        const isOldRequest = n.notification_type === 'connection_request'
-        return !(isSamePerson && isOldRequest)
+        const isSamePerson = Number(n.actor.id) === Number(newNotification.actor.id)
+        const isOldRow = ['connection_request', 'follow'].includes(n.notification_type)
+        return !(isSamePerson && isOldRow)
       })
     }
 
-    // Add the fresh notification to the top
+    // 3. ADD TO TOP: Standard logic for new alerts
     notifications.value.unshift(newNotification)
     unreadCount.value++
+
+    // 4. TOAST: Only show the popup toast for true new alerts (Waiter experience)
     toast.info(`${newNotification.actor.username} ${newNotification.verb}`)
   }
 
@@ -181,26 +201,38 @@ export const useNotificationStore = defineStore('notification', () => {
     hasLoadedInitialList.value = false
   }
 
-  function forceSyncConnection(userId: any) {
+  async function forceSyncConnection(userId: any) {
     const targetId = Number(userId)
 
-    // 1. Check if the user has an UNREAD notification in memory before we scrub it
-    const hasUnread = notifications.value.some((n) => Number(n.actor.id) === targetId && !n.is_read)
+    // 1. Find all UNREAD notifications for this user in memory
+    const unreadItems = notifications.value.filter(
+      (n) => Number(n.actor.id) === targetId && !n.is_read,
+    )
 
-    // 2. If an unread notification was found, decrease the global bubble count
-    if (hasUnread && unreadCount.value > 0) {
-      unreadCount.value--
-      console.log('📉 STORE: Decreased unread count via manual sync')
+    // 2. If we found unread items, tell the backend to mark them read
+    if (unreadItems.length > 0) {
+      const ids = unreadItems.map((n) => n.id)
+      await markNotificationsAsRead(ids) // This syncs the Database
+      console.log(`📉 STORE: Sent mark-as-read to DB for IDs:`, ids)
     }
 
-    // 3. Keep the original scrubbing logic to remove the rows
-    notifications.value = notifications.value.filter((n) => {
-      const isMatch = Number(n.actor.id) === targetId
-      const isStaleType = ['connection_request', 'follow'].includes(n.notification_type)
-      return !(isMatch && isStaleType)
+    // 3. Update the rows IN-PLACE for immediate visual feedback
+    notifications.value.forEach((n) => {
+      if (Number(n.actor.id) === targetId) {
+        n.is_read = true // Ensure it's marked read locally
+        if (n.notification_type === 'follow') {
+          n.is_following_back = true
+          n.verb = 'you followed back and established a connection'
+        } else if (n.notification_type === 'connection_request') {
+          n.is_following_back = true
+          n.verb = 'is now connected with you'
+        }
+      }
     })
 
-    console.log('⚡ STORE: Scrubbed stale relationship notifications for User ID:', targetId)
+    // 4. THE MASTER SYNC: Re-fetch the count from the server to be 100% sure
+    await fetchUnreadCount()
+    console.log('✨ STORE: In-place transformation and Count Sync complete.')
   }
 
   function removeNotificationById(notificationId: number) {
@@ -223,6 +255,27 @@ export const useNotificationStore = defineStore('notification', () => {
     notifications.value = notifications.value.filter((n) => n.id !== notificationId)
   }
 
+  async function declineNotificationInPlace(notificationId: number) {
+    const target = notifications.value.find((n) => n.id === notificationId)
+    if (!target) return
+
+    // 1. Keep the previous read state before we update it
+    const wasUnread = !target.is_read
+
+    // 2. Set local feedback state immediately so the WebSocket ignore logic activates
+    target.is_declined = true
+    target.is_read = true
+    target.verb = 'declined the request'
+
+    // 3. If it was unread, update the count locally and sync with the database
+    if (wasUnread) {
+      if (unreadCount.value > 0) unreadCount.value--
+      await markNotificationsAsRead([notificationId])
+    }
+
+    console.log(`📉 STORE: Local decline applied to ID: ${notificationId}. Database synced.`)
+  }
+
   return {
     notifications,
     unreadCount,
@@ -238,6 +291,8 @@ export const useNotificationStore = defineStore('notification', () => {
     addLiveNotification,
     resetState,
     forceSyncConnection,
+    declineNotificationInPlace,
+
     removeNotificationById,
   }
 })

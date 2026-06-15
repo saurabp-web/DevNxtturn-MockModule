@@ -78,8 +78,12 @@ export const useFeedStore = defineStore('feed', () => {
     isLoadingMainFeed.value = true
     mainFeedError.value = null
     try {
-      if (!authStore.isAuthenticated) throw new Error('Authentication required')
-      const apiUrl = url || '/feed/'
+      // Read user-specific selected interests from local storage [4]
+      const username = authStore.currentUser?.username || 'guest'
+      const interests = localStorage.getItem(`nxtturn_selected_interests_${username}`)
+      const queryParams = interests ? `?interests=${JSON.parse(interests).join(',')}` : ''
+
+      const apiUrl = url || `/feed/${queryParams}`
       const response = await axiosInstance.get<CursorPaginatedResponse>(apiUrl)
       postsStore.addOrUpdatePosts(response.data.results)
       const newIds = response.data.results.map((post) => post.id)
@@ -100,8 +104,12 @@ export const useFeedStore = defineStore('feed', () => {
     isRefreshingMainFeed.value = true
     mainFeedError.value = null
     try {
-      if (!authStore.isAuthenticated) return
-      const response = await axiosInstance.get<CursorPaginatedResponse>('/feed/')
+      // Read user-specific selected interests from local storage [4]
+      const username = authStore.currentUser?.username || 'guest'
+      const interests = localStorage.getItem(`nxtturn_selected_interests_${username}`)
+      const queryParams = interests ? `?interests=${JSON.parse(interests).join(',')}` : ''
+
+      const response = await axiosInstance.get<CursorPaginatedResponse>(`/feed/${queryParams}`)
       const freshPosts = response.data.results
       postsStore.addOrUpdatePosts(freshPosts)
       if (isInitialLoad) {

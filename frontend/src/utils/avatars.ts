@@ -1,4 +1,3 @@
-// src/utils/avatars.ts
 import defaultAvatar from '@/assets/images/default-avatar.svg'
 
 // Safely gets the base URL for local media files
@@ -65,45 +64,61 @@ function createInitialsAvatar(initials: string, fullName: string): string {
 }
 
 /**
- * The Centralized Avatar Orchestrator.
- * Priority: 1. Custom Photo -> 2. Colorful Circular Initial -> 3. System Default
+ * The Centralized Avatar Orchestrator (Symmetrical Hybrid & Privacy-First Version) [4].
+ *
+ * This hybrid signature supports both Rahi's first/last name declarations
+ * and our dynamic display_name/username privacy-first lookups natively [17].
  */
 export function getAvatarUrl(
   pictureUrl: string | null | undefined,
-  firstName: string | null | undefined,
-  lastName: string | null | undefined,
+  param2?: string | null | undefined, // Can be firstName or displayName
+  param3?: string | null | undefined, // Can be lastName or username
   colorSeed?: string | null,
 ): string {
-  // 1. Use custom photo if it exists (handles both Cloud GCS and Local Media)
+  // 1. Priority: Custom Photo (handles GCS Cloud, Local Media, and Docker host overrides)
   if (pictureUrl) {
-    if (pictureUrl.startsWith('http')) {
+    let cleanUrl = pictureUrl
+
+    // Self-Healing Docker Fix:
+    if (cleanUrl.includes('backend:8000')) {
+      cleanUrl = cleanUrl.replace(/https?:\/\/backend:8000/, '')
+    }
+
+    if (cleanUrl.startsWith('http')) {
       try {
-        const parsed = new URL(pictureUrl)
+        const parsed = new URL(cleanUrl)
         if (parsed.hostname === 'backend') {
           return `${parsed.pathname}${parsed.search}${parsed.hash}`
         }
       } catch {
-        // Fall through and return the original URL if parsing fails.
+        // Fall through
       }
-      return pictureUrl
+      return cleanUrl
     }
-    return `${API_URL_BASE}${pictureUrl}`
+    return `${API_URL_BASE}${cleanUrl}`
   }
 
-  // 2. Generate Initial-based Circle if name exists
-  const fName = firstName || ''
-  const lName = lastName || ''
-  const initials = `${fName?.[0] || ''}${lName?.[0] || ''}`
-  const fullName = `${fName} ${lName}`.trim()
-  const colorKey = (colorSeed || fullName || `${fName}${lName}` || 'User').trim()
+  // 2. Fallback: Symmetrical Initials & Color seed generation [4]
+  const name1 = (param2 && param2.trim()) || ''
+  const name2 = (param3 && param3.trim()) || ''
 
-  if (initials) {
-    // We pass fullName to ensures "abc" and "aab" get different colors
-    return createInitialsAvatar(initials.substring(0, 2), colorKey)
+  let nameToUse = 'U'
+  let initial = 'U'
+
+  if (name1 && name2) {
+    nameToUse = `${name1} ${name2}`.trim()
+    initial = name1.charAt(0).toUpperCase() // Matches the clean single-letter design
+  } else if (name1) {
+    nameToUse = name1
+    initial = name1.charAt(0).toUpperCase()
+  } else if (name2) {
+    nameToUse = name2
+    initial = name2.charAt(0).toUpperCase()
   }
 
-  // 3. Absolute Fallback
-  return defaultAvatar
+  const colorKey = (colorSeed || nameToUse || 'User').trim()
+
+  return createInitialsAvatar(initial, colorKey)
 }
 
 /**
@@ -123,4 +138,4 @@ export function buildMediaUrl(url: string | null | undefined): string {
     return url
   }
   return `${API_URL_BASE}${url}`
-} 
+}

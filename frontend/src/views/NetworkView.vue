@@ -10,7 +10,7 @@ import { getAvatarUrl } from '@/utils/avatars'
 import eventBus from '@/services/eventBus'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { onMounted } from 'vue' // Ensure onMounted is imported from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { XMarkIcon } from '@heroicons/vue/24/solid' // Ensure this is also here for your Decline feedback
 
 // 1. Setup the store we created yesterday
@@ -19,10 +19,14 @@ const profileStore = useProfileStore()
 const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
 const { followers, following, connections, pending, isLoading, error } = storeToRefs(networkStore)
+const { currentUser, isAuthenticated } = storeToRefs(authStore)
 const route = useRoute()
+const router = useRouter()
 
 // 2. State for Tabs and Search (Added 'pending')
-const activeTab = ref<'connections' | 'followers' | 'following' | 'pending'>('connections')
+const activeTab = ref<'connections' | 'followers' | 'following' | 'pending' | 'discovery'>(
+  'connections',
+)
 const searchQuery = ref('')
 const successfulConnections = ref<Set<number>>(new Set())
 const successfulDeclines = ref<Set<number>>(new Set())
@@ -63,22 +67,39 @@ useInfiniteScroll(
   nextCursorUrl,
 )
 
-// 3. Fetch data whenever the tab changes
 const fetchData = async () => {
   // GUARD: If the store didn't load, stop here.
   if (!networkStore) return
 
-  if (activeTab.value === 'connections') await networkStore.fetchConnections()
-  else if (activeTab.value === 'followers') await networkStore.fetchFollowers()
-  else if (activeTab.value === 'following') await networkStore.fetchFollowing()
-  else if (activeTab.value === 'pending') await networkStore.fetchPending()
-}
+  if (activeTab.value === 'connections') {
+    const filter = route.query.filter as string
+    const targetUser = route.query.username as string
 
-// Watch for tab changes and fetch immediately on load
-watch(activeTab, fetchData, { immediate: true })
+    // THE MUTUAL FILTER HANDSHAKE:
+    // If the URL has ?filter=mutual, fetch shared connections using our new backend view!
+    if (filter === 'mutual' && targetUser) {
+      await networkStore.fetchMutualConnections(targetUser)
+    } else {
+      await networkStore.fetchConnections()
+    }
+  } else if (activeTab.value === 'followers') {
+    await networkStore.fetchFollowers()
+  } else if (activeTab.value === 'following') {
+    await networkStore.fetchFollowing()
+  } else if (activeTab.value === 'pending') {
+    await networkStore.fetchPending()
+    // PRINT THE EXACT DATA COMING FROM THE SERVER:
+    console.log('👥 LIVE SERVER PENDING DATA:', JSON.parse(JSON.stringify(networkStore.pending)))
+  } else if (activeTab.value === 'discovery') {
+    await networkStore.fetchDiscover()
+  }
+}
 
 // 4. Filter the list based on the search bar
 const filteredList = computed(() => {
+  // If we are on the discovery tab, hide the old flat list
+  if (activeTab.value === 'discovery') return []
+
   const list =
     activeTab.value === 'connections'
       ? connections.value
@@ -190,13 +211,105 @@ const handleMessage = (user: any) => {
   // Example: router.push({ name: 'messages', query: { user: user.username }})
 }
 
+// Watch for tab changes, authentication, and user load
+watch(
+  [activeTab, isAuthenticated, currentUser],
+  async ([newTab, isAuth, user]) => {
+    console.log(
+      '🔍 [NetworkView Watcher] Tab:',
+      newTab,
+      '| Auth:',
+      isAuth,
+      '| User:',
+      user ? user.username : 'null',
+    )
+
+    if (isAuth && user) {
+      await fetchData()
+    }
+  },
+  { immediate: true },
+)
+
+// --- THE DISCOVERY CATEGORIES GENERATOR ---
+// This groups your 4 backend categories into a clean, loopable array
+const discoveryCategories = computed(() => {
+  if (!networkStore.discoverResults) return []
+  return [
+    {
+      title: 'Mutual Connections',
+      key: 'mutual_connections',
+      list: networkStore.discoverResults.mutual_connections,
+    },
+    { title: 'Alumni from your school', key: 'alumni', list: networkStore.discoverResults.alumni },
+    {
+      title: 'People with Similar Skills',
+      key: 'similar_skills',
+      list: networkStore.discoverResults.similar_skills,
+    },
+    {
+      title: 'Local Professionals near you',
+      key: 'local_professionals',
+      list: networkStore.discoverResults.local_professionals,
+    },
+  ].filter((category) => category.list && category.list.length > 0)
+})
+
+// --- THE DISCOVERY CONNECT HANDLER ---
+const successfulConnects = ref<Set<number>>(new Set())
+
+const handleConnect = async (user: any) => {
+  if (successfulConnects.value.has(user.id)) return // Prevent double-clicks
+
+  try {
+    // 1. Send the connection request to the server
+    await profileStore.sendConnectRequestById(user.id)
+
+    // 2. SHOW FEEDBACK: Add to successful connects
+    successfulConnects.value.add(user.id)
+
+    // 3. WAIT 1.5 SECONDS (UX satisfy delay)
+    setTimeout(async () => {
+      // Sync notifications and refresh the pending tab list
+      notificationStore.forceSyncConnection(user.id)
+      await networkStore.fetchPending()
+
+      // Smoothly erase this person from the suggestion cards in-place
+      networkStore.forceSyncConnection(user.id)
+
+      // Cleanup feedback state
+      successfulConnects.value.delete(user.id)
+      console.log('✅ NetworkHub: Discovery connect complete for', user.username)
+    }, 1500)
+  } catch (err) {
+    console.error('NetworkHub: Failed to connect', err)
+  }
+}
+
+const handleTabClick = (
+  tab: 'connections' | 'followers' | 'following' | 'pending' | 'discovery',
+) => {
+  activeTab.value = tab
+
+  // Keep the target username in the URL across all tabs so we don't lose the context!
+  if (route.query.username) {
+    router.replace({
+      name: 'network',
+      query: {
+        tab,
+        username: route.query.username,
+      },
+    })
+  }
+}
+
 // --- DEEP LINKING LOGIC ---
 onMounted(() => {
   // 1. Get the 'tab' from the URL: /network?tab=followers
   const requestedTab = route.query.tab as string
 
   // 2. Define our allowed tabs
-  const validTabs = ['connections', 'followers', 'following', 'pending']
+  const validTabs = ['connections', 'followers', 'following', 'pending', 'discovery']
 
   // 3. If the URL says a specific tab, switch to it immediately
   if (requestedTab && validTabs.includes(requestedTab)) {
@@ -216,12 +329,16 @@ onMounted(() => {
           <h1 class="text-2xl font-bold text-gray-900">
             {{
               activeTab === 'connections'
-                ? 'Your Connections'
+                ? route.query.filter === 'mutual'
+                  ? `Mutual Connections with @${route.query.username}`
+                  : 'Your Connections'
                 : activeTab === 'followers'
                   ? 'Your Followers'
                   : activeTab === 'following'
                     ? 'Following'
-                    : 'Pending Requests'
+                    : activeTab === 'pending'
+                      ? 'Pending Requests'
+                      : 'Discovery'
             }}
           </h1>
 
@@ -240,19 +357,67 @@ onMounted(() => {
         </div>
 
         <!-- Tab Buttons -->
-        <div class="flex gap-2 mt-6 p-1 bg-gray-100/50 rounded-xl w-fit">
+        <div class="flex gap-1 mt-6 p-1 bg-gray-100/50 rounded-xl w-full max-w-2xl">
           <button
-            v-for="tab in ['connections', 'followers', 'following', 'pending'] as const"
+            v-for="tab in [
+              'connections',
+              'followers',
+              'following',
+              'pending',
+              'discovery',
+            ] as const"
             :key="tab"
-            @click="activeTab = tab"
+            @click="handleTabClick(tab)"
             :class="[
-              'px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all',
+              'flex-1 text-center px-1.5 sm:px-4 py-2 text-[9.5px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap',
               activeTab === tab
                 ? 'bg-white text-blue-600 shadow-sm border border-gray-200'
                 : 'text-gray-500 hover:text-gray-700',
             ]"
           >
             {{ tab }}
+          </button>
+        </div>
+
+        <!-- The Sub-Pill Toggle (Only visible under Connections when a target username is present) -->
+        <div
+          v-if="activeTab === 'connections' && route.query.username"
+          class="mt-4 flex gap-2 px-1 animate-fadeIn"
+        >
+          <!-- Button 1: All Connections -->
+          <button
+            @click="
+              router.replace({
+                name: 'network',
+                query: { tab: 'connections', username: route.query.username },
+              })
+            "
+            :class="[
+              'px-4 py-1.5 text-xs font-bold rounded-lg border transition-all duration-200 shadow-sm',
+              route.query.filter !== 'mutual'
+                ? 'bg-blue-50 text-blue-600 border-blue-200'
+                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50',
+            ]"
+          >
+            All Connections
+          </button>
+
+          <!-- Button 2: Mutual Connections -->
+          <button
+            @click="
+              router.replace({
+                name: 'network',
+                query: { tab: 'connections', filter: 'mutual', username: route.query.username },
+              })
+            "
+            :class="[
+              'px-4 py-1.5 text-xs font-bold rounded-lg border transition-all duration-200 shadow-sm',
+              route.query.filter === 'mutual'
+                ? 'bg-blue-50 text-blue-600 border-blue-200'
+                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50',
+            ]"
+          >
+            👥 Mutual with @{{ route.query.username }}
           </button>
         </div>
       </div>
@@ -271,7 +436,7 @@ onMounted(() => {
 
         <!-- Empty State -->
         <div
-          v-if="filteredList.length === 0 && !isLoading"
+          v-if="filteredList.length === 0 && activeTab !== 'discovery' && !isLoading"
           class="flex flex-col items-center justify-center py-24 text-gray-400 text-center"
         >
           <Users class="w-12 h-12 opacity-10 mb-4" />
@@ -279,8 +444,23 @@ onMounted(() => {
           <p class="text-sm">Try searching for someone else or check another tab.</p>
         </div>
 
+        <!-- Discovery Empty State (If there are no suggestions at all) -->
+        <div
+          v-if="activeTab === 'discovery' && discoveryCategories.length === 0 && !isLoading"
+          class="flex flex-col items-center justify-center py-24 text-gray-400 text-center"
+        >
+          <Users class="w-12 h-12 opacity-10 mb-4" />
+          <p class="text-lg font-medium text-gray-900">You're all connected!</p>
+          <p class="text-sm">
+            You have connected with everyone in our recommendations. Check back later!
+          </p>
+        </div>
+
         <!-- User Rows -->
-        <div v-else class="divide-y divide-gray-100 px-2">
+        <div
+          v-if="activeTab !== 'discovery' && filteredList.length > 0"
+          class="divide-y divide-gray-100 px-2"
+        >
           <div
             v-for="user in filteredList"
             :key="user.id"
@@ -318,7 +498,12 @@ onMounted(() => {
 
               <!-- 2. TAB-SPECIFIC ACTIONS (Accept/Decline/Pending) -->
               <template v-if="activeTab === 'pending'">
-                <template v-if="user.connection_status === 'pending_received'">
+                <template
+                  v-if="
+                    user.connection_status === 'pending_received' ||
+                    user.connection_status === 'none'
+                  "
+                >
                   <div class="flex gap-2">
                     <!-- Accept Button -->
                     <button
@@ -390,7 +575,85 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-if="nextCursorUrl" ref="loadMoreTrigger" class="py-10 flex justify-center">
+        <!-- NEW: DISCOVERY CATEGORIES (Only shown on 'discovery' tab) -->
+        <div v-if="activeTab === 'discovery' && !isLoading" class="divide-y divide-gray-100 px-2">
+          <!-- Loop through each of our 4 categories -->
+          <div v-for="category in discoveryCategories" :key="category.key" class="py-6 first:pt-3">
+            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-2">
+              {{ category.title }}
+            </h2>
+
+            <div class="space-y-2">
+              <div
+                v-for="user in category.list"
+                :key="user.id"
+                class="group flex items-center justify-between p-4 hover:bg-blue-50/30 transition-colors rounded-xl"
+              >
+                <!-- Avatar & Details -->
+                <div class="flex items-center gap-4">
+                  <img
+                    :src="getAvatarUrl(user.picture, user.name, '')"
+                    class="w-14 h-14 rounded-2xl object-cover border border-gray-100 shadow-sm"
+                    alt=""
+                  />
+                  <div class="min-w-0">
+                    <RouterLink
+                      :to="`/profile/${user.username}`"
+                      class="text-base font-bold text-gray-900 hover:text-blue-600 transition-colors block"
+                    >
+                      {{ user.name }}
+                    </RouterLink>
+                    <p class="text-xs text-gray-500 truncate max-w-[200px]">
+                      {{ user.headline || 'Member at nxtturn' }}
+                    </p>
+                    <p class="text-[10px] font-mono text-gray-400">@{{ user.username }}</p>
+                  </div>
+                </div>
+
+                <!-- Actions (Standard Message, Custom Connect, Profile Link) -->
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="handleMessage(user)"
+                    class="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all"
+                    title="Message"
+                  >
+                    <MessageSquare class="w-5 h-5" />
+                  </button>
+
+                  <!-- Connect / Sent Button -->
+                  <div class="flex gap-2">
+                    <button
+                      @click="handleConnect(user)"
+                      :disabled="successfulConnects.has(user.id)"
+                      class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm border min-w-[100px]"
+                      :class="[
+                        successfulConnects.has(user.id)
+                          ? 'bg-blue-600 text-white border-blue-700'
+                          : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100',
+                      ]"
+                    >
+                      <span v-if="successfulConnects.has(user.id)">Sent ✓</span>
+                      <span v-else>Connect</span>
+                    </button>
+                  </div>
+
+                  <RouterLink
+                    :to="`/profile/${user.username}`"
+                    class="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
+                  >
+                    <UserCircle class="w-5 h-5" />
+                  </RouterLink>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="nextCursorUrl && activeTab !== 'discovery'"
+          ref="loadMoreTrigger"
+          class="py-10 flex justify-center"
+        >
           <div
             class="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"
           ></div>

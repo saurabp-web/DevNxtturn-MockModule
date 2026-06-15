@@ -124,28 +124,35 @@ class PollSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     picture = serializers.SerializerMethodField()
+    # 1. We define the field here so it's included in the 'Global Identity Packet'
+    display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "email", "picture"]
+        # 2. We add it to the fields list
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "display_name",
+            "email",
+            "picture",
+        ]
+
+    # 3. This method reaches into the Profile to get the 'Superior' name
+    def get_display_name(self, obj):
+        if hasattr(obj, "profile"):
+            return obj.profile.display_name
+        return None
 
     def get_picture(self, obj):
-        """
-        Returns a browser-reachable URL.
-        Local: returns '/media/...' (Vite Proxy handles this)
-        Cloud: returns 'https://storage.googleapis.com/...' (GCS handles this)
-        """
         try:
             if hasattr(obj, "profile") and obj.profile.picture:
-                # We return the raw .url attribute.
-                # We DO NOT use build_absolute_uri here.
                 return obj.profile.picture.url
         except (UserProfile.DoesNotExist, AttributeError):
             pass
         return None
-
-
-# community/serializers.py
 
 
 # community/serializers.py
@@ -454,6 +461,53 @@ class SocialLinkSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+def check_content_accessibility(viewer, author_user, visibility_setting):
+    """
+    Evaluates if the 'viewer' is authorized to see content owned by 'author_user'
+    under a given 'visibility_setting'.
+    Handles: 'public', 'members', 'followers', 'connections', 'self'.
+    """
+    # 1. The Owner always has access to their own content
+    if viewer and viewer.is_authenticated and viewer == author_user:
+        return True
+
+    # 2. Public setting allows everyone (including guests)
+    if visibility_setting == "public":
+        return True
+
+    # 3. All remaining levels require the viewer to be logged in
+    if not viewer or not viewer.is_authenticated:
+        return False
+
+    # 4. 'members' setting allows any logged-in user
+    if visibility_setting == "members":
+        return True
+
+    is_follower = author_user.followers.filter(follower=viewer).exists()
+
+    # 5. 'followers' setting allows anyone who follows the owner
+    if visibility_setting == "followers":
+        return is_follower
+
+    # 6. 'connections' setting requires mutual follows or an accepted connection request
+    if visibility_setting == "connections":
+        is_following_back = viewer.followers.filter(follower=author_user).exists()
+        if is_follower and is_following_back:
+            return True
+
+        has_accepted_request = ConnectionRequest.objects.filter(
+            (
+                Q(sender=viewer, receiver=author_user)
+                | Q(sender=author_user, receiver=viewer)
+            ),
+            status="accepted",
+        ).exists()
+        return has_accepted_request
+
+    # 7. 'self' setting only allows the owner
+    return False
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
@@ -476,6 +530,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     )
     social_links = SocialLinkSerializer(many=True, read_only=True)
     relationship_status = serializers.SerializerMethodField()
+
+    mutual_connections_count = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
@@ -502,11 +558,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "phone_number",
             "email_visibility",
             "phone_visibility",
+            "profile_visibility",
+            "message_visibility",
             # --- Added new count fields to Meta ---
             "followers_count",
             "following_count",
             "connections_count",
             "posts_count",
+            "mutual_connections_count",
         ]
         read_only_fields = fields
 
@@ -530,21 +589,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     # --- RETAINED: Existing Privacy Logic ---
     def _check_visibility(self, obj, field_value, visibility_setting):
         request = self.context.get("request")
-        if request and request.user.is_authenticated and request.user == obj.user:
+        user = request.user if request else None
+        if check_content_accessibility(user, obj.user, visibility_setting):
             return field_value
-        if visibility_setting == "public":
-            return field_value
-        if not request or not request.user.is_authenticated:
-            return None
-        is_follower = obj.user.followers.filter(follower=request.user).exists()
-        if visibility_setting == "followers" and is_follower:
-            return field_value
-        if visibility_setting == "connections":
-            is_following_back = request.user.followers.filter(
-                follower=obj.user
-            ).exists()
-            if is_follower and is_following_back:
-                return field_value
         return None
 
     def get_email(self, obj):
@@ -552,6 +599,45 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_phone_number(self, obj):
         return self._check_visibility(obj, obj.phone_number, obj.phone_visibility)
+
+    def to_representation(self, instance):
+        """
+        Intercepts the final serialized payload. If the overall profile is restricted,
+        we mask personal details, clear list relationships, and set 'is_restricted' to True.
+        """
+        rep = super().to_representation(instance)
+        request = self.context.get("request")
+        user = request.user if request else None
+
+        # Check access on overall profile visibility
+        profile_vis = getattr(instance, "profile_visibility", "public")
+        profile_allowed = check_content_accessibility(user, instance.user, profile_vis)
+
+        # Flag for the frontend to identify locked profiles
+        rep["is_restricted"] = not profile_allowed
+
+        if not profile_allowed:
+            # Strictly restrict and mask sensitive identity data
+            rep["email"] = None
+            rep["phone_number"] = None
+            rep["resume"] = None
+            rep["bio"] = None
+            rep["education"] = []
+            rep["experience"] = []
+            rep["skill_categories"] = []
+            rep["social_links"] = []
+            rep["interests"] = []
+            rep["location_city"] = None
+            rep["location_administrative_area"] = None
+            rep["location_country"] = None
+            rep["current_work_style"] = ""
+            rep["is_open_to_relocation"] = False
+        else:
+            # Profile as a whole is allowed, but we still mask resume for unauthenticated guests
+            if not user or not user.is_authenticated:
+                rep["resume"] = None
+
+        return rep
 
     # --- RETAINED: Existing Relationship Logic ---
     def get_relationship_status(self, obj):
@@ -614,6 +700,42 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_following_viewer": they_follow_me,
         }
 
+    def get_mutual_connections_count(self, obj):
+        """
+        Calculates the number of mutual connections between the logged-in user
+        and the profile owner.
+        """
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated or request.user == obj.user:
+            return 0
+
+        current_user = request.user
+        target_user = obj.user
+
+        # 1. Fetch all connection IDs for the logged-in user (current_user)
+        current_connections = ConnectionRequest.objects.filter(
+            (Q(sender=current_user) | Q(receiver=current_user)), status="accepted"
+        )
+        current_ids = set()
+        for req in current_connections:
+            current_ids.add(
+                req.sender_id if req.receiver_id == current_user.id else req.receiver_id
+            )
+
+        # 2. Fetch all connection IDs for the profile owner (target_user)
+        target_connections = ConnectionRequest.objects.filter(
+            (Q(sender=target_user) | Q(receiver=target_user)), status="accepted"
+        )
+        target_ids = set()
+        for req in target_connections:
+            target_ids.add(
+                req.sender_id if req.receiver_id == target_user.id else req.receiver_id
+            )
+
+        # 3. Intersection of both sets gets the shared/mutual user IDs
+        mutual_ids = current_ids.intersection(target_ids)
+        return len(mutual_ids)
+
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     # Define the nested serializer for incoming data. It's not read-only.
@@ -649,6 +771,8 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
             "phone_number",
             "email_visibility",
             "phone_visibility",
+            "profile_visibility",
+            "message_visibility",
         ]
 
     @transaction.atomic
@@ -683,18 +807,6 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
-# --- END OF REPLACEMENT ---
-
-
-# --- HEAVILY REFACTORED StatusPostSerializer with UPDATE logic ---
-# In community/serializers.py
-
-# --- HEAVILY REFACTORED StatusPostSerializer with UPDATE logic ---
-# --- REPLACEMENT StatusPostSerializer with Polls and Fixes ---
-# In C:\Users\Vinay\Project\Loopline\community\serializers.py
-
-
-# --- REPLACEMENT FOR StatusPostSerializer ---
 class StatusPostSerializer(serializers.ModelSerializer):
 
     class SimpleGroupSerializer(serializers.ModelSerializer):
@@ -750,6 +862,7 @@ class StatusPostSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "group",
+            "privacy_level",
             "like_count",
             "is_liked_by_user",
             "content_type_id",
@@ -793,7 +906,28 @@ class StatusPostSerializer(serializers.ModelSerializer):
 
     # This new method formats the group data correctly when you READ a post.
     def to_representation(self, instance):
+        """
+        Enforces post-level access control. If the viewer is unauthorized,
+        returns a safe, masked representation [4].
+        """
+        request = self.context.get("request")
+        viewer = request.user if request else None
+        post_vis = getattr(instance, "privacy_level", "public")
+
+        # Check access on overall post visibility
+        if not check_content_accessibility(viewer, instance.author, post_vis):
+            return {
+                "id": instance.id,
+                "author": UserSerializer(instance.author, context=self.context).data,
+                "created_at": instance.created_at,
+                "is_restricted": True,
+                "content": "[This post is private.]",
+                "privacy_level": post_vis,
+            }
+
+        # Otherwise, serialize normally
         representation = super().to_representation(instance)
+        representation["is_restricted"] = False
         if instance.group:
             representation["group"] = self.SimpleGroupSerializer(
                 instance.group, context=self.context
@@ -1097,10 +1231,6 @@ class StatusPostSerializer(serializers.ModelSerializer):
         return None
 
 
-# --- END OF REPLACEMENT FOR StatusPostSerializer ---
-
-
-# --- THIS IS THE CORRECTED VERSION ---
 class LivePostSerializer(serializers.ModelSerializer):
     """
     An extremely lightweight serializer for pushing only the ID of a new post
@@ -1545,34 +1675,37 @@ class NetworkUserSerializer(serializers.ModelSerializer):
 
         user = request.user
 
-        # 1. Check for Manual Mutual Follow (Highest Priority Connection)
+        # 1. Check for Manual Mutual Follow (A follows B AND B follows A)
         i_follow_them = Follow.objects.filter(follower=user, following=obj).exists()
         they_follow_me = Follow.objects.filter(follower=obj, following=user).exists()
 
-        if i_follow_them and they_follow_me:
+        # 2. Check for a formal Accepted Request (No mutual follow needed)
+        has_accepted_request = ConnectionRequest.objects.filter(
+            (Q(sender=user, receiver=obj) | Q(sender=obj, receiver=user)),
+            status="accepted",
+        ).exists()
+
+        # 3. IF MUTUAL FOLLOW OR ACCEPTED REQUEST -> THEY ARE CONNECTED
+        if (i_follow_them and they_follow_me) or has_accepted_request:
             return "connected"
 
-        # 2. Check the formal ConnectionRequest table
-        req = ConnectionRequest.objects.filter(
-            (Q(sender=user, receiver=obj) | Q(sender=obj, receiver=user))
-        ).first()
+        # 4. Check for active, pending requests ONLY (ignores old rejected/cancelled rows)
+        if ConnectionRequest.objects.filter(
+            sender=user, receiver=obj, status="pending"
+        ).exists():
+            return "pending_sent"
 
-        if req:
-            if req.status == "accepted":
-                return "connected"
+        if ConnectionRequest.objects.filter(
+            sender=obj, receiver=user, status="pending"
+        ).exists():
+            return "pending_received"
 
-            # Only show pending states if the status is actually 'pending'
-            if req.status == "pending":
-                if req.sender == user:
-                    return "pending_sent"
-                return "pending_received"
-
-        # 3. THE "WARM" STATE: They follow you, but you haven't followed back
+        # 5. THE "WARM" STATE: They follow you, but you haven't followed back
         # and there is no formal connection request pending.
         if they_follow_me and not i_follow_them:
             return "follows_you"
 
-        # 4. Default: Strangers
+        # 6. Default: Strangers
         return "none"
 
 

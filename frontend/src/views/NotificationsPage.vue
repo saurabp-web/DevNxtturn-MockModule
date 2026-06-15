@@ -7,7 +7,7 @@ import { useToast } from 'vue-toastification'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { formatDistanceToNowStrict } from 'date-fns'
 import { getAvatarUrl } from '@/utils/avatars'
-import type { Notification } from '@/stores/notification'
+import type { Notification, PaginatedNotificationResponse } from '@/stores/notification'
 import {
   HeartIcon,
   ChatBubbleOvalLeftEllipsisIcon,
@@ -67,64 +67,113 @@ const handleConnectionAction = async (notification: Notification, action: 'accep
     return
   }
 
+  // --- THE FIXED SHIELD: Set state BEFORE the await to block the WebSocket delete race ---
+  if (action === 'accept') {
+    notification.is_following_back = true
+  } else {
+    notification.is_declined = true
+  }
+
   try {
     // 1. Tell the backend to process the choice
     await axiosInstance.post(`/connections/requests/${requestId}/${action}/`)
 
     if (action === 'accept') {
-      // Logic for Accept: Update state and shout to other components
-      notification.is_following_back = true
-      eventBus.emit('connection-established', notification.actor.id)
-
-      // Note: We don't manually remove the notification for 'Accept' here
-      // because our Backend Signal will automatically replace this row
-      // with a permanent "You are now connected" record on refresh.
-    } else {
-      // --- THE SYNC FIX FOR DECLINE ---
-      // 2. Visual Feedback: Show "Request declined" immediately
-      notification.is_declined = true
-
-      // 3. Professional Delay: Wait 1.5 seconds so user can read the confirmation
-      setTimeout(() => {
-        // 4. Scrub the memory: Removes the row and updates the unread count
-        notificationStore.removeNotificationById(notification.id)
-      }, 1500)
-    }
-
-    // 5. Mark as read immediately (User interacted with it, so it's no longer 'new')
-    if (!notification.is_read) {
-      notification.is_read = true
-      if (notificationStore.unreadCount > 0) {
-        notificationStore.unreadCount--
+      // 1. If the old request was unread, decrement the count locally first
+      if (!notification.is_read) {
+        notification.is_read = true
+        if (notificationStore.unreadCount > 0) {
+          notificationStore.unreadCount--
+        }
+        await notificationStore.markNotificationsAsRead([notification.id], true)
       }
-      // This tells the backend the notification was seen
-      await notificationStore.markNotificationsAsRead([notification.id])
+
+      // 2. SILENT BACKGROUND FETCH: Pull the fresh list from the server without touching the screen
+      // This preserves your exact scroll position and leaves the card at position #50 untouched!
+      const response = await axiosInstance.get<PaginatedNotificationResponse>('/notifications/', {
+        params: { page: 1 },
+      })
+      const freshNotifications = response.data.results
+
+      // 3. Find that new "connection_accepted" notification in the silent list
+      const newConnectedAlert = freshNotifications.find(
+        (n) =>
+          n.notification_type === 'connection_accepted' &&
+          Number(n.actor.id) === Number(notification.actor.id),
+      )
+
+      // 4. Force-mark the new history alert as READ silently
+      if (newConnectedAlert && !newConnectedAlert.is_read) {
+        await notificationStore.markNotificationsAsRead([newConnectedAlert.id])
+      } else {
+        await notificationStore.fetchUnreadCount()
+      }
+
+      eventBus.emit('connection-established', notification.actor.id)
+    } else {
+      // If declining, mark it read locally and in the database
+      if (!notification.is_read) {
+        notification.is_read = true
+        if (notificationStore.unreadCount > 0) {
+          notificationStore.unreadCount--
+        }
+        notificationStore.markNotificationsAsRead([notification.id])
+      }
+
+      // Note: 1.5-second timeout is removed. The feedback stays visible on the screen.
     }
   } catch (error) {
     console.error(`Failed to ${action} connection:`, error)
     toast.error(`Error processing ${action}.`)
     // Reset state on error so buttons reappear
     notification.is_declined = false
+    notification.is_following_back = false
   }
 }
 
 const handleFollowBack = async (notification: Notification) => {
+  // 1. Set local state instantly to shield against WebSocket race conditions
+  notification.is_following_back = true
+
   try {
-    // 1. Send the follow command to the backend
+    // 2. Send the follow command to the backend
     await profileStore.followUser(notification.actor.username)
 
-    // 2. SMART UI: Update the local state instantly.
-    // This triggers the template to hide the button and show the "Connected" badge.
-    notification.is_following_back = true
     eventBus.emit('connection-established', notification.actor.id)
 
-    // 3. Mark as read
-    await markOneAsRead(notification.id)
+    // 3. Mark the original follow notification as read silently (no unread count refetch)
+    if (!notification.is_read) {
+      notification.is_read = true
+      if (notificationStore.unreadCount > 0) {
+        notificationStore.unreadCount--
+      }
+      await notificationStore.markNotificationsAsRead([notification.id], true)
+    }
 
-    // toast.success(`You are now following ${notification.actor.username}`)
+    // 4. SILENT BACKGROUND FETCH: Check if the backend created a new "connection_accepted" alert
+    const response = await axiosInstance.get<PaginatedNotificationResponse>('/notifications/', {
+      params: { page: 1 },
+    })
+    const freshNotifications = response.data.results
+
+    const newConnectedAlert = freshNotifications.find(
+      (n) =>
+        n.notification_type === 'connection_accepted' &&
+        Number(n.actor.id) === Number(notification.actor.id),
+    )
+
+    // 5. Force-mark the new alert as read
+    if (newConnectedAlert && !newConnectedAlert.is_read) {
+      // Final sync: Marks read and pulls the final unread count of 0
+      await notificationStore.markNotificationsAsRead([newConnectedAlert.id])
+    } else {
+      await notificationStore.fetchUnreadCount()
+    }
   } catch (error) {
     console.error('Follow back failed:', error)
     toast.error('Could not follow back.')
+    // Reset state on failure
+    notification.is_following_back = false
   }
 }
 
@@ -200,9 +249,9 @@ const scrollToTopOnOpen = () => {
 onMounted(() => {
   scrollToTopOnOpen()
 
-  if (!notificationStore.hasLoadedInitialList) {
-    notificationStore.fetchNotifications(1)
-  }
+  // Always run both fetches in the background on load to ensure 100% database sync
+  notificationStore.fetchNotifications(1)
+  notificationStore.fetchUnreadCount()
 
   eventBus.on('scroll-notifications-to-top', scrollToTop)
 })
@@ -287,8 +336,8 @@ onUnmounted(() => {
                   :src="
                     getAvatarUrl(
                       notification.actor.picture,
-                      notification.actor.first_name || notification.actor.username,
-                      notification.actor.last_name,
+                      notification.actor.display_name,
+                      notification.actor.username,
                     )
                   "
                   class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"

@@ -25,9 +25,13 @@ const router = createRouter({
     {
       path: '/',
       component: CommunityLayout,
-      meta: { requiresAuth: true },
       children: [
-        { path: '', name: 'feed', component: () => import('@/views/FeedView.vue') },
+        {
+          path: '',
+          name: 'feed',
+          component: () => import('@/views/FeedView.vue'),
+          meta: { requiresAuth: false }, // Guests can now load the homepage feed! [3]
+        },
         {
           path: 'groups',
           name: 'group-list',
@@ -42,21 +46,25 @@ const router = createRouter({
           path: 'groups/:slug/requests',
           name: 'group-requests',
           component: () => import('@/views/GroupRequestsView.vue'),
+          meta: { requiresAuth: true }, // PRIVATE: requires login [1.1.2]
         },
         {
           path: 'saved-posts',
           name: 'saved-posts',
           component: () => import('@/views/SavedPostsView.vue'),
+          meta: { requiresAuth: true }, // PRIVATE: requires login [1.1.2]
         },
         {
           path: 'notifications',
           name: 'notifications',
           component: () => import('@/views/NotificationsPage.vue'),
+          meta: { requiresAuth: true }, // PRIVATE: requires login [1.1.2]
         },
         {
           path: 'network',
           name: 'network',
           component: () => import('@/views/NetworkView.vue'),
+          meta: { requiresAuth: true }, // PRIVATE: requires login [1.1.2]
         },
         { path: 'search', name: 'search', component: () => import('@/views/SearchPage.vue') },
         {
@@ -70,9 +78,13 @@ const router = createRouter({
     {
       path: '/profile',
       component: ProfileLayout,
-      meta: { requiresAuth: true },
       children: [
-        { path: ':username', name: 'profile', component: () => import('@/views/ProfileView.vue') },
+        {
+          path: ':username',
+          name: 'profile',
+          component: () => import('@/views/ProfileView.vue'),
+          meta: { requiresAuth: false }, // PUBLIC [4]
+        },
       ],
     },
     {
@@ -95,8 +107,14 @@ const router = createRouter({
     {
       path: '/explore',
       component: ExploreLayout,
-      meta: { requiresAuth: true },
-      children: [{ path: '', name: 'explore', component: () => import('@/views/ExploreView.vue') }],
+      children: [
+        {
+          path: '',
+          name: 'explore',
+          component: () => import('@/views/ExploreView.vue'),
+          meta: { requiresAuth: false }, // PUBLIC [3]
+        },
+      ],
     },
     // --- ROUTE GROUP 4: Non-Layout Routes (Login/Register) ---
     {
@@ -149,10 +167,31 @@ const router = createRouter({
         requiresAuth: false,
       },
     },
+    {
+      path: '/privacy',
+      name: 'privacy-policy',
+      component: () => import('@/views/PrivacyPolicyView.vue'),
+      meta: {
+        title: 'Privacy Policy',
+        requiresAuth: false, // PUBLIC: indexable on Google! [3]
+      },
+    },
+    // --- ROUTE GROUP 5: Uses the clean full-width Profile Layout (No Sidebars) --- [1]
+    {
+      path: '/settings',
+      component: ProfileLayout,
+      children: [
+        {
+          path: '',
+          name: 'settings',
+          component: () => import('@/views/SettingsView.vue'),
+          meta: { requiresAuth: true }, // PRIVATE [4]
+        },
+      ],
+    },
   ],
 })
 
-// The beforeEach guard remains unchanged.
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   await authStore.initializeAuth()

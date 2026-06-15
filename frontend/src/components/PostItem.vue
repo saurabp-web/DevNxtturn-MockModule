@@ -1324,8 +1324,11 @@ const handleNavigation = () => {
 }
 onMounted(() => eventBus.on('navigation-started', handleNavigation))
 
-// MODIFIED: toggleCommentDisplay function for both desktop and mobile
 async function toggleCommentDisplay() {
+  if (!isAuthenticated.value) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
   const wasShowingComments = showComments.value
   showComments.value = !showComments.value
 
@@ -1365,7 +1368,10 @@ async function toggleCommentDisplay() {
 
 async function handleReaction(reactionType: string) {
   // 1. Security check: Only logged-in users can react
-  if (!isAuthenticated.value) return alert('Please login to react to posts.')
+  if (!isAuthenticated.value) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
 
   // 2. Local guard: Prevent multiple simultaneous requests for the same post
   if (isLiking.value) return
@@ -1385,7 +1391,10 @@ async function handleReaction(reactionType: string) {
 }
 
 async function handleModalReaction(reactionType: string) {
-  if (!isAuthenticated.value) return alert('Please login to react to posts.')
+  if (!isAuthenticated.value) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
   if (reactionType === 'like') {
     await feedStore.toggleLike(props.post.id)
   } else {
@@ -1398,7 +1407,8 @@ async function handleModalReaction(reactionType: string) {
 async function toggleSave() {
   if (!isAuthenticated.value) {
     showOptionsMenu.value = false
-    return alert('Please login to save posts.')
+    ;(authStore as any).showAuthModal = true
+    return
   }
   showOptionsMenu.value = false
   await feedStore.toggleSavePost(props.post.id)
@@ -1700,7 +1710,10 @@ const postToPreview = computed(() => {
 
 // --- Part A: Open the preview modal ---
 function handleRepost() {
-  if (!isAuthenticated.value) return alert('Please login to repost.')
+  if (!isAuthenticated.value) {
+    ;(authStore as any).showAuthModal = true
+    return
+  }
   openRepostModal() // Just opens the UI
 }
 
@@ -1900,11 +1913,7 @@ function fallbackCopyTextToClipboard(text: string) {
           <router-link :to="{ name: 'profile', params: { username: post.author.username } }">
             <img
               :src="
-                getAvatarUrl(
-                  post.author.picture,
-                  post.author.first_name || post.author.username,
-                  post.author.last_name,
-                )
+                getAvatarUrl(post.author.picture, post.author.display_name, post.author.username)
               "
               alt="author avatar"
               class="w-9 h-9 lg:w-11 lg:h-11 rounded-full object-cover mr-3 lg:mr-4 bg-gray-200"
@@ -1930,6 +1939,83 @@ function fallbackCopyTextToClipboard(text: string) {
             </div>
             <div class="flex items-center gap-1.5 mt-0.5">
               <p class="text-xs md:text-sm text-gray-500">{{ formattedTimestamp }}</p>
+
+              <!-- Symmetrical Post Privacy Indicator Icon [4] -->
+              <span class="text-gray-400" :title="`Visible to: ${(post as any).privacy_level}`">
+                <!-- Globe SVG (Everyone/Public) -->
+                <svg
+                  v-if="(post as any).privacy_level === 'public'"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 inline"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3.6 9h16.8M3.6 15h16.8"
+                  />
+                </svg>
+
+                <!-- Members SVG (Members Only) -->
+                <svg
+                  v-else-if="(post as any).privacy_level === 'members'"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 inline"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"
+                  />
+                </svg>
+
+                <!-- Users SVG (Followers or Connections Only) -->
+                <svg
+                  v-else-if="
+                    (post as any).privacy_level === 'followers' ||
+                    (post as any).privacy_level === 'connections'
+                  "
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 inline"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+
+                <!-- Lock SVG (Only Me / Self) -->
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 inline"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
 
               <!-- NEW: Industry Standard Attribution Label -->
               <template v-if="post.shared_via">
@@ -2074,8 +2160,8 @@ function fallbackCopyTextToClipboard(text: string) {
               :src="
                 getAvatarUrl(
                   post.parent_post.author.picture,
-                  post.parent_post.author.first_name || post.parent_post.author.username,
-                  post.parent_post.author.last_name,
+                  post.parent_post.author.display_name,
+                  post.parent_post.author.username,
                 )
               "
               class="w-6 h-6 rounded-full object-cover bg-gray-100"
@@ -2571,8 +2657,8 @@ function fallbackCopyTextToClipboard(text: string) {
               :src="
                 getAvatarUrl(
                   authStore.currentUser?.picture,
-                  authStore.currentUser?.first_name || authStore.currentUser?.username,
-                  authStore.currentUser?.last_name,
+                  authStore.currentUser?.display_name,
+                  authStore.currentUser?.username,
                 )
               "
               alt="your avatar"
@@ -3346,8 +3432,8 @@ function fallbackCopyTextToClipboard(text: string) {
                 :src="
                   getAvatarUrl(
                     authStore.currentUser?.picture,
-                    authStore.currentUser?.first_name || authStore.currentUser?.username,
-                    authStore.currentUser?.last_name,
+                    authStore.currentUser?.display_name,
+                    authStore.currentUser?.username,
                   )
                 "
                 alt="your avatar"
@@ -3446,11 +3532,7 @@ function fallbackCopyTextToClipboard(text: string) {
                 <div class="flex items-center gap-3">
                   <img
                     :src="
-                      getAvatarUrl(
-                        item.user.picture,
-                        item.user.first_name || item.user.username,
-                        item.user.last_name,
-                      )
+                      getAvatarUrl(item.user.picture, item.user.display_name, item.user.username)
                     "
                     class="w-10 h-10 rounded-full object-cover border border-gray-100"
                   />
@@ -3506,8 +3588,8 @@ function fallbackCopyTextToClipboard(text: string) {
                 :src="
                   getAvatarUrl(
                     currentUser?.picture,
-                    currentUser?.first_name || currentUser?.username,
-                    currentUser?.last_name,
+                    currentUser?.display_name,
+                    currentUser?.username,
                   )
                 "
                 class="w-9 h-9 rounded-full object-cover"

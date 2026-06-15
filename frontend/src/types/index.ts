@@ -8,6 +8,7 @@ export interface User {
   email: string
   first_name: string
   last_name: string
+  display_name: string | null
 }
 
 export interface CurrentUser extends User {
@@ -116,6 +117,7 @@ export interface UserProfile {
   following_count: number
   connections_count: number
   posts_count: number
+  mutual_connections_count: number
 }
 
 // --- UPDATED: The Payload for Profile Updates ---
@@ -147,6 +149,7 @@ export interface PostAuthor {
   username: string
   first_name: string
   last_name: string
+  display_name: string | null
   picture: string | null
 }
 

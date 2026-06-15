@@ -124,17 +124,24 @@ export const useProfileStore = defineStore('profile', () => {
     try {
       const response = await axiosInstance.patch<UserProfile>(`/profiles/${username}/`, formData)
       const updatedProfile = response.data
+
       if (currentProfile.value && currentProfile.value.user.username === username) {
         currentProfile.value.picture = updatedProfile.picture
       }
+
+      // FIX: Use the new modular update function
       if (authStore.currentUser?.username === username) {
-        authStore.updateCurrentUserPicture(updatedProfile.picture)
+        authStore.updateCurrentUser({ picture: updatedProfile.picture })
       }
+
       if (authStore.currentUser) {
         postsStore.updateAuthorDetailsInPosts(authStore.currentUser.id, {
           picture: updatedProfile.picture,
         })
       }
+
+      // NEW: Return the response so the ProfileCard knows the upload is finished
+      return updatedProfile
     } catch (err: any) {
       throw new Error(
         err.response?.data?.picture?.join(' ') ||
@@ -150,17 +157,23 @@ export const useProfileStore = defineStore('profile', () => {
         picture: null,
       })
       const updatedProfile = response.data
+
       if (currentProfile.value && currentProfile.value.user.username === username) {
         currentProfile.value.picture = updatedProfile.picture
       }
+
+      // FIX: Use the new modular update function
       if (authStore.currentUser?.username === username) {
-        authStore.updateCurrentUserPicture(updatedProfile.picture)
+        authStore.updateCurrentUser({ picture: null })
       }
+
       if (authStore.currentUser) {
         postsStore.updateAuthorDetailsInPosts(authStore.currentUser.id, {
-          picture: updatedProfile.picture,
+          picture: null,
         })
       }
+
+      return updatedProfile
     } catch (err: any) {
       console.error('Failed to remove profile picture:', err)
       throw new Error(

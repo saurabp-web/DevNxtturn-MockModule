@@ -41,6 +41,11 @@ urlpatterns = [
         views.UserProfileDetailView.as_view(),
         name="userprofile-detail",
     ),
+    path(
+        "profiles/<str:username>/mutual-connections/",
+        views.MutualConnectionsListView.as_view(),
+        name="mutual-connections-list",
+    ),
     # --- Social & Follow Endpoints ---
     path(
         "users/<str:username>/posts/",

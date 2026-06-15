@@ -17,7 +17,7 @@ import ProfileExperienceTab from '@/components/profile/tabs/ProfileExperienceTab
 import ProfileContactTab from '@/components/profile/tabs/ProfileContactTab.vue'
 import ProfileResumeTab from '@/components/profile/tabs/ProfileResumeTab.vue'
 
-import { User, GraduationCap, Code2, Briefcase, FileText, Mail } from 'lucide-vue-next'
+import { User, GraduationCap, Code2, Briefcase, FileText, Mail, Lock } from 'lucide-vue-next'
 
 const leftColumn = ref<HTMLElement | null>(null)
 const rightColumn = ref<HTMLElement | null>(null)
@@ -30,6 +30,7 @@ const { currentProfile, isLoadingProfile, isLoadingPosts, errorProfile, errorPos
   storeToRefs(profileStore)
 const { currentUser, isAuthenticated } = storeToRefs(authStore)
 const username = computed(() => (route.params.username as string) || '')
+const isRestricted = computed(() => (currentProfile.value as any)?.is_restricted || false)
 
 // Check if we're in a test environment (Cypress)
 const isTestEnvironment = typeof window !== 'undefined' && (window as any).Cypress
@@ -159,8 +160,15 @@ useInfiniteScroll(
 
 const loadProfileData = () => {
   if (username.value) {
+    // 1. Fetch the public profile
     profileStore.fetchProfile(username.value)
     profileStore.refreshUserPosts(username.value)
+
+    // 2. THE SYNCHRONIZATION: If this is our own profile,
+    // force the Auth Store to pull the freshest session data from the server.
+    if (isOwnProfile.value) {
+      authStore.fetchUserProfile()
+    }
   }
 }
 
@@ -219,6 +227,20 @@ function navigateToPostsPage() {
   router.push(`/profile/${username.value}/posts`)
 }
 
+// --- THE FINAL HANDSHAKE WATCHER ---
+// If the Auth Store's picture changes, immediately copy it to the
+// profile page state so the card doesn't lag behind.
+watch(
+  () => authStore.currentUser,
+  (newUser) => {
+    if (isOwnProfile.value && newUser && profileStore.currentProfile) {
+      profileStore.currentProfile.picture = newUser.picture
+      profileStore.currentProfile.display_name = newUser.display_name
+    }
+  },
+  { deep: true, immediate: true },
+)
+
 onMounted(() => {
   eventBus.on('scroll-profile-to-top', scrollToTop)
   window.addEventListener('resize', handleResize)
@@ -257,10 +279,7 @@ onUnmounted(() => {
         <aside
           ref="leftColumn"
           data-cy="profile-left-column"
-          :class="[
-            'h-full overflow-y-auto',
-            isTestEnvironment ? 'col-span-12 lg:col-span-6' : 'col-span-12 lg:col-span-6',
-          ]"
+          class="col-span-12 lg:col-span-6 h-full overflow-y-auto"
         >
           <!-- Reduced gap between ProfileCard and tabs -->
           <div class="space-y-4">
@@ -272,8 +291,8 @@ onUnmounted(() => {
               @posts-clicked="navigateToPostsPage"
             />
 
-            <!-- PILL STYLE TAB SECTION (Updated UI only) -->
-            <div>
+            <!-- PILL STYLE TAB SECTION (Shown only if NOT restricted) -->
+            <div v-if="!isRestricted">
               <div class="mb-3">
                 <!-- Reduced margin-bottom -->
                 <div
@@ -371,9 +390,53 @@ onUnmounted(() => {
           </div>
         </aside>
 
+        <!-- RIGHT COLUMN 1: Show the Private Lock-Screen when restricted -->
+        <div v-if="isRestricted" class="col-span-12 lg:col-span-6 min-w-0 mt-6 lg:mt-0">
+          <div
+            class="bg-white rounded-2xl shadow-md p-10 text-center h-full flex flex-col justify-center min-h-[320px]"
+          >
+            <div class="flex flex-col items-center justify-center space-y-4">
+              <div class="p-4 bg-gray-100 rounded-full text-blue-500">
+                <!-- Custom Inline Lock SVG to prevent any import errors -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-12 w-12"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+              </div>
+              <h2 class="text-xl font-bold text-gray-800">This Profile is Private</h2>
+              <p class="text-gray-500 max-w-sm text-sm leading-relaxed">
+                Full career, education, skills, and contact details are only visible to authorized
+                members.
+              </p>
+              <div class="pt-2">
+                <router-link
+                  v-if="!isAuthenticated"
+                  to="/login"
+                  class="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold text-sm rounded-full shadow hover:from-blue-600 hover:to-purple-600 transition duration-300"
+                >
+                  Sign in to connect
+                </router-link>
+                <p v-else class="text-sm text-gray-500 italic">
+                  Send a connection request to view this profile.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- RIGHT COLUMN - Show conditionally based on environment -->
         <div
-          v-if="isTestEnvironment"
+          v-else-if="isTestEnvironment"
           ref="rightColumn"
           class="col-span-12 lg:col-span-6 min-w-0 mt-6 lg:mt-0 h-full overflow-y-auto"
         >

@@ -2,14 +2,17 @@
 import { ref, onUnmounted, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAvatarUrl } from '@/utils/avatars'
-import type { UserProfile } from '@/types'
+import type { UserProfile, NetworkUser } from '@/types'
 import { useProfileStore } from '@/stores/profile'
 import ProfileActions from '@/components/ProfileActions.vue'
+import { useAuthStore } from '@/stores/auth'
+import axiosInstance from '@/services/axiosInstance'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 import IdentityForm from '@/components/profile/forms/IdentityForm.vue'
 import { PencilIcon, XMarkIcon, CheckIcon } from '@heroicons/vue/24/solid'
 import eventBus from '@/services/eventBus'
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 
 // Import your avatar files - adjust the path according to your project structure
 import maleAvatar1 from '@/assets/avatars/male-1.png'
@@ -32,6 +35,8 @@ const emit = defineEmits<{
 }>()
 
 const profileStore = useProfileStore()
+const isRestricted = computed(() => (props.profile as any)?.is_restricted || false)
+const authStore = useAuthStore()
 const router = useRouter()
 
 // This function tells the app to go to the network page and open a specific tab
@@ -84,6 +89,19 @@ const socialStats = computed(() => ({
   posts: props.profile.posts_count || 0,
 }))
 
+const displayPicture = computed(() => {
+  // If we have a local preview (during the 2s window), show that first!
+  if (picturePreviewUrl.value) return picturePreviewUrl.value
+
+  // If it's our own profile, always trust the Global Auth Store over the Prop
+  if (props.isOwnProfile && authStore.currentUser) {
+    return authStore.currentUser.picture
+  }
+
+  // Otherwise (for other users), use the prop
+  return props.profile.picture
+})
+
 // Track if component is mounted
 const isComponentMounted = ref(false)
 
@@ -106,7 +124,15 @@ onMounted(() => {
 
 async function handleSaveChanges(formData: IdentityFormData) {
   try {
+    // 1. Tell the Profile Store to update the database
     await profileStore.updateProfile(props.profile.user.username, formData)
+
+    // 2. THE HANDSHAKE: Tell the Auth Store (the Navbar's brain) to update
+    // its memory with the new display_name immediately.
+    authStore.updateCurrentUser({
+      display_name: formData.display_name,
+    })
+
     isModalOpen.value = false
   } catch (error) {
     console.error('Failed to update profile:', error)
@@ -118,8 +144,8 @@ async function handleSaveChanges(formData: IdentityFormData) {
 function handleProfilePictureClick() {
   if (props.isOwnProfile) {
     openPreviewModal()
-  } else {
-    // For other users, show preview with original resolution and no options
+  } else if (!isRestricted.value) {
+    // Only allow expanding the picture if the profile is NOT restricted
     isProfilePicturePreviewModalOpen.value = true
   }
 }
@@ -155,19 +181,26 @@ async function uploadProfilePicture() {
 
   isUploadingPicture.value = true
   try {
-    await profileStore.updateProfilePicture(props.profile.user.username, selectedFile.value)
+    // 1. We capture the response so we have the new image URL
+    const response = await profileStore.updateProfilePicture(
+      props.profile.user.username,
+      selectedFile.value,
+    )
 
     if (!isComponentMounted.value) return
 
-    // SUCCESS: Keep the preview visible for 2 seconds.
-    // This gives the browser time to download the real image from the
-    // new backend URL in the background without showing a broken icon.
+    // 2. THE HANDSHAKE: Tell the Auth Store about the new picture immediately
+    if (response && response.picture) {
+      authStore.updateCurrentUser({ picture: response.picture })
+    }
+
+    // --- EVERYTHING BELOW IS YOUR ORIGINAL LOGIC PRESERVED ---
     selectedFile.value = null
     setTimeout(() => {
       if (isComponentMounted.value) {
         picturePreviewUrl.value = null
       }
-    }, 2000)
+    }, 2000) // This is your original 2s safety delay
 
     isPreviewModalOpen.value = false
   } catch (error: any) {
@@ -182,27 +215,31 @@ async function uploadProfilePicture() {
     }
   }
 }
-
 async function uploadEditModalProfilePicture() {
   if (!editModalSelectedFile.value) return
-
-  // Check if component is still mounted
   if (!isComponentMounted.value) return
 
   isUploadingPicture.value = true
   try {
-    await profileStore.updateProfilePicture(
+    // 1. Capture the server response
+    const response = await profileStore.updateProfilePicture(
       props.profile.user.username,
       editModalSelectedFile.value,
     )
 
-    // Check again before updating UI
     if (!isComponentMounted.value) return
 
+    // 2. THE HANDSHAKE: Sync to global authStore
+    if (response && response.picture) {
+      authStore.updateCurrentUser({ picture: response.picture })
+    }
+
+    // --- PRESERVING YOUR ORIGINAL UI CLEANUP LOGIC ---
     editModalSelectedFile.value = null
     editModalPicturePreviewUrl.value = null
     isEditProfileModalOpen.value = false
-    // Also update the main preview
+
+    // Also update the main preview state so everything is in sync
     selectedFile.value = null
     picturePreviewUrl.value = null
   } catch (error: any) {
@@ -228,12 +265,20 @@ async function uploadSelectedAvatar() {
     const blob = await response.blob()
     const file = new File([blob], `${selectedAvatar.value.id}.png`, { type: 'image/png' })
 
-    await profileStore.updateProfilePicture(props.profile.user.username, file)
+    // 1. Capture the response from the server
+    const uploadResponse = await profileStore.updateProfilePicture(
+      props.profile.user.username,
+      file,
+    )
 
     if (!isComponentMounted.value) return
 
-    // SUCCESS: Close modal but KEEP the picturePreviewUrl (the local asset)
-    // for 2 seconds so the transition is invisible to the user.
+    // 2. THE HANDSHAKE: Sync the gallery choice to the Global Identity Store
+    if (uploadResponse && uploadResponse.picture) {
+      authStore.updateCurrentUser({ picture: uploadResponse.picture })
+    }
+
+    // --- EVERYTHING BELOW IS YOUR ORIGINAL TRANSITION LOGIC PRESERVED ---
     isAvatarPreviewModalOpen.value = false
     selectedAvatar.value = null
 
@@ -241,7 +286,7 @@ async function uploadSelectedAvatar() {
       if (isComponentMounted.value) {
         picturePreviewUrl.value = null
       }
-    }, 2000)
+    }, 2000) // Your original 2s transition buffer
   } catch (error: any) {
     if (isComponentMounted.value) {
       alert(error.message || 'Failed to set avatar.')
@@ -273,10 +318,15 @@ async function handleRemovePicture() {
   if (window.confirm('Are you sure you want to remove your profile picture?')) {
     isRemovingPicture.value = true
     try {
+      // 1. Tell the database to remove the file
       await profileStore.removeProfilePicture(props.profile.user.username)
 
-      // Check again before updating UI
+      // Check again before updating global UI
       if (!isComponentMounted.value) return
+
+      // 2. THE HANDSHAKE: Tell the Auth Store to nullify the picture in memory
+      // This forces the Navbar to immediately draw the Initial-based fallback.
+      authStore.updateCurrentUser({ picture: null })
 
       isPreviewModalOpen.value = false
     } catch (error) {
@@ -332,6 +382,27 @@ function handleEditProfile() {
 
   isPreviewModalOpen.value = false
   isModalOpen.value = true
+}
+
+// --- UPDATED CONNECTIONS CARD CLICK TRIGGER (With Route-Based Redirection) ---
+function handleConnectionsCardClick() {
+  if (!isComponentMounted.value) return
+
+  if (props.isOwnProfile) {
+    navigateToNetworkTab('connections')
+  } else if (props.profile.mutual_connections_count > 0) {
+    // THE REDIRECT HANDSHAKE:
+    // Go to the Network page, open the 'connections' tab,
+    // and pass the 'mutual' filter along with the username!
+    router.push({
+      name: 'network',
+      query: {
+        tab: 'connections',
+        filter: 'mutual',
+        username: props.profile.user.username,
+      },
+    })
+  }
 }
 
 // Handle posts card click - emits event to parent
@@ -399,15 +470,8 @@ onUnmounted(() => {
                 class="absolute -inset-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-20 group-hover:opacity-30 transition-opacity duration-300"
               ></div>
               <img
-                data-cy="profile-picture-img"
-                :src="
-                  getAvatarUrl(
-                    picturePreviewUrl || profile.picture,
-                    profile.display_name || profile.user.first_name || profile.user.username,
-                    profile.user.last_name,
-                  )
-                "
-                alt="Profile Picture"
+                :src="getAvatarUrl(displayPicture, profile.display_name, profile.user.username)"
+                alt="Profile"
                 class="relative w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-gray-200 z-10 cursor-pointer"
                 @click="handleProfilePictureClick"
               />
@@ -458,12 +522,36 @@ onUnmounted(() => {
             ]"
           >
             <div class="mb-4 px-2">
-              <!-- Display Name -->
-              <h1
-                class="text-xl sm:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent break-words"
-              >
-                {{ profile.display_name || `${profile.user.first_name} ${profile.user.last_name}` }}
-              </h1>
+              <!-- Display Name with Optional Private Badge -->
+              <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                <h1
+                  class="text-xl sm:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent break-words"
+                >
+                  {{
+                    profile.display_name || `${profile.user.first_name} ${profile.user.last_name}`
+                  }}
+                </h1>
+
+                <!-- Private Profile Badge -->
+                <span
+                  v-if="isRestricted"
+                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3.5 w-3.5 text-gray-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Private Profile
+                </span>
+              </div>
               <p class="text-base sm:text-lg text-gray-500 mt-1 break-words">
                 @{{ profile.user.username }}
               </p>
@@ -479,13 +567,26 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Social Stats reordered for consistency -->
+        <!-- Social Stats reordered for consistency (Updated to support Conditional Clicks & Mutual Badges) -->
         <div class="mt-2 pt-4 border-t border-gray-100">
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <!-- 1. Connections Card (Moved to First) -->
-            <div class="stats-card group" @click="navigateToNetworkTab('connections')">
+            <!-- 1. Connections Card (Clickable on own profile OR if mutual connections exist) -->
+            <div
+              class="stats-card group"
+              :class="[
+                isOwnProfile || profile.mutual_connections_count > 0
+                  ? 'cursor-pointer'
+                  : 'cursor-default pointer-events-none',
+              ]"
+              @click="handleConnectionsCardClick"
+            >
               <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
+                class="stats-card-inner transform transition-transform duration-300"
+                :class="
+                  isOwnProfile || profile.mutual_connections_count > 0
+                    ? 'group-hover:translate-y-[-2px]'
+                    : ''
+                "
               >
                 <div
                   class="stats-gradient bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50"
@@ -497,14 +598,27 @@ onUnmounted(() => {
                   <div class="text-xs font-medium text-violet-600/80 uppercase tracking-wider">
                     Connections
                   </div>
+                  <!-- NEW: Embedded Mutual Badge (Only visible on other profiles if mutual connections exist) -->
+                  <div
+                    v-if="!isOwnProfile && profile.mutual_connections_count > 0"
+                    class="text-[9px] font-bold text-green-600 flex items-center gap-0.5 mt-0.5"
+                  >
+                    <span>👥</span>
+                    <span>{{ profile.mutual_connections_count }} Mutual</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- 2. Followers Card (Now Second) -->
-            <div class="stats-card group" @click="navigateToNetworkTab('followers')">
+            <!-- 2. Followers Card (Read-only on other profiles) -->
+            <div
+              class="stats-card group"
+              :class="isOwnProfile ? 'cursor-pointer' : 'cursor-default pointer-events-none'"
+              @click="isOwnProfile ? navigateToNetworkTab('followers') : null"
+            >
               <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
+                class="stats-card-inner transform transition-transform duration-300"
+                :class="isOwnProfile ? 'group-hover:translate-y-[-2px]' : ''"
               >
                 <div
                   class="stats-gradient bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50"
@@ -520,10 +634,15 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- 3. Following Card (Now Third) -->
-            <div class="stats-card group" @click="navigateToNetworkTab('following')">
+            <!-- 3. Following Card (Read-only on other profiles) -->
+            <div
+              class="stats-card group"
+              :class="isOwnProfile ? 'cursor-pointer' : 'cursor-default pointer-events-none'"
+              @click="isOwnProfile ? navigateToNetworkTab('following') : null"
+            >
               <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300"
+                class="stats-card-inner transform transition-transform duration-300"
+                :class="isOwnProfile ? 'group-hover:translate-y-[-2px]' : ''"
               >
                 <div
                   class="stats-gradient bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50"
@@ -539,10 +658,15 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- 4. Posts Card (Stay Last) -->
-            <div class="stats-card group" @click="handlePostsClick">
+            <!-- 4. Posts Card (Read-only on other profiles) -->
+            <div
+              class="stats-card group"
+              :class="isOwnProfile ? 'cursor-pointer' : 'cursor-default pointer-events-none'"
+              @click="isOwnProfile ? handlePostsClick() : null"
+            >
               <div
-                class="stats-card-inner transform group-hover:translate-y-[-2px] transition-transform duration-300 cursor-pointer"
+                class="stats-card-inner transform transition-transform duration-300"
+                :class="isOwnProfile ? 'group-hover:translate-y-[-2px]' : ''"
               >
                 <div
                   class="stats-gradient bg-gradient-to-br from-amber-50 via-orange-50 to-red-50"
@@ -578,9 +702,9 @@ onUnmounted(() => {
           <img
             :src="
               getAvatarUrl(
-                profile.picture,
-                profile.display_name || profile.user.first_name || profile.user.username,
-                profile.user.last_name,
+                picturePreviewUrl || profile.picture,
+                profile.display_name,
+                profile.user.username,
               )
             "
             alt="Profile Picture Preview"
@@ -601,6 +725,7 @@ onUnmounted(() => {
     </BaseModal>
 
     <!-- ALL MODALS with mount checks -->
+
     <BaseModal
       v-if="isComponentMounted"
       :show="isModalOpen"
@@ -629,13 +754,7 @@ onUnmounted(() => {
           class="mb-4 w-full max-w-xs overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center"
         >
           <img
-            :src="
-              getAvatarUrl(
-                picturePreviewUrl || profile.picture,
-                profile.display_name || profile.user.first_name || profile.user.username,
-                profile.user.last_name,
-              )
-            "
+            :src="getAvatarUrl(displayPicture, profile.display_name, profile.user.username)"
             alt="Profile Picture Preview"
             class="w-full h-auto max-h-64 object-contain"
           />

@@ -20,6 +20,7 @@ export interface User {
   email: string // <--- FIX: Added this property
   date_joined: string
   picture: string | null
+  display_name: string | null
 }
 
 // Interface for registration data
@@ -36,6 +37,9 @@ export const useAuthStore = defineStore('auth', () => {
   const authToken = ref<string | null>(localStorage.getItem('authToken') || null)
   const currentUser = ref<User | null>(null)
   const isLoading = ref<boolean>(false)
+
+  const showAuthModal = ref<boolean>(false)
+  const showSettingsModal = ref<boolean>(false)
 
   // --- Getters ---
   const isAuthenticated = computed(() => !!authToken.value)
@@ -59,9 +63,11 @@ export const useAuthStore = defineStore('auth', () => {
     currentUser.value = user
   }
 
-  function updateCurrentUserPicture(newPictureUrl: string | null) {
+  function updateCurrentUser(data: Partial<User>) {
     if (currentUser.value) {
-      currentUser.value.picture = newPictureUrl
+      // This 'merges' the new data into the existing user in RAM
+      currentUser.value = { ...currentUser.value, ...data }
+      console.log('👤 AuthStore: Global identity synced in memory')
     }
   }
 
@@ -219,6 +225,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     userDisplay,
     isLoading,
+    showAuthModal,
+    showSettingsModal,
     setToken,
     setUser,
     login,
@@ -228,7 +236,7 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     verifyEmail,
     initializeAuth,
-    updateCurrentUserPicture,
+    updateCurrentUser,
     resetAuthState,
   }
 })

@@ -18,7 +18,7 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 
-from datetime import date
+from datetime import date, timedelta
 import random
 
 from channels.layers import get_channel_layer
@@ -397,19 +397,6 @@ class UserPostListView(generics.ListAPIView):
         return {"request": self.request}
 
 
-# --- FIND AND REPLACE THE ENTIRE FollowToggleView CLASS ---
-
-# C:\Users\Vinay\Project\Loopline\community\views.py
-
-# C:\Users\Vinay\Project\Loopline\community\views.py
-
-# --- FINAL, CORRECTED FollowToggleView ---
-
-# C:\Users\Vinay\Project\Loopline\community\views.py
-
-# --- FINAL, CORRECTED FollowToggleView ---
-
-
 class FollowToggleView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -457,7 +444,7 @@ class FollowToggleView(APIView):
 
             # 3. Handle the Connection logic
             if is_connecting:
-                # Ensure the reciprocal follow exists (SILENTLY)
+                # A. Ensure reciprocal follow exists (SILENTLY via Muzzle)
                 if not Follow.objects.filter(
                     follower=user_to_follow, following=current_user
                 ).exists():
@@ -465,33 +452,42 @@ class FollowToggleView(APIView):
                     follow_b._silent_follow = True
                     follow_b.save()
 
-                # Find any pending connection requests
-                pending_reqs = ConnectionRequest.objects.filter(
+                # B. Update any pending connection requests to 'accepted'
+                ConnectionRequest.objects.filter(
                     (
                         Q(sender=current_user, receiver=user_to_follow)
                         | Q(sender=user_to_follow, receiver=current_user)
                     ),
                     status="pending",
+                ).update(status="accepted")
+
+                # --- THE PRECISION NOTIFICATIONS ---
+
+                # 1. FOR THE WAITER (User 1): This will pop to the top of their list via WebSocket
+                Notification.objects.create(
+                    recipient=user_to_follow,
+                    actor=current_user,
+                    verb="followed you back and established a connection",
+                    notification_type=Notification.CONNECTION_ACCEPTED,
+                    target=current_user,
                 )
 
-                if pending_reqs.exists():
-                    # CASE 1: Formal Request exists. Update it (Signal sends standard "Accepted" alert)
-                    for req in pending_reqs:
-                        req.status = "accepted"
-                        req.save()
-                else:
-                    # CASE 2: Manual Follow-Follow (No formal request)
-                    # Create the custom notification with your exact sentence
-                    Notification.objects.create(
-                        recipient=user_to_follow,  # Original follower
-                        actor=current_user,  # Person following back
-                        verb="followed you back and established a connection",
-                        notification_type=Notification.CONNECTION_ACCEPTED,  # Keep type for green styling
-                        target=current_user,
-                    )
-                    logger.info(
-                        f"DB: Created 'Followed Back' alert for {user_to_follow.username}"
-                    )
+                # 2. FOR THE CLICKER (User 2): This creates the permanent history record
+                Notification.objects.create(
+                    recipient=current_user,
+                    actor=user_to_follow,
+                    verb="you followed back and established a connection",
+                    notification_type=Notification.CONNECTION_ACCEPTED,
+                    target=user_to_follow,
+                )
+
+                # 3. CLEANUP: Delete the old "Started following you" (FOLLOW) alert
+                # This ensures that when the Clicker refreshes later, the old row is gone.
+                Notification.objects.filter(
+                    recipient=current_user,
+                    actor=user_to_follow,
+                    notification_type=Notification.FOLLOW,
+                ).delete()
 
                 return Response({"status": "connected"}, status=status.HTTP_200_OK)
 
@@ -633,23 +629,35 @@ class ConnectionRequestViewSet(
         receiver = serializer.validated_data["receiver"]
         sender = request.user
 
-        # 1. SMART RESOLVE: Check if THEY already sent YOU a request (The "Omi" case)
+        # 1. SMART RESOLVE: Check for an incoming pending request OR a manual follow
         incoming_request = ConnectionRequest.objects.filter(
             sender=receiver, receiver=sender, status="pending"
         ).first()
 
-        if incoming_request:
-            # Instead of throwing a 400 error, we finalize the connection immediately.
-            with transaction.atomic():
-                incoming_request.status = "accepted"
-                incoming_request.save()  # Triggers the 'Accepted' notification (Event 700)
+        # Check if the other person already follows you manually
+        already_follows_you = Follow.objects.filter(
+            follower=receiver, following=sender
+        ).exists()
 
-                # Establish mutual follows (SILENTLY)
-                # This ensures the Network Hub stays in sync without sending extra toasts
+        if incoming_request or already_follows_you:
+            # Instead of a new request, we finalize the connection immediately.
+            with transaction.atomic():
+                if incoming_request:
+                    incoming_request.status = "accepted"
+                    incoming_request.save()  # Triggers the 'Accepted' notification
+                else:
+                    # Create a formal accepted record so history/logic stays in sync
+                    ConnectionRequest.objects.update_or_create(
+                        sender=receiver,
+                        receiver=sender,
+                        defaults={"status": "accepted"},
+                    )
+
+                # Establish mutual follows (SILENTLY using the Muzzle)
                 for f, r in [(sender, receiver), (receiver, sender)]:
                     if not Follow.objects.filter(follower=f, following=r).exists():
                         fol = Follow(follower=f, following=r)
-                        fol._silent_follow = True  # <--- THE MUZZLE
+                        fol._silent_follow = True
                         fol.save()
 
             return Response(
@@ -1370,34 +1378,124 @@ class CommentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
 # ==================================
 class FeedListView(generics.ListAPIView):
     serializer_class = StatusPostSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Unlocks the feed for unauthenticated guests [3]
     pagination_class = PostCursorPagination
     authentication_classes = [TokenAuthentication]
 
-    # THIS IS THE NEW, FIXED CODE
     def get_queryset(self):
         user = self.request.user
+        one_week_ago = timezone.now() - timedelta(days=7)
 
-        # 1. Get the authors for the feed (unchanged)
+        # --- INTERESTS LOOKUP (HIGH-SPEED INDEXED) --- [4]
+        interest_list = []
+
+        # 1. If the user is logged in, read interests directly from their database profile! [4]
+        if user and user.is_authenticated:
+            try:
+                profile_interests = user.profile.interests or []
+                interest_list = [
+                    i.strip().lower() for i in profile_interests if i.strip()
+                ]
+            except Exception:
+                pass
+
+        # 2. If guest (or if profile interests is empty), fallback to query parameters [4]
+        if not interest_list:
+            interests_param = self.request.query_params.get("interests", "")
+            interest_list = [
+                i.strip().lower() for i in interests_param.split(",") if i.strip()
+            ]
+
+        # Define the strict public privacy filter [4]
+        public_privacy_q = (
+            Q(privacy_level="public")
+            & Q(author__profile__profile_visibility="public")
+            & (Q(group__isnull=True) | Q(group__privacy_level="public"))
+        )
+
+        # 1. GUEST USER (Unauthenticated) [3, 4]
+        if not user or not user.is_authenticated:
+            if interest_list:
+                # High-Speed Index Search: Match posts whose tags overlap with interests [4]
+                queryset = (
+                    StatusPost.objects.filter(public_privacy_q)
+                    .filter(tags__overlap=interest_list)
+                    .filter(created_at__gte=one_week_ago)
+                )
+                if not queryset.exists():
+                    queryset = StatusPost.objects.filter(public_privacy_q).filter(
+                        tags__overlap=interest_list
+                    )
+                    if not queryset.exists():
+                        queryset = StatusPost.objects.filter(public_privacy_q).filter(
+                            created_at__gte=one_week_ago
+                        )
+            else:
+                queryset = StatusPost.objects.filter(public_privacy_q).filter(
+                    created_at__gte=one_week_ago
+                )
+
+            # Dev safety fallback
+            if not queryset.exists():
+                queryset = StatusPost.objects.filter(public_privacy_q)
+
+            return (
+                queryset.select_related("author__profile", "group")
+                .prefetch_related("media", "likes", "poll__options", "poll__votes")
+                .order_by("-created_at", "-id")
+                .distinct()
+            )
+
+        # 2. LOGGED-IN MEMBER [4]
         following_user_ids = list(user.following.values_list("following_id", flat=True))
         user_ids_for_feed = following_user_ids + [user.id]
 
-        # 2. Define the privacy filter using Q objects
-        # A post is visible in the feed if:
-        # - It has no group (it's a personal, public wall post), OR
-        # - Its group is public, OR
-        # - Its group is private AND the current user is a member of that group.
-        privacy_q = (
+        member_privacy_q = (
             Q(group__isnull=True)
             | Q(group__privacy_level="public")
             | Q(group__members=user)
         )
 
-        # 3. Combine the filters and return the final queryset
+        # Fetch their standard feed (posts by people they follow)
+        standard_feed = StatusPost.objects.filter(
+            author_id__in=user_ids_for_feed
+        ).filter(member_privacy_q)
+
+        if standard_feed.exists():
+            return (
+                standard_feed.select_related("author__profile", "group")
+                .prefetch_related("media", "likes", "poll__options", "poll__votes")
+                .order_by("-created_at", "-id")
+                .distinct()
+            )
+
+        # Otherwise, if their feed is empty, fall back to showing the trending public posts [4]
+        # (Prioritizing their chosen interests if selected) [4]
+        if interest_list:
+            fallback_feed = (
+                StatusPost.objects.filter(public_privacy_q)
+                .filter(tags__overlap=interest_list)
+                .filter(created_at__gte=one_week_ago)
+            )
+            if not fallback_feed.exists():
+                fallback_feed = StatusPost.objects.filter(public_privacy_q).filter(
+                    tags__overlap=interest_list
+                )
+                if not fallback_feed.exists():
+                    fallback_feed = StatusPost.objects.filter(public_privacy_q).filter(
+                        created_at__gte=one_week_ago
+                    )
+        else:
+            fallback_feed = StatusPost.objects.filter(public_privacy_q).filter(
+                created_at__gte=one_week_ago
+            )
+
+        # Dev safety fallback
+        if not fallback_feed.exists():
+            fallback_feed = StatusPost.objects.filter(public_privacy_q)
+
         return (
-            StatusPost.objects.filter(author_id__in=user_ids_for_feed)
-            .filter(privacy_q)
-            .select_related("author__profile", "group")
+            fallback_feed.select_related("author__profile", "group")
             .prefetch_related("media", "likes", "poll__options", "poll__votes")
             .order_by("-created_at", "-id")
             .distinct()
@@ -2067,6 +2165,26 @@ class NetworkDiscoverView(generics.ListAPIView):
                 results["local_professionals"].append(candidate)
                 seen_ids.add(candidate.id)
 
+        # --- TIER 5: GLOBAL POPULARITY FALLBACK (Most Followed Users) --- [4]
+        # If we still don't have enough recommendations, fill the empty slots
+        # with the most followed public users across the platform [4]
+        total_recommendations_count = len(seen_ids) - len(block_list_ids)
+        if total_recommendations_count < 10:
+            slots_needed = 10 - total_recommendations_count
+            popular_candidates = list(
+                User.objects.filter(
+                    profile__profile_visibility="public"
+                )  # Secure public check [4]
+                .exclude(id__in=seen_ids)
+                .annotate(follower_count=Count("followers"))
+                .order_by("-follower_count")[:slots_needed]
+            )
+
+            for candidate in popular_candidates:
+                # We place them under local_professionals (or we can append them anywhere)
+                results["local_professionals"].append(candidate)
+                seen_ids.add(candidate.id)
+
         # --- STEP 3: THE DAILY SHUFFLE (Stability within the same block) ---
         # Seed logic: User ID + Date + 6-Hour Block
         # This keeps the list stable for 6 hours, then shuffles to prevent staleness
@@ -2145,3 +2263,50 @@ class GoogleLogin(SocialLoginView):
         """
         # .rstrip('/') ensures we don't end up with //login if the env var has a slash
         return f"{settings.FRONTEND_URL.rstrip('/')}/login"
+
+
+class MutualConnectionsListView(generics.ListAPIView):
+    """
+    Gold-Standard Hybrid View:
+    Returns a standard, paginated list of mutual connections between
+    the logged-in user and the target profile owner.
+    """
+
+    serializer_class = NetworkUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        target_username = self.kwargs.get("username")
+        current_user = self.request.user
+
+        # 1. Safely find the target profile owner
+        try:
+            target_user = User.objects.get(username=target_username)
+        except User.DoesNotExist:
+            return User.objects.none()
+
+        # 2. Fetch all accepted connection IDs for the logged-in user
+        current_connections = ConnectionRequest.objects.filter(
+            (Q(sender=current_user) | Q(receiver=current_user)), status="accepted"
+        )
+        current_ids = set()
+        for req in current_connections:
+            current_ids.add(
+                req.sender_id if req.receiver_id == current_user.id else req.receiver_id
+            )
+
+        # 3. Fetch all accepted connection IDs for the target user
+        target_connections = ConnectionRequest.objects.filter(
+            (Q(sender=target_user) | Q(receiver=target_user)), status="accepted"
+        )
+        target_ids = set()
+        for req in target_connections:
+            target_ids.add(
+                req.sender_id if req.receiver_id == target_user.id else req.receiver_id
+            )
+
+        # 4. Intersection of both sets yields the shared user IDs
+        mutual_ids = current_ids.intersection(target_ids)
+
+        # 5. Return an optimized, pre-joined queryset of those mutual users
+        return User.objects.filter(id__in=mutual_ids).select_related("profile")
