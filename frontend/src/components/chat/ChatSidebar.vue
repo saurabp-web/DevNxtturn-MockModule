@@ -1,32 +1,32 @@
 <template>
   <aside
-    class="flex h-full min-h-0 w-full min-w-0 flex-col gap-4 overflow-hidden rounded-[1.75rem] border border-white/60 bg-gradient-to-b from-white/95 to-slate-50/95 p-4 shadow-[0_28px_90px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-all duration-300 sm:rounded-[2.5rem] sm:p-5 lg:min-w-[300px]"
+    class="flex h-full min-h-0 w-full min-w-0 flex-col gap-4 overflow-hidden rounded-[1.75rem] border border-violet-100/80 bg-gradient-to-b from-white/95 via-violet-50/70 to-fuchsia-50/50 p-4 shadow-[0_28px_90px_rgba(139,92,246,0.12)] backdrop-blur-2xl transition-all duration-300 sm:rounded-[2.5rem] sm:p-5 lg:min-w-[300px]"
   >
     <!-- Header -->
     <div class="flex items-end justify-between px-1 pt-1">
       <div>
         <div class="flex items-center gap-2">
           <div
-            class="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 shadow-[0_0_0_4px_rgba(59,130,246,0.10)]"
+            class="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 shadow-[0_0_0_4px_rgba(139,92,246,0.12)]"
           ></div>
           <h3 class="m-0 text-xl font-black tracking-tight text-slate-900">Messages</h3>
         </div>
-        <p class="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <!-- <p class="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
           Direct chat
-        </p>
+        </p> -->
       </div>
-      <span
+      <!-- <span
         v-if="totalUnread > 0"
-        class="flex h-7 min-w-[28px] items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-2 text-[11px] font-black text-white shadow-[0_6px_18px_rgba(37,99,235,0.28)]"
+        class="flex h-7 min-w-[28px] items-center justify-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2 text-[11px] font-black text-white shadow-[0_6px_18px_rgba(139,92,246,0.28)]"
       >
         {{ totalUnread }}
-      </span>
+      </span> -->
     </div>
 
     <!-- Search -->
     <div class="group relative px-1">
       <div
-        class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 text-slate-400 shadow-sm transition-colors group-focus-within:text-blue-500"
+        class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 text-violet-300 shadow-sm transition-colors group-focus-within:text-violet-500"
       >
         <svg
           class="h-4.5 w-4.5"
@@ -41,7 +41,7 @@
       </div>
       <input
         v-model.trim="search"
-        class="w-full rounded-[1.35rem] border border-slate-200/60 bg-white/90 py-3.5 pl-12 pr-10 text-sm font-medium text-slate-800 outline-none transition-all placeholder:text-slate-400 hover:bg-white hover:shadow-sm focus:border-blue-500/20 focus:bg-white focus:ring-4 focus:ring-blue-500/10 sm:rounded-[1.5rem]"
+        class="w-full rounded-[1.35rem] border border-violet-100/80 bg-white/90 py-3.5 pl-12 pr-10 text-sm font-medium text-slate-800 outline-none transition-all placeholder:text-slate-400 hover:bg-white hover:shadow-sm focus:border-violet-300/70 focus:bg-white focus:ring-4 focus:ring-violet-500/10 sm:rounded-[1.5rem]"
         placeholder="Find someone..."
         aria-label="Search users"
       />
@@ -65,7 +65,7 @@
 
     <!-- Loading / Error States -->
     <div v-if="loading" class="flex flex-col items-center justify-center gap-3 py-10 opacity-60">
-      <div class="h-6 w-6 rounded-full border-2 border-slate-300 border-t-blue-500 animate-spin"></div>
+      <div class="h-6 w-6 rounded-full border-2 border-violet-100 border-t-violet-500 animate-spin"></div>
       <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest"
         >Updating...</span
       >
@@ -81,9 +81,9 @@
       class="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-4 text-center"
     >
       <div class="relative">
-        <div class="absolute -inset-4 rounded-full bg-blue-100/50 blur-xl"></div>
+        <div class="absolute -inset-4 rounded-full bg-violet-100/60 blur-xl"></div>
         <div
-          class="relative grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl shadow-blue-200"
+          class="relative grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-xl shadow-violet-200"
         >
           <svg
             class="h-8 w-8 text-white"
@@ -99,9 +99,9 @@
         </div>
       </div>
       <div>
-        <p class="text-base font-bold text-slate-800">Your inbox is empty</p>
+        <p class="text-base font-bold text-slate-800">Your inbox is Waiting</p>
         <p class="mt-1 text-xs font-medium text-slate-400">
-          Search for friends to start a conversation
+          Find your pepole and start a conversation!
         </p>
       </div>
     </div>
@@ -117,7 +117,7 @@
         >
       </div>
       <div v-if="search" class="mb-2 px-3">
-        <span class="text-[10px] font-black uppercase tracking-[0.15em] text-blue-500"
+        <span class="text-[10px] font-black uppercase tracking-[0.15em] text-violet-500"
           >Search Results</span
         >
       </div>
@@ -125,11 +125,11 @@
       <div
         v-for="user in displayedUsers"
         :key="getConversationKey(user)"
-        class="group relative mx-0.5 flex cursor-pointer items-center gap-3 rounded-[1.45rem] border border-slate-200/60 bg-white/80 p-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200/70 hover:bg-white hover:shadow-[0_16px_40px_rgba(59,130,246,0.08)] sm:gap-4 sm:rounded-[1.75rem] sm:p-3.5"
+        class="group relative mx-0.5 flex cursor-pointer items-center gap-3 rounded-[1.45rem] border border-violet-100/70 bg-white/82 p-3 shadow-sm shadow-violet-100/40 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-200 hover:bg-white hover:shadow-md hover:shadow-violet-100 sm:gap-4 sm:rounded-[1.75rem] sm:p-3.5"
         :class="[
-          user.unread_count > 0 && !search ? 'bg-blue-50/60' : '',
+          user.unread_count > 0 && !search ? 'bg-violet-50/80' : '',
           selectedUserId === user.id
-            ? '!border-blue-500/20 bg-blue-50/80 shadow-md ring-1 ring-blue-500/10'
+            ? '!border-violet-300/70 bg-violet-50/90 shadow-md shadow-violet-100 ring-1 ring-violet-500/10'
             : '',
         ]"
         role="button"
@@ -140,24 +140,24 @@
         <!-- Selection Indicator -->
         <div
           v-if="selectedUserId === user.id"
-          class="absolute left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-gradient-to-b from-blue-500 to-indigo-500"
+          class="absolute left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-gradient-to-b from-violet-500 to-fuchsia-500"
         ></div>
 
-        <!-- Avatar Container - No hover effect here -->
+        <!-- Avatar Container -->
         <div class="relative flex-shrink-0">
           <StableAvatar
             :src="user.avatar_display_url || getConversationAvatarUrl(user)"
             :alt="`${getConversationUsername(user) || 'user'} avatar`"
-            class="relative z-10 h-12 w-12 rounded-[1.25rem] object-cover shadow-lg transition-transform duration-300"
+            class="relative z-10 h-12 w-12 rounded-[3.25rem] object-cover "
           />
-          <div
+          <!-- <div
             v-if="user.is_online"
             class="absolute -bottom-0.5 -right-0.5 z-20 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm ring-2 ring-white/20"
-          ></div>
+          ></div> -->
           <!-- Unread Badge -->
           <div
             v-if="user.unread_count > 0"
-            class="absolute -right-1 -top-1 z-20 grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-gradient-to-r from-blue-500 to-indigo-500 text-[10px] font-black text-white shadow-sm"
+            class="absolute -right-1 -top-1 z-20 grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-gradient-to-r from-fuchsia-600 to-fuchsia-600 text-[10px] font-black text-white shadow-sm"
           >
             {{ user.unread_count > 9 ? '9+' : user.unread_count }}
           </div>
@@ -169,7 +169,7 @@
             <RouterLink
               v-if="user.username"
               :to="{ name: 'profile', params: { username: user.username } }"
-              class="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors hover:text-blue-600"
+              class="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors hover:text-violet-600"
               @click.stop
             >
               {{ user.username }}
@@ -193,11 +193,15 @@
               user.unread_count > 0 ? 'font-bold text-slate-700' : 'font-medium text-slate-400'
             "
           >
-            <template v-if="user.last_message">
-              <span v-if="user.last_message_is_mine" class="opacity-60">You: </span
-              >{{ user.last_message }}
+            <!-- <template v-if="lastMessagePreview(user)">
+              <span v-if="user.last_message_is_mine" class="opacity-60">You: </span>
+              {{ lastMessagePreviewLabel(user) }}
             </template>
-            <template v-else>Start a conversation</template>
+            <template v-else-if="user.last_message">
+              <span v-if="user.last_message_is_mine" class="opacity-60">You: </span>
+              {{ user.last_message }}
+            </template>
+            <template v-else>Start a conversation</template> -->
           </div>
         </div>
       </div>
@@ -221,7 +225,7 @@ import { getMessagingConversations, getMessagingUsers } from '@/services/messagi
 import { mapActions, mapState } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/profile'
-import { getAvatarUrl } from '@/utils/avatars'
+import { buildMediaUrl, getAvatarUrl } from '@/utils/avatars'
 import StableAvatar from './StableAvatar.vue'
 
 export default {
@@ -287,12 +291,14 @@ export default {
     eventBus.on('messaging-read-updated', this.handleMessagingReadUpdated)
     eventBus.on('messaging-presence-updated', this.handlePresenceUpdated)
     eventBus.on('messaging-thread-read', this.handleThreadRead)
+    eventBus.on('messaging-last-message-updated', this.handleLastMessageUpdated)
   },
   beforeUnmount() {
     this.stopPolling()
     eventBus.off('messaging-read-updated', this.handleMessagingReadUpdated)
     eventBus.off('messaging-presence-updated', this.handlePresenceUpdated)
     eventBus.off('messaging-thread-read', this.handleThreadRead)
+    eventBus.off('messaging-last-message-updated', this.handleLastMessageUpdated)
   },
   methods: {
     getAvatarUrl,
@@ -393,6 +399,24 @@ export default {
         user?.id ?? user?.conversation_id ?? user?.conversationId ?? this.getConversationUsername(user),
       )
     },
+    
+    lastMessagePreview(user) {
+      const preview = user?.last_message_preview || null
+      const url = buildMediaUrl(preview?.url || '')
+      if (!preview || !url) return null
+      return {
+        ...preview,
+        url,
+      }
+    },
+    lastMessagePreviewLabel(user) {
+      const kind = this.lastMessagePreview(user)?.kind
+      if (kind === 'video') return 'Video'
+      if (kind === 'gif') return 'GIF'
+      if (kind === 'sticker') return 'Sticker'
+      if (kind === 'image') return 'Photo'
+      return 'Media'
+    },
     getExistingAvatarRow(user, rows = []) {
       const username = this.getConversationUsername(user)
       const key = this.getConversationKey(user)
@@ -431,11 +455,11 @@ export default {
     timeAgo(isoString) {
       if (!isoString) return ''
       const diff = (Date.now() - new Date(isoString).getTime()) / 1000
-      if (diff < 60) return 'now'
-      if (diff < 3600) return `${Math.floor(diff / 60)}m`
-      if (diff < 86400) return `${Math.floor(diff / 3600)}h`
-      if (diff < 604800) return `${Math.floor(diff / 86400)}d`
-      return new Date(isoString).toLocaleDateString()
+      if (diff < 60) return 'just now'
+      return new Date(isoString).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
     },
     handleUserClick(user) {
       const unreadCount = Number(user?.unread_count || 0)
@@ -544,6 +568,25 @@ export default {
         // If not in list, reload to get new conversation
         this.loadConversations({ silent: true })
       }
+    },
+    handleLastMessageUpdated(update) {
+      const userId = update?.user_id
+      if (!userId) return
+      const idx = this.conversations.findIndex((c) => String(c.id) === String(userId))
+      if (idx === -1) {
+        this.loadConversations({ silent: true })
+        return
+      }
+
+      const conv = {
+        ...this.conversations[idx],
+        last_message: update.last_message || '',
+        last_message_time: update.timestamp || new Date().toISOString(),
+        last_message_is_mine: Boolean(update.is_mine),
+        last_message_preview: update.preview || null,
+      }
+      this.conversations.splice(idx, 1)
+      this.conversations.unshift(conv)
     },
     tryAutoSelectInitialUser() {
       if (!this.initialUsername || this.selectedUserId) return

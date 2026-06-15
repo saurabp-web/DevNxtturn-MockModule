@@ -62,17 +62,17 @@
     <div
       v-else
       data-chat-pane
-      class="relative flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/90 shadow-[0_20px_60px_rgba(139,92,246,0.08)] backdrop-blur-2xl sm:rounded-[2.5rem]"
+      class="chat-pane relative flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-[1.25rem] border border-violet-100/80 bg-white/90 shadow-[0_20px_60px_rgba(139,92,246,0.10)] backdrop-blur-2xl sm:rounded-[1.75rem] lg:rounded-[2rem]"
     >
       <!-- Chat Header -->
       <div
-        class="relative z-10 flex items-center justify-between gap-3 border-b border-slate-200/50 bg-white/70 px-4 py-4 backdrop-blur-xl sm:px-5 lg:px-6"
+        class="relative z-10 flex items-center justify-between gap-3 border-b border-violet-100/70 bg-gradient-to-r from-white/90 via-violet-50/80 to-fuchsia-50/70 px-3 py-3.5 shadow-sm shadow-violet-100/40 backdrop-blur-xl sm:px-5 sm:py-4 lg:px-6"
       >
         <div class="flex min-w-0 items-center gap-3 sm:gap-4">
           <button
             v-if="showMobileBack"
             type="button"
-            class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-slate-100/70 text-slate-600 transition-all duration-200 hover:bg-white hover:text-purple-600 hover:shadow-md active:scale-95 lg:hidden"
+            class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-violet-100/70 text-violet-600 transition-all duration-200 hover:bg-white hover:text-purple-700 hover:shadow-md hover:shadow-violet-100 active:scale-95 lg:hidden"
             @click="handleBackToList"
             aria-label="Back to conversations"
           >
@@ -90,7 +90,7 @@
             <StableAvatar
               :src="chatAvatarUrl"
               :alt="`${user.username || 'user'} avatar`"
-              class="h-12 w-12 rounded-xl object-cover shadow-md shadow-purple-200 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-300"
+              class="h-12 w-12 rounded-[3.25rem] object-cover shadow-violet-200"
             />
             <div
               v-if="isSelectedUserOnline"
@@ -102,12 +102,12 @@
             <div class="flex items-center gap-1.5 text-xs font-medium" :class="userPresenceClass">
               <!-- <span class="h-1.5 w-1.5 rounded-full" :class="userPresenceDotClass"></span> -->
               <span>{{ userPresenceLabel }}</span>
-              <span
+              <!-- <span
                 v-if="unreadInThreadCount > 0"
                 class="ml-1 rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm"
               >
                 {{ unreadInThreadCount > 99 ? '99+' : unreadInThreadCount }} unread
-              </span>
+              </span> -->
             </div>
           </div>
         </div>
@@ -115,7 +115,7 @@
         <!-- Header Actions -->
         <div class="flex gap-1">
           <button
-            class="group grid h-10 w-10 place-items-center rounded-xl bg-slate-100/60 text-slate-500 transition-all duration-200 hover:bg-white hover:text-purple-600 hover:shadow-md active:scale-95"
+            class="group grid h-10 w-10 place-items-center rounded-xl bg-violet-100/70 text-violet-500 transition-all duration-200 hover:bg-white hover:text-purple-700 hover:shadow-md hover:shadow-violet-100 active:scale-95"
           >
             <svg
               class="h-5 w-5 transition-transform duration-200 group-hover:scale-110"
@@ -135,7 +135,7 @@
       <!-- Messages Area -->
       <div
         ref="messageList"
-        class="message-area relative flex-1 overflow-y-auto px-5 py-5 lg:px-6"
+        class="message-area relative flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5 lg:px-6"
         style="overflow-anchor: none"
         @scroll="onScroll"
         @wheel="markManualHistoryScroll"
@@ -185,9 +185,23 @@
                   item.message.is_deleted,
                   item.message.edited_at,
                   item.message.reactions?.length,
+                  item.message.my_reaction,
+                  item.message.reply_to_message?.content,
+                  item.message.reply_to_message?.media_url,
+                  item.message.reply_to_message?.media,
+                  item.message.reply_to_message?.media_type,
+                  item.message.reply_to_message?.media_preview?.url,
+                  item.message.reply_to_message?.media_preview?.kind,
+                  item.message.reply_to_message?.preview?.url,
+                  item.message.reply_to_message?.preview?.kind,
+                  item.message.reply_to_message?.gif_url,
+                  item.message.reply_to_message?.sticker_url,
+                  item.message.reply_to_message?.is_deleted,
+                  item.message.reply_to_message?.sender_display_name,
                 ]"
                 :message="item.message"
                 :isMe="String(getMessageSenderId(item.message)) === String(currentUserId)"
+                :current-user-id="currentUserId"
                 @react="sendReaction"
                 @reply="beginReplyMessage"
                 @edit="beginEditMessage"
@@ -278,7 +292,7 @@
 
       <!-- Input Area -->
       <div
-        class="relative z-10 border-t border-slate-200/60 bg-white/55 px-4 py-4 backdrop-blur-md sm:px-5 lg:px-6"
+        class="relative z-10 border-t border-violet-100/70 bg-gradient-to-r from-white/75 via-violet-50/65 to-fuchsia-50/50 px-3 py-3 shadow-[0_-10px_30px_rgba(139,92,246,0.06)] backdrop-blur-md sm:px-5 sm:py-4 lg:px-6"
       >
         <transition
           enter-active-class="transition duration-200 ease-out"
@@ -290,14 +304,14 @@
         >
           <div
             v-if="isPartnerTyping"
-            class="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 text-xs font-semibold text-slate-500 shadow-sm backdrop-blur-md"
+            class="mb-2 inline-flex items-center rounded-2xl border border-violet-100/70 bg-violet-50/80 px-3 py-2 shadow-sm shadow-violet-100/60"
+            aria-label="Typing"
           >
-            <span class="flex items-center gap-1">
+            <span class="flex items-center gap-1.5">
               <span class="typing-dot"></span>
               <span class="typing-dot typing-dot-delay-1"></span>
               <span class="typing-dot typing-dot-delay-2"></span>
             </span>
-            <span>{{ user.username }} is typing</span>
           </div>
         </transition>
         <MessageInput
@@ -307,6 +321,7 @@
           :draft-text="draftText"
           :editing-message="editingMessage"
           :replying-message="replyingMessage"
+          :current-user-id="currentUserId"
           @send="sendMessage"
           @cancel-edit="cancelEditMessage"
           @cancel-reply="cancelReplyMessage"
@@ -378,10 +393,10 @@
 
 .typing-dot {
   display: inline-block;
-  width: 0.45rem;
-  height: 0.45rem;
+  width: 0.38rem;
+  height: 0.38rem;
   border-radius: 9999px;
-  background: rgb(148 163 184);
+  background: rgb(100 116 139);
   animation: typingPulse 1.2s infinite ease-in-out;
 }
 
@@ -1319,12 +1334,22 @@ export default {
       this.$refs.messageInput?.openEmojiPicker?.()
     },
     beginEditMessage(message) {
+      if (!message) return
+      const type = String(message?.message_type || '').toLowerCase()
+      const mediaType = String(message?.media_type || '').toLowerCase()
+      const mediaUrl = String(message?.media_url || message?.media || '').toLowerCase()
+      const isVisualFile =
+        type === 'file' &&
+        (mediaType.startsWith('image/') ||
+          mediaType.startsWith('video/') ||
+          /\.(jpg|jpeg|png|gif|webp|mp4|webm|ogg|mov)(\?|#|$)/i.test(mediaUrl))
+      const isEditableMediaCaption = isVisualFile && Boolean(message?.content?.trim())
       if (
-        !message ||
         String(this.getMessageSenderId(message)) !== String(this.currentUserId) ||
         message.is_deleted ||
-        message.can_edit === false ||
-        ['gif', 'sticker', 'file'].includes(String(message?.message_type || '').toLowerCase())
+        (message.can_edit === false && !isEditableMediaCaption) ||
+        ['gif', 'sticker'].includes(type) ||
+        (type === 'file' && !isEditableMediaCaption)
       )
         return
       this.replyingMessage = null
@@ -1410,6 +1435,51 @@ export default {
       if (this.editingMessage?.id === message.id && message.is_deleted) {
         this.editingMessage = null
       }
+      if (this.replyingMessage?.id === message.id) {
+        this.replyingMessage = message.is_deleted ? null : { ...this.replyingMessage, ...message }
+      }
+      this.patchReplyPreviewsForMessage(message)
+    },
+    getReplyPreviewTextForMessage(message) {
+      if (!message) return ''
+      if (message.is_deleted) return 'Message deleted'
+      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
+      if (type === 'gif') return 'GIF'
+      if (type === 'sticker') return 'Sticker'
+      if (message.content?.trim()) return message.content.trim()
+      if (type === 'file') {
+        const mediaType = String(message?.media_type || '').toLowerCase()
+        const url = String(message?.media_url || message?.media || '').toLowerCase()
+        if (mediaType.startsWith('video/') || /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(url)) return 'Video'
+        if (mediaType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)(\?|#|$)/i.test(url)) return 'Photo'
+      }
+      return ''
+    },
+    patchReplyPreviewsForMessage(message) {
+      if (!message?.id) return
+      this.messages = this.messages.map((row) => {
+        const reply = row?.reply_to_message
+        if (!reply || String(reply.id) !== String(message.id)) return row
+        return {
+          ...row,
+          reply_to_message: {
+            ...reply,
+            content: this.getReplyPreviewTextForMessage(message),
+            type: message.message_type || message.type || reply.type,
+            message_type: message.message_type || message.type || reply.message_type,
+            media_url: message.media_url || reply.media_url || '',
+            media: message.media || reply.media || '',
+            media_type: message.media_type || reply.media_type || '',
+            media_preview: message.media_preview || message.preview || reply.media_preview || reply.preview || null,
+            gif_url: message.gif_url || reply.gif_url || '',
+            sticker_url: message.sticker_url || reply.sticker_url || '',
+            external_url: message.external_url || reply.external_url || '',
+            sender_display_name: message.sender_display_name || reply.sender_display_name,
+            sender_username: message.sender_username || reply.sender_username,
+            is_deleted: Boolean(message.is_deleted),
+          },
+        }
+      })
     },
     addMessageUnique(message, forceScroll = false) {
       if (!message) return
@@ -1421,6 +1491,7 @@ export default {
         this.messages.push(message)
         this.totalCount += 1
         this.triggerEmojiEffectForMessage(message)
+        this.emitLastMessageUpdate(message, isMine)
 
         if (isIncoming) {
           this.clearTypingIndicator()
@@ -1444,6 +1515,50 @@ export default {
           this.showScrollDown = true
         }
       }
+    },
+    getSidebarConversationUserId(message) {
+      const senderId = this.getMessageSenderId(message)
+      const isMine = String(senderId) === String(this.currentUserId)
+      return isMine ? this.user?.id : senderId || this.user?.id
+    },
+    getSidebarLastMessageText(message) {
+      if (!message || message.is_deleted) return ''
+      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
+      if (type === 'gif' || type === 'sticker') return ''
+      return String(message?.content || '').trim()
+    },
+    getSidebarMessagePreview(message) {
+      if (!message || message.is_deleted) return null
+      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
+      if (type === 'gif') {
+        const url = message?.gif_url || message?.external_url || ''
+        return url ? { kind: 'gif', url } : null
+      }
+      if (type === 'sticker') {
+        const url = message?.sticker_url || message?.external_url || ''
+        return url ? { kind: 'sticker', url } : null
+      }
+
+      const url = message?.media_url || message?.media || ''
+      if (!url) return null
+      const mediaType = String(message?.media_type || '').toLowerCase()
+      const isVideo =
+        mediaType.startsWith('video/') || /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(String(url))
+      return {
+        kind: isVideo ? 'video' : 'image',
+        url,
+      }
+    },
+    emitLastMessageUpdate(message, isMine) {
+      const userId = this.getSidebarConversationUserId(message)
+      if (!userId) return
+      eventBus.emit('messaging-last-message-updated', {
+        user_id: userId,
+        last_message: this.getSidebarLastMessageText(message),
+        timestamp: message?.timestamp || new Date().toISOString(),
+        is_mine: Boolean(isMine),
+        preview: this.getSidebarMessagePreview(message),
+      })
     },
     markThreadAsReadLocally() {
       if (!this.keepUnreadDividerVisible) {

@@ -40,6 +40,7 @@ class MessageSerializer(serializers.ModelSerializer):
     reactions = serializers.SerializerMethodField()
     my_reaction = serializers.SerializerMethodField()
     sender_username = serializers.SerializerMethodField()
+    sender_display_name = serializers.SerializerMethodField()
     reply_to_message = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
     can_delete = serializers.SerializerMethodField()
@@ -90,18 +91,48 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_sender_username(self, obj):
         return obj.sender.username if getattr(obj, "sender", None) else ""
 
+    def get_sender_display_name(self, obj):
+        if not getattr(obj, "sender", None):
+            return ""
+        return obj.sender.get_full_name() or obj.sender.username
+
     def get_reply_to_message(self, obj):
         reply = getattr(obj, "reply_to", None)
         if not reply:
             return None
+        reply_type = normalize_message_type(getattr(reply, "message_type", None))
+        media_url = self.get_media_url(reply)
+        media_preview = None
+        if reply_type in {"gif", "sticker"}:
+            preview_url = self.get_gif_url(reply) if reply_type == "gif" else self.get_sticker_url(reply)
+            if preview_url:
+                media_preview = {"kind": reply_type, "url": preview_url}
+        elif reply_type == "file" and media_url:
+            media_type = str(getattr(reply, "media_type", "") or "").lower()
+            is_video = media_type.startswith("video/") or media_url.lower().split("?", 1)[0].endswith(
+                (".mp4", ".webm", ".ogg", ".mov")
+            )
+            media_preview = {
+                "kind": "video" if is_video else "image",
+                "url": media_url,
+                "media_type": getattr(reply, "media_type", "") or "",
+            }
+
         return {
             "id": reply.id,
             "sender_id": reply.sender_id,
             "sender_username": reply.sender.username,
+            "sender_display_name": reply.sender.get_full_name() or reply.sender.username,
             "content": describe_message(reply, reply.is_deleted),
-            "type": normalize_message_type(getattr(reply, "message_type", None)),
+            "type": reply_type,
+            "message_type": reply_type,
+            "media_url": media_url,
+            "media": self.get_media(reply),
+            "media_type": getattr(reply, "media_type", "") or "",
+            "media_preview": media_preview,
             "gif_url": self.get_gif_url(reply),
             "sticker_url": self.get_sticker_url(reply),
+            "external_url": getattr(reply, "external_url", "") or "",
             "animated": bool(getattr(reply, "animated", False)),
             "chat_id": build_chat_id(reply.sender_id, reply.receiver_id),
             "is_deleted": reply.is_deleted,

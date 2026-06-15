@@ -39,6 +39,29 @@ def _serialize_chat_user(user_obj, request):
     }
 
 
+def _message_media_preview(message):
+    if not message or getattr(message, "is_deleted", False):
+        return None
+
+    message_type = normalize_message_type(getattr(message, "message_type", None))
+    if message_type in {"gif", "sticker"}:
+        url = str(getattr(message, "external_url", "") or "")
+        return {"kind": message_type, "url": url} if url else None
+
+    if message_type != "file" or not getattr(message, "media", None):
+        return None
+
+    media_url = getattr(message.media, "url", "") or ""
+    media_type = str(getattr(message, "media_type", "") or "").lower()
+    media_path = str(media_url).lower().split("?", 1)[0]
+    is_video = media_type.startswith("video/") or media_path.endswith((".mp4", ".webm", ".ogg", ".mov"))
+    return {
+        "kind": "video" if is_video else "image",
+        "url": media_url,
+        "media_type": getattr(message, "media_type", "") or "",
+    }
+
+
 def broadcast_message(sender_id, receiver_id, data, event="created"):
     user_ids = sorted([sender_id, receiver_id])
     room_group_name = f"chat_{user_ids[0]}_{user_ids[1]}"
@@ -90,6 +113,17 @@ def resolve_reply_target(sender, receiver, reply_to_message_id):
 
 def _clean_payload_value(value):
     return str(value or "").strip()
+
+
+def _is_visual_file_message(message):
+    if normalize_message_type(getattr(message, "message_type", None)) != "file":
+        return False
+
+    media_type = str(getattr(message, "media_type", "") or "").lower()
+    media_url = str(getattr(getattr(message, "media", None), "url", "") or "").lower().split("?", 1)[0]
+    return media_type.startswith(("image/", "video/")) or media_url.endswith(
+        (".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".ogg", ".mov")
+    )
 
 
 def _create_message_from_payload(sender, receiver, payload, reply_to_message=None):
@@ -200,8 +234,12 @@ def message_detail(request, message_id):
             return Response({"error": "You can only edit your own messages"}, status=status.HTTP_403_FORBIDDEN)
         if message.is_deleted:
             return Response({"error": "Deleted messages cannot be edited"}, status=status.HTTP_400_BAD_REQUEST)
-        if normalize_message_type(message.message_type) != "text":
-            return Response({"error": "Only text messages can be edited"}, status=status.HTTP_400_BAD_REQUEST)
+        message_type = normalize_message_type(message.message_type)
+        if message_type != "text" and not _is_visual_file_message(message):
+            return Response(
+                {"error": "Only text messages and media captions can be edited"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if timezone.now() > message.timestamp + timedelta(minutes=30):
             return Response(
                 {"error": "Messages can only be edited within 30 minutes"},
@@ -428,6 +466,7 @@ def conversations(request):
             "can_message": True,
             "unread_count": unread,
             "last_message": describe_message(last_msg, last_msg.is_deleted) if last_msg else "",
+            "last_message_preview": _message_media_preview(last_msg),
             "last_message_time": last_msg.timestamp.isoformat() if last_msg and last_msg.timestamp else None,
             "last_message_is_mine": last_msg.sender_id == user.id if last_msg else False,
         })

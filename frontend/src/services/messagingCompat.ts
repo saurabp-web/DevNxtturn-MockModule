@@ -30,6 +30,34 @@ function getCurrentUserId() {
   }
 }
 
+function normalizeLastMessagePreview(row: any) {
+  const type = String(
+    row?.last_message_type ||
+      row?.last_message_message_type ||
+      row?.last_message_preview?.kind ||
+      '',
+  ).toLowerCase()
+  const mediaType = String(
+    row?.last_message_media_type || row?.last_message_preview?.media_type || '',
+  ).toLowerCase()
+  const url =
+    row?.last_message_preview?.url ||
+    row?.last_message_preview_url ||
+    row?.last_message_media_url ||
+    row?.last_media_url ||
+    row?.last_message_gif_url ||
+    row?.last_message_sticker_url ||
+    ''
+
+  if (!url) return null
+  if (type === 'gif') return { kind: 'gif', url }
+  if (type === 'sticker') return { kind: 'sticker', url }
+  if (mediaType.startsWith('video/')) return { kind: 'video', url }
+  if (mediaType.startsWith('image/')) return { kind: 'image', url }
+  if (/\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(url)) return { kind: 'video', url }
+  return { kind: 'image', url }
+}
+
 function normalizeConversationRow(row: any) {
   const participants = Array.isArray(row?.participants) ? row.participants : []
   const currentUserId = getCurrentUserId()
@@ -48,6 +76,7 @@ function normalizeConversationRow(row: any) {
     participants,
     unread_count: Number(row?.unread_count || 0),
     last_message: row?.last_message || '',
+    last_message_preview: normalizeLastMessagePreview(row),
     last_message_time: row?.last_message_time || row?.updated_at || row?.created_at || null,
     last_message_is_mine: Boolean(row?.last_message_is_mine),
   }

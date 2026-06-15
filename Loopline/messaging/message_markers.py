@@ -31,11 +31,24 @@ def describe_message(message, deleted: bool = False) -> str:
 
     message_type = normalize_message_type(getattr(message, "message_type", None))
     if message_type == "gif":
-        title = getattr(message, "media_title", "") or getattr(message, "provider_id", "") or "GIF"
-        return f"GIF: {str(title).replace('-', ' ').title()}"
+        return "GIF"
     if message_type == "sticker":
-        title = getattr(message, "media_title", "") or getattr(message, "provider_id", "") or "Sticker"
-        return f"Sticker: {str(title).replace('-', ' ').title()}"
+        return "Sticker"
+    if message_type == "file":
+        content = str(getattr(message, "content", "") or "").strip()
+        if content:
+            return content
+
+        media_type = str(getattr(message, "media_type", "") or "").lower()
+        media_url = str(getattr(getattr(message, "media", None), "url", "") or "")
+        if media_type.startswith("video/") or media_url.lower().split("?", 1)[0].endswith(
+            (".mp4", ".webm", ".ogg", ".mov")
+        ):
+            return "Video"
+        if media_type.startswith("image/") or media_url.lower().split("?", 1)[0].endswith(
+            (".jpg", ".jpeg", ".png", ".gif", ".webp")
+        ):
+            return "Photo"
 
     return str(getattr(message, "content", "") or "")
 

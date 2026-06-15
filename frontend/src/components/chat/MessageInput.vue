@@ -10,23 +10,60 @@
     >
       <div
         v-if="isReplying"
-        class="mx-1 rounded-[1.5rem] border border-indigo-200 bg-indigo-50/90 px-4 py-3 text-xs font-semibold text-indigo-800 shadow-sm backdrop-blur-md"
+        class="mx-1 overflow-hidden rounded-[1.35rem] border border-violet-100/80 bg-white/95 text-xs shadow-sm shadow-violet-100/50 backdrop-blur-md"
       >
-        <div class="flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-              Replying to {{ replyingSenderName }}
+        <div class="flex items-stretch justify-between gap-3">
+          <div class="flex min-w-0 flex-1 gap-3 px-4 py-3">
+            <div
+              class="w-1 flex-shrink-0 rounded-full"
+              :class="replyingMessage?.is_deleted ? 'bg-slate-300' : 'bg-violet-500'"
+            ></div>
+            <div class="min-w-0 flex-1">
+              <!-- <div class="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                Replying to
+              </div> -->
+              <div
+                class="mt-0.5 truncate text-sm font-bold"
+                :class="replyingMessage?.is_deleted ? 'text-slate-500' : 'text-violet-700'"
+              >
+                {{ replyingSenderName }}
+              </div>
+              <div
+                class="mt-0.5 truncate text-sm font-medium"
+                :class="replyingMessage?.is_deleted ? 'italic text-slate-400' : 'text-slate-700'"
+              >
+                {{ replyPreviewText }}
+              </div>
             </div>
-            <div class="truncate text-sm font-medium text-indigo-900/80">
-              {{ replyPreviewText }}
+            <div
+              v-if="replyPreviewMedia"
+              class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200"
+            >
+              <img
+                v-if="replyPreviewMedia.kind !== 'video'"
+                :src="replyPreviewMedia.url"
+                alt=""
+                class="h-full w-full object-cover"
+              />
+              <video
+                v-else
+                :src="replyPreviewMedia.url"
+                class="h-full w-full object-cover"
+                muted
+                playsinline
+                preload="metadata"
+              ></video>
             </div>
           </div>
           <button
-            class="rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-700 transition hover:bg-indigo-100"
+            class="my-2 mr-2 grid h-9 w-9 flex-shrink-0 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
             type="button"
+            aria-label="Cancel reply"
             @click="$emit('cancel-reply')"
           >
-            Cancel
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+              <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" />
+            </svg>
           </button>
         </div>
       </div>
@@ -40,10 +77,10 @@
       leave-from-class="translate-y-0 opacity-100 scale-100"
       leave-to-class="translate-y-4 opacity-0 scale-95"
     >
-      <div v-if="attachments.length && !isEditing" class="mx-1 rounded-[2rem] border border-white/70 bg-white/80 p-4 shadow-lg shadow-blue-100 backdrop-blur-2xl">
+      <div v-if="attachments.length && !isEditing" class="mx-1 rounded-[2rem] border border-violet-100/70 bg-white/85 p-4 shadow-lg shadow-violet-100 backdrop-blur-2xl">
         <div class="mb-4 flex items-center justify-between px-2">
           <div class="flex items-center gap-2">
-            <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+            <span class="h-2 w-2 rounded-full bg-violet-500"></span>
             <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Attached Media</span>
           </div>
         </div>
@@ -57,9 +94,9 @@
             <img
               v-if="attachment.kind === 'image'"
               :src="attachment.previewUrl"
-              class="h-16 w-16 rounded-[1rem] object-cover shadow-sm ring-1 ring-blue-100 transition-transform duration-500 group-hover:scale-105"
+              class="h-16 w-16 rounded-[1rem] object-cover shadow-sm ring-1 ring-violet-100 transition-transform duration-500 group-hover:scale-105"
             />
-            <div v-else-if="attachment.kind === 'video'" class="grid h-16 w-16 place-items-center rounded-[1rem] bg-gradient-to-br from-blue-600 to-indigo-600 shadow-sm">
+            <div v-else-if="attachment.kind === 'video'" class="grid h-16 w-16 place-items-center rounded-[1rem] bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-sm">
               <div class="grid h-9 w-9 place-items-center rounded-full bg-white/15 backdrop-blur-md">
                 <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -112,7 +149,7 @@
       </div>
     </transition>
 
-    <div class="group relative flex items-end gap-3 px-1">
+    <div class="group relative flex items-end gap-2 px-0.5 sm:gap-3 sm:px-1">
       <div class="relative flex flex-1 flex-col gap-2">
         <div class="relative">
           <textarea
@@ -121,7 +158,7 @@
             :disabled="disabled"
             rows="1"
             :placeholder="isEditing ? 'Edit your message...' : 'Type a message...'"
-            class="custom-scrollbar w-full max-h-32 resize-none rounded-[2rem] bg-white/90 py-4 pl-14 pr-14 text-[15px] font-medium leading-relaxed text-slate-800 shadow-sm outline-none transition-all placeholder:text-slate-400 hover:bg-white focus:shadow-md focus:ring-4 focus:ring-blue-500/10 disabled:opacity-50"
+            class="custom-scrollbar w-full max-h-32 resize-none rounded-[1.55rem] border border-violet-100/80 bg-white/95 py-3.5 pl-12 pr-12 text-[15px] font-medium leading-relaxed text-slate-800 shadow-sm shadow-violet-100/40 outline-none transition-all placeholder:text-slate-400 hover:bg-white focus:border-violet-200 focus:shadow-md focus:shadow-violet-100 focus:ring-4 focus:ring-violet-500/10 disabled:opacity-50 sm:rounded-[2rem] sm:py-4 sm:pl-14 sm:pr-14"
             @input="handleInput"
             @keydown="handleKeydown"
             @focus="handleFocus"
@@ -130,7 +167,7 @@
           ></textarea>
 
           <button
-            class="absolute left-3 bottom-2 flex h-11 w-11 items-center justify-center rounded-[1.25rem] text-slate-400 transition-all duration-300 hover:bg-blue-50 hover:text-blue-600 active:scale-90"
+            class="absolute left-2 bottom-2 flex h-10 w-10 items-center justify-center rounded-[1.1rem] text-violet-400 transition-all duration-300 hover:bg-violet-50 hover:text-violet-600 active:scale-90 sm:left-3 sm:h-11 sm:w-11 sm:rounded-[1.25rem]"
             :disabled="disabled || isEditing"
             type="button"
             @click="openFilePicker"
@@ -143,7 +180,7 @@
           <div class="absolute right-3 bottom-2">
             <button
               ref="emojiButton"
-              class="flex h-11 w-11 items-center justify-center rounded-[1.25rem] text-2xl transition-all duration-300 hover:bg-violet-50 hover:scale-110 active:scale-90"
+              class="flex h-10 w-10 items-center justify-center rounded-[1.1rem] bg-violet-50/70 text-2xl shadow-sm shadow-violet-100/60 ring-1 ring-violet-100/70 transition-all duration-300 hover:bg-violet-100/80 hover:scale-110 hover:shadow-violet-200 active:scale-90 sm:h-11 sm:w-11 sm:rounded-[1.25rem]"
               :disabled="disabled || isEditing"
               type="button"
               @click="toggleEmoji"
@@ -210,7 +247,7 @@
       </div>
 
       <button
-        class="group/send relative flex h-14 w-14 items-center justify-center rounded-[1.5rem] bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20 transition-all duration-300 hover:from-blue-700 hover:to-indigo-700 active:scale-95 disabled:opacity-40"
+        class="group/send relative flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[1.25rem] bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/25 transition-all duration-300 hover:from-violet-700 hover:to-fuchsia-700 hover:shadow-violet-500/30 active:scale-95 disabled:opacity-40 sm:h-14 sm:w-14 sm:rounded-[1.5rem]"
         :disabled="disabled || (!message.trim() && !attachments.length)"
         type="button"
         @click="send"
@@ -241,7 +278,7 @@
 
 <script>
 import EmojiPicker from './EmojiPicker.vue'
-import { describeMediaItem } from './chatMediaCatalog'
+import { buildMediaUrl } from '@/utils/avatars'
 
 export default {
   components: {
@@ -263,6 +300,10 @@ export default {
     replyingMessage: {
       type: Object,
       default: null,
+    },
+    currentUserId: {
+      type: [Number, String],
+      default: '',
     },
   },
   emits: ['send', 'cancel-edit', 'cancel-reply', 'typing', 'draft-change'],
@@ -290,22 +331,55 @@ export default {
       return Boolean(this.replyingMessage)
     },
     replyPreviewText() {
+      if (this.replyingMessage?.is_deleted) return 'Message deleted'
       const type = String(this.replyingMessage?.message_type || this.replyingMessage?.type || 'text').toLowerCase()
-      if (type === 'gif' || type === 'sticker') {
-        return describeMediaItem({
-          kind: type,
-          title: this.replyingMessage?.media_title || this.replyingMessage?.provider_id || type,
-        })
-      }
-      return this.replyingMessage?.content || 'Message'
+      if (type === 'gif') return 'GIF'
+      if (type === 'sticker') return 'Sticker'
+      if (this.replyingMessage?.content?.trim()) return this.replyingMessage.content.trim()
+      if (this.replyPreviewMedia?.kind === 'video') return 'Video'
+      if (this.replyPreviewMedia?.kind === 'image') return 'Photo'
+      return 'Message'
+    },
+    replyPreviewMedia() {
+      const message = this.replyingMessage
+      if (!message || message.is_deleted) return null
+      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
+      const mediaType = String(message?.media_type || '').toLowerCase()
+      const preview = message?.media_preview || message?.preview || message?.last_message_preview || null
+      const raw =
+        type === 'gif'
+          ? message?.gif_url || message?.external_url || preview?.url || ''
+          : type === 'sticker'
+            ? message?.sticker_url || message?.external_url || preview?.url || ''
+            : message?.media_url || message?.media || preview?.url || ''
+      const url = buildMediaUrl(raw || '')
+      if (!url) return null
+      if (type === 'gif') return { kind: 'gif', url }
+      if (type === 'sticker') return { kind: 'sticker', url }
+      const isVideo =
+        preview?.kind === 'video' ||
+        mediaType.startsWith('video/') ||
+        /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(String(url))
+      return { kind: isVideo ? 'video' : 'image', url }
     },
     replyingSenderName() {
+      if (String(this.replyingSenderId) === String(this.currentUserId ?? '')) {
+        return 'You'
+      }
       return (
+        this.replyingMessage?.sender_display_name ||
         this.replyingMessage?.sender_username ||
         this.replyingMessage?.sender?.username ||
         this.replyingMessage?.sender_user?.username ||
-        'message'
+        'Message'
       )
+    },
+    replyingSenderId() {
+      const sender = this.replyingMessage?.sender
+      if (sender && typeof sender === 'object') {
+        return sender.id ?? sender.user_id ?? sender.pk ?? ''
+      }
+      return this.replyingMessage?.sender_id ?? sender ?? ''
     },
   },
   watch: {

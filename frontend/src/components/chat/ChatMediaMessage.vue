@@ -82,9 +82,8 @@ const kindLabel = computed(() => (props.kind === 'gif' ? 'GIF' : 'Sticker'))
 const shouldUseVideo = computed(() => props.sourceUrl.toLowerCase().endsWith('.mp4'))
 const label = computed(() => props.label || props.title || kindLabel.value)
 const mediaStyle = computed(() => ({
-  '--chat-media-max-width': props.kind === 'gif' ? '20rem' : '12.5rem',
-  '--chat-media-max-height': props.kind === 'gif' ? '22rem' : '14rem',
-  '--chat-media-min-width': props.compact ? '10rem' : props.kind === 'gif' ? '11.5rem' : '8.5rem',
+  '--chat-media-width': props.kind === 'gif' ? 'clamp(11rem, 32vw, 15.5rem)' : 'clamp(5.75rem, 20vw, 8rem)',
+  '--chat-media-aspect': props.kind === 'gif' ? '4 / 3' : '1 / 1',
 }))
 
 watch(
@@ -107,43 +106,26 @@ function handleError() {
   display: flex;
   flex-direction: column;
   width: fit-content;
-  max-width: min(100%, var(--chat-media-max-width, 18.5rem));
-  min-width: var(--chat-media-min-width, 0);
-}
-
-.chat-media-message--gif {
-  max-width: min(100%, 19rem);
-}
-
-.chat-media-message--sticker {
-  max-width: min(100%, 12.5rem);
-}
-
-.chat-media-message--compact {
-  max-width: min(100%, 14rem);
+  max-width: 100%;
 }
 
 .chat-media-message__frame {
   position: relative;
   overflow: hidden;
-  border-radius: 1.5rem;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(226, 232, 240, 0.92));
+  width: min(var(--chat-media-width, 15.5rem), 100%);
+  aspect-ratio: var(--chat-media-aspect, 4 / 3);
+  max-height: min(36vh, 14rem);
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, rgba(240, 249, 255, 0.98), rgba(238, 242, 255, 0.94));
   box-shadow:
-    0 18px 40px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  padding: 0.55rem;
+    0 1px 1px rgba(15, 23, 42, 0.04),
+    0 8px 22px rgba(79, 70, 229, 0.07);
 }
 
 .chat-media-message--sticker .chat-media-message__frame {
-  padding: 0.15rem;
-  border-radius: 1.1rem;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.88)),
-    radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.16) 1px, transparent 0);
-  background-size: auto, 12px 12px;
-  box-shadow:
-    0 10px 24px rgba(15, 23, 42, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .dark .chat-media-message__frame {
@@ -153,27 +135,41 @@ function handleError() {
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
+.dark .chat-media-message--sticker .chat-media-message__frame {
+  background: transparent;
+  box-shadow: none;
+}
+
 .chat-media-message__media {
   display: block;
-  width: auto;
-  max-width: 100%;
-  max-height: var(--chat-media-max-height, 20rem);
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 1.05rem;
-  aspect-ratio: auto;
+  border-radius: inherit;
   background: rgba(255, 255, 255, 0.02);
 }
 
 .chat-media-message--sticker .chat-media-message__media {
-  max-height: var(--chat-media-max-height, 14rem);
   object-fit: contain;
+  padding: 0;
+}
+
+@media (max-width: 480px) {
+  .chat-media-message {
+    width: fit-content;
+  }
+
+  .chat-media-message__frame {
+    width: min(var(--chat-media-width, 15.5rem), calc(100vw - 2rem));
+    border-radius: 0.85rem;
+  }
 }
 
 .chat-media-message__skeleton {
   position: absolute;
-  inset: 0.55rem;
+  inset: 0;
   overflow: hidden;
-  border-radius: 1.05rem;
+  border-radius: inherit;
   background: rgba(148, 163, 184, 0.15);
 }
 

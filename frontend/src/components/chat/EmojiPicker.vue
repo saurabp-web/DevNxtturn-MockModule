@@ -487,7 +487,9 @@ function selectEmoji(rawEmoji: string) {
   saveRecentEmoji(emoji)
   recentEmojis.value = getRecentEmojis()
   emit('select', emoji)
-  emit('close')
+  if (props.mode !== 'composer') {
+    emit('close')
+  }
 }
 
 function selectMedia(item: ChatMediaItem) {

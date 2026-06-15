@@ -959,7 +959,7 @@ const currentUsername = computed(() => currentUser.value?.username || '')
               <span class="nav-label nav-label-network">Network</span>
             </RouterLink>
 
-            <!-- MESSAGES (Now with color-filled solid icon and slightly bigger) -->
+            <!-- MESSAGES  -->
             <RouterLink
               :to="{ name: 'messages' }"
               class="nav-btn group relative flex flex-col items-center justify-center gap-0 focus-ring min-w-[50px] lg:min-w-[60px] hover:bg-messages-hover"
@@ -1665,14 +1665,24 @@ const currentUsername = computed(() => currentUser.value?.username || '')
               </RouterLink>
 
               <!-- MESSAGES (Swapped in mobile too) -->
-              <button
-                @click="handleNonNavigableClick"
-                class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-messages-hover transition-colors text-left"
+              <RouterLink
+              :to="{ name: 'messages' }"
+              class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-network-hover transition-colors text-left"
+
+            >
+              <ChatBubbleLeftRightIconSolid
+                class="icon icon-messages icon-messages-solid"
+                aria-hidden="true"
+              />
+              <span class=" font-medium text-gray-900">Messages</span>
+              <span
+                v-if="unreadMessageCount > 0"
+                class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full"
+                aria-label="unread messages"
               >
-                <ChatBubbleLeftRightIconSolid class="h-6 w-6 text-current" />
-                <span class="font-medium text-gray-900">Messages</span>
-                <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
-              </button>
+                {{ unreadMessageCount > 9 ? '9+' : unreadMessageCount }}
+              </span>
+            </RouterLink>
 
               <!-- NOTIFICATIONS -->
               <RouterLink

@@ -14,6 +14,16 @@ type Events = {
   'connection-established': number
   'messaging-read-updated': void
   'messaging-presence-updated': { user_id: number; username?: string; is_online: boolean }
+  'messaging-last-message-updated': {
+    user_id: number | string
+    last_message: string
+    timestamp?: string
+    is_mine: boolean
+    preview?: {
+      kind: 'image' | 'video' | 'gif' | 'sticker'
+      url: string
+    } | null
+  }
   'messaging-thread-read': {
     reader_id: number
     sender_id?: number
