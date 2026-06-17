@@ -1,13 +1,7 @@
-<template>
-  <img
-    :src="displayedSrc || src"
-    :alt="alt"
-    v-bind="$attrs"
-  />
-</template>
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-<script>
-export default {
+export default defineComponent({
   inheritAttrs: false,
   props: {
     src: {
@@ -21,14 +15,14 @@ export default {
   },
   data() {
     return {
-      displayedSrc: this.src,
-      loadToken: 0,
+      displayedSrc: this.src as string,
+      loadToken: 0 as number,
     }
   },
   watch: {
     src: {
       immediate: true,
-      handler(nextSrc) {
+      handler(nextSrc: string) {
         if (!nextSrc || nextSrc === this.displayedSrc) return
         if (nextSrc.startsWith('data:')) {
           this.displayedSrc = nextSrc
@@ -53,5 +47,9 @@ export default {
       },
     },
   },
-}
+})
 </script>
+
+<template>
+  <img :src="displayedSrc || src" :alt="alt" v-bind="$attrs" />
+</template>

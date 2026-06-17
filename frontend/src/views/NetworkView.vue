@@ -206,9 +206,7 @@ const handleCancel = async (user: any) => {
 }
 
 const handleMessage = (user: any) => {
-  // Logic to navigate to conversation or open chat window
-  console.log('Opening chat with:', user.username)
-  // Example: router.push({ name: 'messages', query: { user: user.username }})
+  router.push({ name: 'messages', query: { user: user.username } })
 }
 
 // Watch for tab changes, authentication, and user load

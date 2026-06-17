@@ -1,309 +1,5 @@
-<template>
-  <div :class="['mb-3 flex w-full', isMe ? 'justify-end' : 'justify-start']" :data-message-id="message?.id"
-    @dblclick="toggleReactions" @pointerdown="onPointerDown" @pointerup="onPointerUp" @pointercancel="onPointerCancel"
-    @pointermove="onPointerMove" @contextmenu="onContextMenu">
-    <div :class="[
-      'message-bubble-shell flex min-w-0 flex-col gap-1.5',
-      isMe ? 'message-bubble-shell--me items-end' : 'items-start',
-      hasMedia ? 'message-bubble-shell--media' : 'message-bubble-shell--text',
-      hasMedia && hasText ? 'message-bubble-shell--captioned' : '',
-      isChatMediaMessage ? 'message-bubble-shell--chat-media' : '',
-    ]">
-      <div class="relative min-w-0 max-w-full">
-        <!-- Reactions Popup -->
-        <transition enter-active-class="transition duration-200 ease-out"
-          enter-from-class="transform scale-95 opacity-0 translate-y-1"
-          enter-to-class="transform scale-100 opacity-100 translate-y-0"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="transform scale-100 opacity-100 translate-y-0"
-          leave-to-class="transform scale-95 opacity-0 translate-y-1">
-          <div v-if="showReactions" ref="reactionsPopup"
-            class="absolute bottom-full z-40 mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[#1e1e1e]/95 px-3 py-2 shadow-[0_18px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl"
-            :class="isMe ? 'right-0' : 'left-0'" @click.stop>
-            <button v-for="emoji in quickEmojis" :key="emoji"
-              class="flex h-8 w-8 items-center justify-center rounded-full text-xl transition-all duration-150 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/25"
-              :class="myReaction === emoji ? 'bg-white/20 ring-2 ring-white/30' : ''" type="button"
-              :aria-label="`React with ${emoji} emoji`" @click.stop="selectReaction(emoji)">
-              <span class="reaction-emoji">{{ emoji }}</span>
-            </button>
-            <button
-              class="flex h-8 w-8 items-center justify-center rounded-full text-[20px] font-medium leading-none text-white/90 transition-transform duration-150 hover:scale-110 hover:bg-white/10 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/25"
-              type="button" aria-label="Open emoji palette" @click.stop="toggleEmojiPalette">
-              +
-            </button>
-          </div>
-        </transition>
-
-        <!-- Reply Preview -->
-        <div v-if="showReplyPreview"
-          class="reply-preview-bubble mb-1.5 max-w-full overflow-hidden rounded-xl border text-xs shadow-sm"
-          :class="isMe ? 'mr-2' : 'ml-2'">
-          <div class="flex min-w-0 gap-2 px-2.5 py-2">
-            <div class="h-auto w-1 flex-shrink-0 rounded-full"
-              :class="replyToMessage.is_deleted ? 'bg-slate-300' : isMe ? 'bg-sky-500' : 'bg-violet-500'"></div>
-            <div class="min-w-0 flex-1">
-              <div class="truncate text-[11px] font-black"
-                :class="replyToMessage.is_deleted ? 'text-slate-500' : isMe ? 'text-sky-700' : 'text-violet-700'">
-                {{ replySenderName(replyToMessage) }}
-              </div>
-              <div class="reply-preview-text mt-0.5 line-clamp-2 text-[12px] font-medium leading-snug"
-                :class="replyToMessage.is_deleted ? 'italic text-slate-400' : 'text-slate-600'">
-                {{ replyPreviewText(replyToMessage) }}
-              </div>
-            </div>
-            <div v-if="replyPreviewMedia(replyToMessage)"
-              class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 ring-1 ring-white/80">
-              <img v-if="replyPreviewMedia(replyToMessage).kind !== 'video'"
-                :src="replyPreviewMedia(replyToMessage).url" alt="" class="h-full w-full object-cover" />
-              <video v-else :src="replyPreviewMedia(replyToMessage).url" class="h-full w-full object-cover" muted
-                playsinline preload="metadata"></video>
-            </div>
-          </div>
-        </div>
-
-        <!-- Main Message Card -->
-        <div data-message-card
-          class="message-card relative min-w-0 max-w-full overflow-hidden rounded-2xl shadow-sm transition-all duration-200 group"
-          :class="[
-            isDeleted
-              ? 'bg-slate-100/80 px-4 py-2.5 backdrop-blur-sm'
-              : isEmojiOnlyMessage
-                ? 'bg-transparent px-0 py-0 shadow-none overflow-visible'
-                : isChatMediaMessage
-                  ? 'message-card--chat-media bg-transparent px-0 py-0 shadow-none overflow-visible'
-                  : hasMedia
-                    ? 'message-card--media'
-                    : 'px-4 py-2.5',
-            hasMedia && hasText ? 'message-card--captioned-media' : '',
-            hasMedia && !hasText ? 'message-card--media-only' : '',
-            hasMedia && isMe ? 'message-card--me-media' : '',
-            hasMedia && !isMe ? 'message-card--their-media' : '',
-            hasMedia ? `message-card--media-${mediaOrientation}` : '',
-            !hasMedia && !isMe && !isDeleted && !isEmojiOnlyMessage && !isChatMediaMessage ? 'message-card--their-text' : '',
-            !isDeleted && !hasMedia && !isEmojiOnlyMessage && !isChatMediaMessage && !isMe
-              ? ''
-              : '',
-            isMe && !isDeleted && !hasMedia && !isEmojiOnlyMessage && !isChatMediaMessage
-              ? 'border border-sky-200/80 bg-sky-50 text-slate-900 shadow-sm shadow-sky-100/70'
-              : 'text-slate-900',
-            isMe && !isDeleted && !hasMedia && !isEmojiOnlyMessage && !isChatMediaMessage
-              ? 'rounded-br-md'
-              : 'rounded-bl-md',
-          ]">
-          <div v-if="isDeleted" class="flex items-center gap-2">
-            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path
-                d="M12 9v4m0 4h.01M10.29 3.86l-8.1 14A2 2 0 004.1 21h15.8a2 2 0 001.91-2.14l-8.1-14a2 2 0 00-3.42 0z"
-                stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            <span class="italic text-sm text-slate-500">{{ deletedMessageText }}</span>
-          </div>
-
-          <template v-else>
-            <template v-if="isChatMediaMessage">
-              <ChatMediaMessage :kind="messageType === 'gif' ? 'gif' : 'sticker'" :source-url="chatMediaSourceUrl"
-                :title="chatMediaTitle" :label="chatMediaLabel" :animated="Boolean(message?.animated)" :compact="isMe"
-                :show-meta="false" />
-            </template>
-
-            <!-- Media Content -->
-            <div v-if="hasMedia" class="message-media-frame group/media" :class="[
-              isVideo(media) ? 'message-media-frame--video' : 'message-media-frame--image',
-              hasText ? 'message-media-frame--with-caption' : 'message-media-frame--solo',
-              `message-media-frame--${mediaOrientation}`,
-            ]">
-              <div v-if="mediaLoading && (isImage(media) || isVideo(media))"
-                class="absolute inset-0 z-10 flex items-center justify-center bg-white/80 backdrop-blur-sm">
-                <div class="h-8 w-8 animate-spin rounded-full border-2 border-violet-400 border-t-transparent"></div>
-              </div>
-
-              <div v-if="mediaError" class="flex h-full w-full items-center justify-center bg-rose-50 p-6">
-                <div class="text-center">
-                  <svg class="mx-auto h-8 w-8 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <p class="mt-1 text-xs text-rose-500">Failed to load</p>
-                </div>
-              </div>
-
-              <img v-else-if="isImage(media)" v-show="!mediaLoading" :src="cachedMediaUrl" alt="Shared media"
-                class="message-media-content cursor-pointer transition-transform hover:scale-105"
-                @click="openMediaPreview('image', cachedMediaUrl)" @load="onMediaLoad" @error="onMediaError" />
-
-              <video v-else-if="isVideo(media)" :src="cachedMediaUrl" controls class="message-media-content bg-black"
-                @loadedmetadata="onMediaLoad" @error="onMediaError" />
-
-              <!-- <button v-if="!mediaError && !mediaLoading && (isImage(media) || isVideo(media))"
-                class="message-media-expand" type="button" aria-label="Open media full view"
-                @click.stop="openMediaPreview(isVideo(media) ? 'video' : 'image', cachedMediaUrl)">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                  <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3m8 0h3a2 2 0 002-2v-3"
-                    stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </button> -->
-
-              <a v-if="!isImage(media) && !isVideo(media) && !mediaError" :href="cachedMediaUrl" target="_blank"
-                rel="noopener noreferrer"
-                class="flex h-full w-full items-center gap-3 bg-slate-50 p-3 transition-colors hover:bg-slate-100">
-                <svg class="h-8 w-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <div class="flex-1">
-                  <div class="text-sm font-medium text-slate-700">File attachment</div>
-                  <div class="text-xs text-slate-500">Click to download</div>
-                </div>
-              </a>
-            </div>
-
-            <!-- Text Content -->
-            <div v-if="hasText" :class="[
-              'message-text text-sm leading-relaxed',
-              hasMedia ? 'message-text--caption' : 'message-text--standalone',
-              isEmojiOnlyMessage ? 'emoji-only-message' : '',
-            ]">
-              <template v-if="isEmojiOnlyMessage">
-                <div class="emoji-only-message__row">
-                  <AnimatedEmoji v-for="(emoji, index) in emojiOnlyEmojis" :key="`${emoji}-${index}`" :emoji="emoji"
-                    :size="emojiOnlySize" :animated="true" />
-                </div>
-              </template>
-              <template v-else>
-                <AnimatedMessage :text="message.content" />
-              </template>
-            </div>
-
-            <!-- Timestamp and Actions -->
-            <div class="message-meta mt-1.5 flex items-center gap-1.5" :class="isMe ? 'justify-end' : 'justify-start'">
-              <span class="text-[10px] font-semibold" :class="isMe ? 'text-slate-500' : 'text-slate-400'">
-                {{ formattedTime }}
-              </span>
-              <span v-if="message.edited_at" class="text-[9px] font-medium"
-                :class="isMe ? 'text-slate-500' : 'text-slate-400'">
-                Edited
-              </span>
-              <span v-if="isMe && !isDeleted" class="message-delivery-ticks" :class="statusClass"
-                :aria-label="statusLabel">
-                <svg class="h-3.5 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M2.8 13.3l4.3 4.3L16.8 7.9" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M8.1 13.3l4.3 4.3 8.8-9.7" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </div>
-          </template>
-        </div>
-
-        <!-- Reactions Display -->
-        <div v-if="!isDeleted && reactions.length > 0" class="mt-1 flex flex-wrap gap-1"
-          :class="isMe ? 'justify-end' : 'justify-start'">
-          <button v-for="reaction in visibleReactions" :key="reaction.emoji"
-            class="flex cursor-pointer items-center gap-1 rounded-full border border-slate-200/80 bg-white/90 px-2 py-0.5 text-xs font-medium text-slate-600 shadow-sm backdrop-blur-sm transition-all hover:scale-105 hover:bg-white hover:shadow-md"
-            :class="myReaction === reaction.emoji ? '!border-violet-300 !bg-violet-50 text-violet-700 ring-1 ring-violet-200' : ''"
-            type="button" :aria-label="`React with ${reaction.emoji}`" @click.stop="selectReaction(reaction.emoji)">
-            <span class="reaction-emoji reaction-emoji--small">{{ reaction.emoji }}</span>
-            <span>{{ reaction.count }}</span>
-          </button>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- More Reactions Panel -->
-    <teleport to="body">
-      <transition enter-active-class="transition duration-150 ease-out"
-        enter-from-class="opacity-0 translate-y-2 scale-95" enter-to-class="opacity-100 translate-y-0 scale-100"
-        leave-active-class="transition duration-120 ease-in" leave-from-class="opacity-100 translate-y-0 scale-100"
-        leave-to-class="opacity-0 translate-y-2 scale-95">
-        <div v-if="showEmojiPalette" ref="emojiPalette"
-          class="fixed z-[260] h-[min(28rem,70vh)] w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/20"
-          :style="emojiPaletteStyle" @click.stop>
-          <EmojiPicker :open="showEmojiPalette" @select="selectReactionFromPalette" @close="showEmojiPalette = false" />
-        </div>
-      </transition>
-    </teleport>
-
-    <!-- Context Menu -->
-    <teleport to="body">
-      <transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 scale-95"
-        enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-120 ease-in"
-        leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-        <div v-if="showActions" ref="actionMenu"
-          class="fixed z-[120] w-56 overflow-hidden rounded-xl border border-violet-100/80 bg-white/95 py-1 shadow-xl shadow-violet-100/50 backdrop-blur-xl"
-          :style="actionMenuStyle" role="menu" @click.stop>
-          <button
-            class="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-violet-50"
-            type="button" @click="emitReply">
-            <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M3 10l7-7v4c8 0 11 5 11 13-3-5-7-6-11-6v4l-7-8z" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-            Reply
-          </button>
-
-          <button v-if="canCopy"
-            class="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-violet-50"
-            type="button" @click="copyMessage">
-            <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M8 8h10v12H8z" stroke-linejoin="round" />
-              <path d="M6 16H5a2 2 0 01-2-2V5a2 2 0 012-2h9a2 2 0 012 2v1" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-            Copy
-          </button>
-
-          <div v-if="isMe && !isDeleted" class="my-1 border-t border-violet-100"></div>
-
-          <button v-if="isMe && !isDeleted && canEdit"
-            class="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-violet-50"
-            type="button" @click="emitEdit">
-            <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M4 20h4l10-10a2.5 2.5 0 10-4-4L4 16v4z" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            Edit
-          </button>
-
-          <button v-if="isMe && !isDeleted"
-            class="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50"
-            type="button" @click="emitDelete">
-            <svg class="h-4 w-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M6 7h12M9 7V5h6v2m-8 0l1 14h6l1-14" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            Delete
-          </button>
-        </div>
-      </transition>
-    </teleport>
-
-    <teleport to="body">
-      <!-- Media Preview Modal -->
-      <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"
-        enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100"
-        leave-to-class="opacity-0">
-        <div v-if="showImagePreview"
-          class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md"
-          @click.self="closeMediaPreview" @keydown.escape="closeMediaPreview">
-          <div class="media-preview-shell">
-            <img v-if="previewType === 'image'" :src="previewUrl" alt="Full screen preview"
-              class="media-preview-content" />
-            <div v-else-if="previewType === 'video'" class="media-preview-video">
-              <video ref="previewVideo" :src="previewUrl" class="media-preview-content bg-black" autoplay playsinline
-                @click="togglePreviewVideo" @loadedmetadata="onPreviewVideoLoaded"
-                @timeupdate="onPreviewVideoTimeUpdate" @play="previewVideoPaused = false"
-                @pause="previewVideoPaused = true" @ended="previewVideoPaused = true" />
-            </div>
-            <button class="media-preview-close" type="button" aria-label="Close media full view"
-              @click.stop="closeMediaPreview">
-              ×
-            </button>
-          </div>
-        </div>
-      </transition>
-    </teleport>
-  </div>
-</template>
-
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import AnimatedEmoji from './AnimatedEmoji.vue'
 import AnimatedMessage from './AnimatedMessage.vue'
 import EmojiPicker from './EmojiPicker.vue'
@@ -340,7 +36,7 @@ const EXTRA_REACTION_EMOJIS = [
   '😂',
 ]
 
-export default {
+export default defineComponent({
   name: 'MessageBubble',
   components: {
     AnimatedEmoji,
@@ -366,46 +62,46 @@ export default {
   data() {
     return {
       showReactions: false,
-      lastTap: 0,
+      lastTap: 0 as number,
       wasScrolling: false,
-      pressTimer: null,
+      pressTimer: null as any,
       pointerIsDown: false,
       activePointerType: '',
       showImagePreview: false,
       previewUrl: '',
       previewType: 'image',
       previewVideoPaused: true,
-      previewVideoCurrentTime: 0,
-      previewVideoDuration: 0,
+      previewVideoCurrentTime: 0 as number,
+      previewVideoDuration: 0 as number,
       mediaOrientation: 'landscape',
       showActions: false,
       showEmojiPalette: false,
-      actionMenuX: 0,
-      actionMenuY: 0,
-      emojiPaletteX: 12,
-      emojiPaletteY: 12,
+      actionMenuX: 0 as number,
+      actionMenuY: 0 as number,
+      emojiPaletteX: 12 as number,
+      emojiPaletteY: 12 as number,
       mediaLoading: true,
       mediaError: false,
-      _cachedTimestamp: null,
-      _cachedFormattedTime: null,
-      _cachedMediaUrl: null,
+      _cachedTimestamp: null as any,
+      _cachedFormattedTime: null as any,
+      _cachedMediaUrl: null as any,
       _previousBodyOverflow: '',
     }
   },
   computed: {
-    quickEmojis() {
+    quickEmojis(): string[] {
       return QUICK_EMOJIS
     },
-    emojiTokens() {
+    emojiTokens(): any[] {
       return tokenizeMessageText(this.message?.content || '')
     },
-    isEmojiOnlyText() {
+    isEmojiOnlyText(): boolean {
       return isEmojiOnlyMessage(this.emojiTokens)
     },
-    emojiOnlyEmojis() {
+    emojiOnlyEmojis(): string[] {
       return this.emojiTokens.filter((token) => token.type === 'emoji').map((token) => token.value)
     },
-    emojiOnlySize() {
+    emojiOnlySize(): number {
       switch (this.emojiOnlyEmojis.length) {
         case 1:
           return 58
@@ -417,12 +113,15 @@ export default {
           return 28
       }
     },
-    reactions() {
+    reactions(): any[] {
       return this.message?.reactions || []
     },
-    visibleReactions() {
+    visibleReactions(): any[] {
       const firstReactions = this.reactions.slice(0, 2)
-      if (!this.myReaction || firstReactions.some((reaction) => reaction.emoji === this.myReaction)) {
+      if (
+        !this.myReaction ||
+        firstReactions.some((reaction) => reaction.emoji === this.myReaction)
+      ) {
         return firstReactions
       }
       const selectedReaction = this.reactions.find((reaction) => reaction.emoji === this.myReaction)
@@ -431,72 +130,79 @@ export default {
         ? [firstReactions[0], selectedReaction]
         : [...firstReactions, selectedReaction]
     },
-    myReaction() {
+    myReaction(): string {
       return String(this.message?.my_reaction || '').trim()
     },
-    deliveryState() {
+    deliveryState(): string {
       if (!this.isMe || this.isDeleted) return 'none'
       return this.message?.is_read ? 'seen' : 'delivered'
     },
-    statusLabel() {
+    statusLabel(): string {
       if (this.deliveryState === 'seen') return 'Seen'
       if (this.deliveryState === 'delivered') return 'Delivered'
       return 'Sent'
     },
-    statusClass() {
+    statusClass(): string {
       if (this.deliveryState === 'seen') return 'text-sky-500'
       if (this.deliveryState === 'delivered') return 'text-slate-400'
       return 'text-slate-400'
     },
-    isDeleted() {
+    isDeleted(): boolean {
       return Boolean(this.message?.is_deleted)
     },
-    deletedMessageText() {
+    deletedMessageText(): string {
       return this.isMe ? 'You deleted this message' : 'This message was deleted'
     },
-    hasText() {
+    hasText(): boolean {
       return Boolean(this.message?.content?.trim()) && !this.isDeleted && !this.isChatMessage
     },
-    isEmojiOnlyMessage() {
+    isEmojiOnlyMessage(): boolean {
       return this.hasText && this.isEmojiOnlyText && !this.hasMedia
     },
-    media() {
+    media(): any {
       return this.message || null
     },
-    hasMedia() {
+    hasMedia(): boolean {
       return Boolean((this.media?.media_url || this.media?.media) && !this.isDeleted)
     },
-    isMediaOnly() {
+    isMediaOnly(): boolean {
       return this.hasMedia && !this.hasText
     },
-    messageType() {
+    messageType(): string {
       return String(this.message?.message_type || 'text').toLowerCase()
     },
-    isChatMessage() {
+    isChatMessage(): boolean {
       return this.messageType === 'gif' || this.messageType === 'sticker'
     },
-    isChatMediaMessage() {
+    isChatMediaMessage(): boolean {
       return this.isChatMessage && !this.isDeleted
     },
-    chatMediaKindLabel() {
+    chatMediaKindLabel(): string {
       return this.messageType === 'gif' ? 'GIF' : this.messageType === 'sticker' ? 'Sticker' : ''
     },
-    chatMediaTitle() {
+    chatMediaTitle(): string {
       if (!this.isChatMessage) return ''
-      return this.message?.media_title || this.message?.provider_id || this.message?.providerId || this.chatMediaKindLabel
+      return (
+        this.message?.media_title ||
+        this.message?.provider_id ||
+        this.message?.providerId ||
+        this.chatMediaKindLabel
+      )
     },
-    chatMediaSourceUrl() {
-      if (this.messageType === 'gif') return this.message?.gif_url || this.message?.external_url || ''
-      if (this.messageType === 'sticker') return this.message?.sticker_url || this.message?.external_url || ''
+    chatMediaSourceUrl(): string {
+      if (this.messageType === 'gif')
+        return this.message?.gif_url || this.message?.external_url || ''
+      if (this.messageType === 'sticker')
+        return this.message?.sticker_url || this.message?.external_url || ''
       return ''
     },
-    chatMediaLabel() {
+    chatMediaLabel(): string {
       return describeMediaItem({
         kind: this.messageType === 'gif' ? 'gif' : 'sticker',
         title: this.chatMediaTitle,
       })
     },
-    formattedTime() {
+    formattedTime(): string {
       const ts = this.message?.timestamp
       if (!ts) return ''
 
@@ -511,45 +217,45 @@ export default {
       })
       return this._cachedFormattedTime
     },
-    formattedPreviewVideoTime() {
+    formattedPreviewVideoTime(): string {
       return `${this.formatVideoTime(this.previewVideoCurrentTime)} / ${this.formatVideoTime(this.previewVideoDuration)}`
     },
-    actionMenuStyle() {
+    actionMenuStyle(): Record<string, string> {
       return {
         left: `${this.actionMenuX}px`,
         top: `${this.actionMenuY}px`,
       }
     },
-    emojiPaletteStyle() {
+    emojiPaletteStyle(): Record<string, string> {
       return {
         left: `${this.emojiPaletteX}px`,
         top: `${this.emojiPaletteY}px`,
       }
     },
-    canEdit() {
+    canEdit(): boolean {
       if (this.isChatMediaMessage) return false
       return Boolean(this.message?.can_edit) || this.hasEditableMediaCaption
     },
-    isVisualMediaMessage() {
+    isVisualMediaMessage(): boolean {
       return this.hasMedia && (this.isImage(this.media) || this.isVideo(this.media))
     },
-    hasEditableMediaCaption() {
+    hasEditableMediaCaption(): boolean {
       return this.isMe && this.isVisualMediaMessage && Boolean(this.message?.content?.trim())
     },
-    copyableText() {
+    copyableText(): string {
       if (this.isChatMediaMessage) return ''
       return this.message?.content?.trim() || ''
     },
-    canCopy() {
+    canCopy(): boolean {
       return Boolean(this.copyableText)
     },
-    replyToMessage() {
+    replyToMessage(): any {
       return this.message?.reply_to_message || null
     },
-    showReplyPreview() {
+    showReplyPreview(): boolean {
       return Boolean(this.replyToMessage) && !this.isDeleted
     },
-    cachedMediaUrl() {
+    cachedMediaUrl(): string {
       if (!this.hasMedia) return ''
       if (this._cachedMediaUrl) return this._cachedMediaUrl
 
@@ -573,7 +279,7 @@ export default {
     },
   },
   methods: {
-    replyPreviewText(message) {
+    replyPreviewText(message: any): string {
       if (!message) return ''
       if (message.is_deleted) return 'Message deleted'
       const type = String(message?.message_type || message?.type || 'text').toLowerCase()
@@ -585,11 +291,12 @@ export default {
       if (media?.kind === 'image') return 'Photo'
       return ''
     },
-    replyPreviewMedia(message) {
+    replyPreviewMedia(message: any): any {
       if (!message || message.is_deleted) return null
       const type = String(message?.message_type || message?.type || 'text').toLowerCase()
       const mediaType = String(message?.media_type || '').toLowerCase()
-      const preview = message?.media_preview || message?.preview || message?.last_message_preview || null
+      const preview =
+        message?.media_preview || message?.preview || message?.last_message_preview || null
       const raw =
         type === 'gif'
           ? message?.gif_url || message?.external_url || preview?.url || ''
@@ -606,12 +313,12 @@ export default {
         /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(String(url))
       return { kind: isVideo ? 'video' : 'image', url }
     },
-    replySenderName(message) {
+    replySenderName(message: any): string {
       if (!message) return 'Message'
       if (String(message.sender_id ?? '') === String(this.currentUserId ?? '')) return 'You'
       return message.sender_display_name || message.sender_username || 'Message'
     },
-    onContextMenu(event) {
+    onContextMenu(event: any) {
       if (this.isDeleted) return
       event.preventDefault()
       const offset = 12
@@ -621,20 +328,24 @@ export default {
       const paneRect = pane.getBoundingClientRect?.()
       const leftBound = paneRect ? paneRect.left + offset : offset
       const topBound = paneRect ? paneRect.top + offset : offset
-      const rightBound = paneRect ? paneRect.right - menuWidth - offset : window.innerWidth - menuWidth - offset
-      const bottomBound = paneRect ? paneRect.bottom - menuHeight - offset : window.innerHeight - menuHeight - offset
+      const rightBound = paneRect
+        ? paneRect.right - menuWidth - offset
+        : window.innerWidth - menuWidth - offset
+      const bottomBound = paneRect
+        ? paneRect.bottom - menuHeight - offset
+        : window.innerHeight - menuHeight - offset
 
       this.actionMenuX = Math.max(leftBound, Math.min(event.clientX + offset, rightBound))
       this.actionMenuY = Math.max(topBound, Math.min(event.clientY + offset, bottomBound))
       this.showActions = true
       this.showReactions = false
     },
-    closeActions(event) {
+    closeActions(event?: any) {
       if (
         event &&
-        ((this.$refs.actionMenu && this.$refs.actionMenu.contains(event.target)) ||
-          (this.$refs.emojiPalette && this.$refs.emojiPalette.contains(event.target)) ||
-          (this.$refs.reactionsPopup && this.$refs.reactionsPopup.contains(event.target)))
+        ((this.$refs.actionMenu as HTMLElement | null)?.contains(event.target) ||
+          (this.$refs.emojiPalette as HTMLElement | null)?.contains(event.target) ||
+          (this.$refs.reactionsPopup as HTMLElement | null)?.contains(event.target))
       ) {
         return
       }
@@ -645,10 +356,10 @@ export default {
     handleScroll() {
       if (this.showActions) this.showActions = false
     },
-    onKeydown(event) {
+    onKeydown(event: any) {
       if (event.key === 'Escape') this.closeActions()
     },
-    onPointerDown(event) {
+    onPointerDown(event: any) {
       if (this.isDeleted) return
       this.pointerIsDown = true
       this.activePointerType = event.pointerType || ''
@@ -680,10 +391,10 @@ export default {
         this.wasScrolling = true
       }
     },
-    handlePreviewKeydown(event) {
+    handlePreviewKeydown(event: any) {
       if (event.key === 'Escape') this.closeImage()
     },
-    isImage(message) {
+    isImage(message: any): boolean {
       const mediaType = message?.media_type || ''
       if (mediaType.startsWith('image/')) return true
       const url = this.cachedMediaUrl.toLowerCase()
@@ -695,13 +406,18 @@ export default {
         url.endsWith('.webp')
       )
     },
-    isVideo(message) {
+    isVideo(message: any): boolean {
       const mediaType = message?.media_type || ''
       if (mediaType.startsWith('video/')) return true
       const url = this.cachedMediaUrl.toLowerCase()
-      return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg') || url.endsWith('.mov')
+      return (
+        url.endsWith('.mp4') ||
+        url.endsWith('.webm') ||
+        url.endsWith('.ogg') ||
+        url.endsWith('.mov')
+      )
     },
-    onMediaLoad(event) {
+    onMediaLoad(event: any) {
       const target = event?.target
       const width = target?.naturalWidth || target?.videoWidth || 0
       const height = target?.naturalHeight || target?.videoHeight || 0
@@ -724,22 +440,22 @@ export default {
       this.mediaError = true
       this.$emit('media-error', { messageId: this.message.id })
     },
-    formatVideoTime(seconds) {
+    formatVideoTime(seconds: any): string {
       const totalSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0
       const minutes = Math.floor(totalSeconds / 60)
       const remainingSeconds = totalSeconds % 60
       return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`
     },
-    onPreviewVideoLoaded(event) {
+    onPreviewVideoLoaded(event: any) {
       this.previewVideoDuration = event.target?.duration || 0
       this.previewVideoCurrentTime = event.target?.currentTime || 0
       this.previewVideoPaused = Boolean(event.target?.paused)
     },
-    onPreviewVideoTimeUpdate(event) {
+    onPreviewVideoTimeUpdate(event: any) {
       this.previewVideoCurrentTime = event.target?.currentTime || 0
     },
     togglePreviewVideo() {
-      const video = this.$refs.previewVideo
+      const video = this.$refs.previewVideo as HTMLVideoElement | null
       if (!video) return
       if (video.paused) {
         video.play?.()
@@ -747,25 +463,27 @@ export default {
         video.pause?.()
       }
     },
-    seekPreviewVideo(event) {
-      const video = this.$refs.previewVideo
+    seekPreviewVideo(event: any) {
+      const video = this.$refs.previewVideo as HTMLVideoElement | null
       const nextTime = Number(event.target?.value || 0)
       this.previewVideoCurrentTime = nextTime
       if (video) video.currentTime = nextTime
     },
-    openImage(url) {
+    openImage(url: string) {
       this.openMediaPreview('image', url)
     },
-    openMediaPreview(type, url) {
+    openMediaPreview(type: string, url: string) {
       if (!url) return
       this.previewUrl = url
       this.previewType = type === 'video' ? 'video' : 'image'
       this.previewVideoPaused = this.previewType === 'video'
       this.previewVideoCurrentTime = 0
       this.previewVideoDuration = 0
-      this._previousBodyOverflow = document.body.style.overflow
-      document.body.style.overflow = 'hidden'
-      document.activeElement?.blur?.()
+      if (document.body) {
+        this._previousBodyOverflow = document.body.style.overflow
+        document.body.style.overflow = 'hidden'
+      }
+      ;(document.activeElement as HTMLElement | null)?.blur?.()
       this.showImagePreview = true
       document.addEventListener('keydown', this.handlePreviewKeydown)
     },
@@ -773,7 +491,7 @@ export default {
       this.closeMediaPreview()
     },
     closeMediaPreview() {
-      this.$refs.previewVideo?.pause?.()
+      ;(this.$refs.previewVideo as HTMLVideoElement | null)?.pause?.()
       this.showImagePreview = false
       this.previewUrl = ''
       this.previewType = 'image'
@@ -783,7 +501,7 @@ export default {
       document.body.style.overflow = this._previousBodyOverflow || ''
       document.removeEventListener('keydown', this.handlePreviewKeydown)
     },
-    selectReaction(emoji) {
+    selectReaction(emoji: string) {
       if (this.isDeleted) return
       this.$emit('react', { messageId: this.message.id, emoji })
       this.showReactions = false
@@ -827,14 +545,12 @@ export default {
       const aboveTop = rect.top - panelHeight - gutter
       const belowTop = rect.bottom + gutter
       const top =
-        aboveTop >= gutter
-          ? aboveTop
-          : Math.min(belowTop, viewportHeight - panelHeight - gutter)
+        aboveTop >= gutter ? aboveTop : Math.min(belowTop, viewportHeight - panelHeight - gutter)
 
       this.emojiPaletteX = left
       this.emojiPaletteY = Math.max(gutter, top)
     },
-    selectReactionFromPalette(emoji) {
+    selectReactionFromPalette(emoji: string) {
       this.selectReaction(emoji)
     },
     emitEdit() {
@@ -849,7 +565,7 @@ export default {
       this.closeActions()
       this.$emit('reply', this.message)
     },
-    async writeToClipboard(text) {
+    async writeToClipboard(text: string): Promise<boolean> {
       if (!text) return false
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text)
@@ -902,8 +618,561 @@ export default {
     }
     if (this.pressTimer) clearTimeout(this.pressTimer)
   },
-}
+})
 </script>
+
+<template>
+  <div
+    :class="['mb-3 flex w-full', isMe ? 'justify-end' : 'justify-start']"
+    :data-message-id="message?.id"
+    @dblclick="toggleReactions"
+    @pointerdown="onPointerDown"
+    @pointerup="onPointerUp"
+    @pointercancel="onPointerCancel"
+    @pointermove="onPointerMove"
+    @contextmenu="onContextMenu"
+  >
+    <div
+      :class="[
+        'message-bubble-shell flex min-w-0 flex-col gap-1.5',
+        isMe ? 'message-bubble-shell--me items-end' : 'items-start',
+        hasMedia ? 'message-bubble-shell--media' : 'message-bubble-shell--text',
+        hasMedia && hasText ? 'message-bubble-shell--captioned' : '',
+        isChatMediaMessage ? 'message-bubble-shell--chat-media' : '',
+      ]"
+    >
+      <div class="relative min-w-0 max-w-full">
+        <!-- Reactions Popup -->
+        <transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform scale-95 opacity-0 translate-y-1"
+          enter-to-class="transform scale-100 opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform scale-100 opacity-100 translate-y-0"
+          leave-to-class="transform scale-95 opacity-0 translate-y-1"
+        >
+          <div
+            v-if="showReactions"
+            ref="reactionsPopup"
+            class="absolute bottom-full z-40 mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[#1e1e1e]/95 px-3 py-2 shadow-[0_18px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl"
+            :class="isMe ? 'right-0' : 'left-0'"
+            @click.stop
+          >
+            <button
+              v-for="emoji in quickEmojis"
+              :key="emoji"
+              class="flex h-8 w-8 items-center justify-center rounded-full text-xl transition-all duration-150 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/25"
+              :class="myReaction === emoji ? 'bg-white/20 ring-2 ring-white/30' : ''"
+              type="button"
+              :aria-label="`React with ${emoji} emoji`"
+              @click.stop="selectReaction(emoji)"
+            >
+              <span class="reaction-emoji">{{ emoji }}</span>
+            </button>
+            <button
+              class="flex h-8 w-8 items-center justify-center rounded-full text-[20px] font-medium leading-none text-white/90 transition-transform duration-150 hover:scale-110 hover:bg-white/10 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/25"
+              type="button"
+              aria-label="Open emoji palette"
+              @click.stop="toggleEmojiPalette"
+            >
+              +
+            </button>
+          </div>
+        </transition>
+
+        <!-- Reply Preview -->
+        <div
+          v-if="showReplyPreview"
+          class="reply-preview-bubble mb-1.5 max-w-full overflow-hidden rounded-xl border text-xs shadow-sm"
+          :class="isMe ? 'mr-2' : 'ml-2'"
+        >
+          <div class="flex min-w-0 gap-2 px-2.5 py-2">
+            <div
+              class="h-auto w-1 flex-shrink-0 rounded-full"
+              :class="
+                replyToMessage.is_deleted ? 'bg-slate-300' : isMe ? 'bg-sky-500' : 'bg-violet-500'
+              "
+            ></div>
+            <div class="min-w-0 flex-1">
+              <div
+                class="truncate text-[11px] font-black"
+                :class="
+                  replyToMessage.is_deleted
+                    ? 'text-slate-500'
+                    : isMe
+                      ? 'text-sky-700'
+                      : 'text-violet-700'
+                "
+              >
+                {{ replySenderName(replyToMessage) }}
+              </div>
+              <div
+                class="reply-preview-text mt-0.5 line-clamp-2 text-[12px] font-medium leading-snug"
+                :class="replyToMessage.is_deleted ? 'italic text-slate-400' : 'text-slate-600'"
+              >
+                {{ replyPreviewText(replyToMessage) }}
+              </div>
+            </div>
+            <div
+              v-if="replyPreviewMedia(replyToMessage)"
+              class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 ring-1 ring-white/80"
+            >
+              <img
+                v-if="replyPreviewMedia(replyToMessage).kind !== 'video'"
+                :src="replyPreviewMedia(replyToMessage).url"
+                alt=""
+                class="h-full w-full object-cover"
+              />
+              <video
+                v-else
+                :src="replyPreviewMedia(replyToMessage).url"
+                class="h-full w-full object-cover"
+                muted
+                playsinline
+                preload="metadata"
+              ></video>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Message Card -->
+        <div
+          data-message-card
+          class="message-card relative min-w-0 max-w-full overflow-hidden rounded-2xl shadow-sm transition-all duration-200 group"
+          :class="[
+            isDeleted
+              ? 'bg-slate-100/80 px-4 py-2.5 backdrop-blur-sm'
+              : isEmojiOnlyMessage
+                ? 'bg-transparent px-0 py-0 shadow-none overflow-visible'
+                : isChatMediaMessage
+                  ? 'message-card--chat-media bg-transparent px-0 py-0 shadow-none overflow-visible'
+                  : hasMedia
+                    ? 'message-card--media'
+                    : 'px-4 py-2.5',
+            hasMedia && hasText ? 'message-card--captioned-media' : '',
+            hasMedia && !hasText ? 'message-card--media-only' : '',
+            hasMedia && isMe ? 'message-card--me-media' : '',
+            hasMedia && !isMe ? 'message-card--their-media' : '',
+            hasMedia ? `message-card--media-${mediaOrientation}` : '',
+            !hasMedia && !isMe && !isDeleted && !isEmojiOnlyMessage && !isChatMediaMessage
+              ? 'message-card--their-text'
+              : '',
+            !isDeleted && !hasMedia && !isEmojiOnlyMessage && !isChatMediaMessage && !isMe
+              ? ''
+              : '',
+            isMe && !isDeleted && !hasMedia && !isEmojiOnlyMessage && !isChatMediaMessage
+              ? 'border border-sky-200/80 bg-sky-50 text-slate-900 shadow-sm shadow-sky-100/70'
+              : 'text-slate-900',
+            isMe && !isDeleted && !hasMedia && !isEmojiOnlyMessage && !isChatMediaMessage
+              ? 'rounded-br-md'
+              : 'rounded-bl-md',
+          ]"
+        >
+          <div v-if="isDeleted" class="flex items-center gap-2">
+            <svg
+              class="h-4 w-4 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 9v4m0 4h.01M10.29 3.86l-8.1 14A2 2 0 004.1 21h15.8a2 2 0 001.91-2.14l-8.1-14a2 2 0 00-3.42 0z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span class="italic text-sm text-slate-500">{{ deletedMessageText }}</span>
+          </div>
+
+          <template v-else>
+            <template v-if="isChatMediaMessage">
+              <ChatMediaMessage
+                :kind="messageType === 'gif' ? 'gif' : 'sticker'"
+                :source-url="chatMediaSourceUrl"
+                :title="chatMediaTitle"
+                :label="chatMediaLabel"
+                :animated="Boolean(message?.animated)"
+                :compact="isMe"
+                :show-meta="false"
+              />
+            </template>
+
+            <!-- Media Content -->
+            <div
+              v-if="hasMedia"
+              class="message-media-frame group/media"
+              :class="[
+                isVideo(media) ? 'message-media-frame--video' : 'message-media-frame--image',
+                hasText ? 'message-media-frame--with-caption' : 'message-media-frame--solo',
+                `message-media-frame--${mediaOrientation}`,
+              ]"
+            >
+              <div
+                v-if="mediaLoading && (isImage(media) || isVideo(media))"
+                class="absolute inset-0 z-10 flex items-center justify-center bg-white/80 backdrop-blur-sm"
+              >
+                <div
+                  class="h-8 w-8 animate-spin rounded-full border-2 border-violet-400 border-t-transparent"
+                ></div>
+              </div>
+
+              <div
+                v-if="mediaError"
+                class="flex h-full w-full items-center justify-center bg-rose-50 p-6"
+              >
+                <div class="text-center">
+                  <svg
+                    class="mx-auto h-8 w-8 text-rose-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                  <p class="mt-1 text-xs text-rose-500">Failed to load</p>
+                </div>
+              </div>
+
+              <img
+                v-else-if="isImage(media)"
+                v-show="!mediaLoading"
+                :src="cachedMediaUrl"
+                alt="Shared media"
+                class="message-media-content cursor-pointer transition-transform hover:scale-105"
+                @click="openMediaPreview('image', cachedMediaUrl)"
+                @load="onMediaLoad"
+                @error="onMediaError"
+              />
+
+              <video
+                v-else-if="isVideo(media)"
+                :src="cachedMediaUrl"
+                controls
+                class="message-media-content bg-black"
+                @loadedmetadata="onMediaLoad"
+                @error="onMediaError"
+              />
+
+              <a
+                v-if="!isImage(media) && !isVideo(media) && !mediaError"
+                :href="cachedMediaUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex h-full w-full items-center gap-3 bg-slate-50 p-3 transition-colors hover:bg-slate-100"
+              >
+                <svg
+                  class="h-8 w-8 text-slate-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-slate-700">File attachment</div>
+                  <div class="text-xs text-slate-500">Click to download</div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Text Content -->
+            <div
+              v-if="hasText"
+              :class="[
+                'message-text text-sm leading-relaxed',
+                hasMedia ? 'message-text--caption' : 'message-text--standalone',
+                isEmojiOnlyMessage ? 'emoji-only-message' : '',
+              ]"
+            >
+              <template v-if="isEmojiOnlyMessage">
+                <div class="emoji-only-message__row">
+                  <AnimatedEmoji
+                    v-for="(emoji, index) in emojiOnlyEmojis"
+                    :key="`${emoji}-${index}`"
+                    :emoji="emoji"
+                    :size="emojiOnlySize"
+                    :animated="true"
+                  />
+                </div>
+              </template>
+              <template v-else>
+                <AnimatedMessage :text="message.content" />
+              </template>
+            </div>
+
+            <!-- Timestamp and Actions -->
+            <div
+              class="message-meta mt-1.5 flex items-center gap-1.5"
+              :class="isMe ? 'justify-end' : 'justify-start'"
+            >
+              <span
+                class="text-[10px] font-semibold"
+                :class="isMe ? 'text-slate-500' : 'text-slate-400'"
+              >
+                {{ formattedTime }}
+              </span>
+              <span
+                v-if="message.edited_at"
+                class="text-[9px] font-medium"
+                :class="isMe ? 'text-slate-500' : 'text-slate-400'"
+              >
+                Edited
+              </span>
+              <span
+                v-if="isMe && !isDeleted"
+                class="message-delivery-ticks"
+                :class="statusClass"
+                :aria-label="statusLabel"
+              >
+                <svg
+                  class="h-3.5 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M2.8 13.3l4.3 4.3L16.8 7.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M8.1 13.3l4.3 4.3 8.8-9.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+            </div>
+          </template>
+        </div>
+
+        <!-- Reactions Display -->
+        <div
+          v-if="!isDeleted && reactions.length > 0"
+          class="mt-1 flex flex-wrap gap-1"
+          :class="isMe ? 'justify-end' : 'justify-start'"
+        >
+          <button
+            v-for="reaction in visibleReactions"
+            :key="reaction.emoji"
+            class="flex cursor-pointer items-center gap-1 rounded-full border border-slate-200/80 bg-white/90 px-2 py-0.5 text-xs font-medium text-slate-600 shadow-sm backdrop-blur-sm transition-all hover:scale-105 hover:bg-white hover:shadow-md"
+            :class="
+              myReaction === reaction.emoji
+                ? '!border-violet-300 !bg-violet-50 text-violet-700 ring-1 ring-violet-200'
+                : ''
+            "
+            type="button"
+            :aria-label="`React with ${reaction.emoji}`"
+            @click.stop="selectReaction(reaction.emoji)"
+          >
+            <span class="reaction-emoji reaction-emoji--small">{{ reaction.emoji }}</span>
+            <span>{{ reaction.count }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- More Reactions Panel -->
+    <teleport to="body">
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 translate-y-2 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+        leave-active-class="transition duration-120 ease-in"
+        leave-from-class="opacity-100 translate-y-0 scale-100"
+        leave-to-class="opacity-0 translate-y-2 scale-95"
+      >
+        <div
+          v-if="showEmojiPalette"
+          ref="emojiPalette"
+          class="fixed z-[260] h-[min(28rem,70vh)] w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/20"
+          :style="emojiPaletteStyle"
+          @click.stop
+        >
+          <EmojiPicker
+            :open="showEmojiPalette"
+            @select="selectReactionFromPalette"
+            @close="showEmojiPalette = false"
+          />
+        </div>
+      </transition>
+    </teleport>
+
+    <!-- Context Menu -->
+    <teleport to="body">
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-120 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
+      >
+        <div
+          v-if="showActions"
+          ref="actionMenu"
+          class="fixed z-[120] w-56 overflow-hidden rounded-xl border border-violet-100/80 bg-white/95 py-1 shadow-xl shadow-violet-100/50 backdrop-blur-xl"
+          :style="actionMenuStyle"
+          role="menu"
+          @click.stop
+        >
+          <button
+            class="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-violet-50"
+            type="button"
+            @click="emitReply"
+          >
+            <svg
+              class="h-4 w-4 text-slate-500"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M3 10l7-7v4c8 0 11 5 11 13-3-5-7-6-11-6v4l-7-8z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Reply
+          </button>
+
+          <button
+            v-if="canCopy"
+            class="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-violet-50"
+            type="button"
+            @click="copyMessage"
+          >
+            <svg
+              class="h-4 w-4 text-slate-500"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M8 8h10v12H8z" stroke-linejoin="round" />
+              <path
+                d="M6 16H5a2 2 0 01-2-2V5a2 2 0 012-2h9a2 2 0 012-2h1"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Copy
+          </button>
+
+          <div v-if="isMe && !isDeleted" class="my-1 border-t border-violet-100"></div>
+
+          <button
+            v-if="isMe && !isDeleted && canEdit"
+            class="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-violet-50"
+            type="button"
+            @click="emitEdit"
+          >
+            <svg
+              class="h-4 w-4 text-slate-500"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M4 20h4l10-10a2.5 2.5 0 10-4-4L4 16v4z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Edit
+          </button>
+
+          <button
+            v-if="isMe && !isDeleted"
+            class="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50"
+            type="button"
+            @click="emitDelete"
+          >
+            <svg
+              class="h-4 w-4 text-rose-500"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M6 7h12M9 7V5h6v2m-8 0l1 14h6l1-14"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Delete
+          </button>
+        </div>
+      </transition>
+    </teleport>
+
+    <teleport to="body">
+      <!-- Media Preview Modal -->
+      <transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showImagePreview"
+          class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md"
+          @click.self="closeMediaPreview"
+          @keydown.escape="closeMediaPreview"
+        >
+          <div class="media-preview-shell">
+            <img
+              v-if="previewType === 'image'"
+              :src="previewUrl"
+              alt="Full screen preview"
+              class="media-preview-content"
+            />
+            <div v-else-if="previewType === 'video'" class="media-preview-video">
+              <video
+                ref="previewVideo"
+                :src="previewUrl"
+                class="media-preview-content bg-black"
+                autoplay
+                playsinline
+                @click="togglePreviewVideo"
+                @loadedmetadata="onPreviewVideoLoaded"
+                @timeupdate="onPreviewVideoTimeUpdate"
+                @play="previewVideoPaused = false"
+                @pause="previewVideoPaused = true"
+                @ended="previewVideoPaused = true"
+              />
+            </div>
+            <button
+              class="media-preview-close"
+              type="button"
+              aria-label="Close media full view"
+              @click.stop="closeMediaPreview"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      </transition>
+    </teleport>
+  </div>
+</template>
 
 <style scoped>
 .animated-message :deep(.animated-message__link),
@@ -937,8 +1206,7 @@ export default {
 
 .message-card--their-text {
   border: 1px solid rgba(221, 214, 254, 0.88);
-  background:
-    linear-gradient(180deg, rgba(250, 245, 255, 0.98), rgba(245, 243, 255, 0.94));
+  background: linear-gradient(180deg, rgba(250, 245, 255, 0.98), rgba(245, 243, 255, 0.94));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.78),
     0 1px 1px rgba(76, 29, 149, 0.03),
@@ -948,8 +1216,7 @@ export default {
 
 .reply-preview-bubble {
   border-color: rgba(221, 214, 254, 0.78);
-  background:
-    linear-gradient(135deg, rgba(250, 245, 255, 0.96), rgba(245, 243, 255, 0.9));
+  background: linear-gradient(135deg, rgba(250, 245, 255, 0.96), rgba(245, 243, 255, 0.9));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.74),
     0 8px 18px rgba(109, 40, 217, 0.06);
@@ -957,8 +1224,7 @@ export default {
 
 .message-bubble-shell--me .reply-preview-bubble {
   border-color: rgba(125, 211, 252, 0.52);
-  background:
-    linear-gradient(135deg, rgba(240, 249, 255, 0.98), rgba(224, 242, 254, 0.9));
+  background: linear-gradient(135deg, rgba(240, 249, 255, 0.98), rgba(224, 242, 254, 0.9));
 }
 
 .message-card--chat-media {
@@ -1145,8 +1411,7 @@ export default {
 }
 
 .message-media-frame--image {
-  background:
-    linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(226, 232, 240, 0.82));
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(226, 232, 240, 0.82));
 }
 
 .message-media-frame--video {
@@ -1369,7 +1634,6 @@ export default {
     right: max(0.75rem, env(safe-area-inset-right));
     top: max(0.75rem, env(safe-area-inset-top));
   }
-
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
@@ -1407,11 +1671,7 @@ export default {
 .reaction-emoji {
   display: inline-block;
   font-family:
-    'Apple Color Emoji',
-    'Segoe UI Emoji',
-    'Segoe UI Symbol',
-    'Noto Color Emoji',
-    sans-serif;
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
   font-variant-emoji: emoji;
   line-height: 1;
 }

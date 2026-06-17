@@ -1,11 +1,8 @@
-<template>
-  <AnimatedEmoji :emoji="emoji" :animated="animated" :size="size" class="emoji-glyph" />
-</template>
-
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import AnimatedEmoji from './AnimatedEmoji.vue'
 
-export default {
+export default defineComponent({
   name: 'EmojiGlyph',
   components: {
     AnimatedEmoji,
@@ -24,8 +21,12 @@ export default {
       default: 20,
     },
   },
-}
+})
 </script>
+
+<template>
+  <AnimatedEmoji :emoji="emoji" :animated="animated" :size="Number(size)" class="emoji-glyph" />
+</template>
 
 <style scoped>
 .emoji-glyph {

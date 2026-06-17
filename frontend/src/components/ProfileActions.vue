@@ -5,6 +5,7 @@ import { useNetworkStore } from '@/stores/network'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import eventBus from '@/services/eventBus'
 
 // Import filled icons from Heroicons
@@ -24,6 +25,7 @@ const profileStore = useProfileStore()
 const notificationStore = useNotificationStore()
 const networkStore = useNetworkStore()
 const authStore = useAuthStore()
+const router = useRouter()
 const { relationshipStatus, currentProfile, isLoadingFollow } = storeToRefs(profileStore)
 
 const showDisconnectConfirm = ref(false)
@@ -206,7 +208,9 @@ const handleMessage = (event: MouseEvent) => {
     ;(authStore as any).showAuthModal = true
     return
   }
-  console.log('Messaging functionality to be implemented.')
+  if (currentProfile.value) {
+    router.push({ name: 'messages', query: { user: currentProfile.value.user.username } })
+  }
 }
 
 // Improved ripple effect handler without layout shifts

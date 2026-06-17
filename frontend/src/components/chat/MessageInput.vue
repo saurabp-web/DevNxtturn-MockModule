@@ -19,9 +19,6 @@
               :class="replyingMessage?.is_deleted ? 'bg-slate-300' : 'bg-violet-500'"
             ></div>
             <div class="min-w-0 flex-1">
-              <!-- <div class="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
-                Replying to
-              </div> -->
               <div
                 class="mt-0.5 truncate text-sm font-bold"
                 :class="replyingMessage?.is_deleted ? 'text-slate-500' : 'text-violet-700'"
@@ -61,7 +58,13 @@
             aria-label="Cancel reply"
             @click="$emit('cancel-reply')"
           >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <svg
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              viewBox="0 0 24 24"
+            >
               <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" />
             </svg>
           </button>
@@ -77,11 +80,16 @@
       leave-from-class="translate-y-0 opacity-100 scale-100"
       leave-to-class="translate-y-4 opacity-0 scale-95"
     >
-      <div v-if="attachments.length && !isEditing" class="mx-1 rounded-[2rem] border border-violet-100/70 bg-white/85 p-4 shadow-lg shadow-violet-100 backdrop-blur-2xl">
+      <div
+        v-if="attachments.length && !isEditing"
+        class="mx-1 rounded-[2rem] border border-violet-100/70 bg-white/85 p-4 shadow-lg shadow-violet-100 backdrop-blur-2xl"
+      >
         <div class="mb-4 flex items-center justify-between px-2">
           <div class="flex items-center gap-2">
             <span class="h-2 w-2 rounded-full bg-violet-500"></span>
-            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Attached Media</span>
+            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500"
+              >Attached Media</span
+            >
           </div>
         </div>
 
@@ -96,15 +104,24 @@
               :src="attachment.previewUrl"
               class="h-16 w-16 rounded-[1rem] object-cover shadow-sm ring-1 ring-violet-100 transition-transform duration-500 group-hover:scale-105"
             />
-            <div v-else-if="attachment.kind === 'video'" class="grid h-16 w-16 place-items-center rounded-[1rem] bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-sm">
-              <div class="grid h-9 w-9 place-items-center rounded-full bg-white/15 backdrop-blur-md">
+            <div
+              v-else-if="attachment.kind === 'video'"
+              class="grid h-16 w-16 place-items-center rounded-[1rem] bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-sm"
+            >
+              <div
+                class="grid h-9 w-9 place-items-center rounded-full bg-white/15 backdrop-blur-md"
+              >
                 <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                  <path
+                    d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"
+                  />
                 </svg>
               </div>
             </div>
             <div class="min-w-0 flex-1">
-              <div class="truncate text-sm font-semibold text-slate-800">{{ attachment.file.name }}</div>
+              <div class="truncate text-sm font-semibold text-slate-800">
+                {{ attachment.file.name }}
+              </div>
               <div class="mt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
                 {{ attachment.kind }} ready to send
               </div>
@@ -114,7 +131,13 @@
               type="button"
               @click="removeAttachment(index)"
             >
-              <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+              <svg
+                class="h-3 w-3"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                viewBox="0 0 24 24"
+              >
                 <path d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -172,8 +195,18 @@
             type="button"
             @click="openFilePicker"
           >
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg
+              class="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
           </button>
 
@@ -226,12 +259,7 @@
                 leave-from-class="translate-y-0 opacity-100 scale-100"
                 leave-to-class="translate-y-4 opacity-0 scale-95"
               >
-      <div
-        v-if="showEmoji"
-        class="fixed z-[260]"
-        :style="emojiPanelStyle"
-        @click.stop
-                >
+                <div v-if="showEmoji" class="fixed z-[260]" :style="emojiPanelStyle" @click.stop>
                   <EmojiPicker
                     :open="showEmoji"
                     mode="composer"
@@ -252,7 +280,13 @@
         type="button"
         @click="send"
       >
-        <svg class="h-6 w-6 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+        <svg
+          class="h-6 w-6 transition-transform group-hover:translate-x-1"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+          viewBox="0 0 24 24"
+        >
           <path d="M5 12h14m-7-7l7 7-7 7" />
         </svg>
       </button>
@@ -268,7 +302,10 @@
     </div>
 
     <transition name="fade">
-      <div v-if="errorMessage" class="mx-4 flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-rose-500">
+      <div
+        v-if="errorMessage"
+        class="mx-4 flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-rose-500"
+      >
         <span class="h-1 w-1 rounded-full bg-rose-500"></span>
         {{ errorMessage }}
       </div>
@@ -276,11 +313,12 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue'
 import EmojiPicker from './EmojiPicker.vue'
 import { buildMediaUrl } from '@/utils/avatars'
 
-export default {
+export default defineComponent({
   components: {
     EmojiPicker,
   },
@@ -307,32 +345,34 @@ export default {
     },
   },
   emits: ['send', 'cancel-edit', 'cancel-reply', 'typing', 'draft-change'],
-    data() {
-      return {
-        message: '',
-        attachments: [],
-        showEmoji: false,
-        emojiPanelStyle: {
-          left: '0px',
-          top: '0px',
-          width: '28rem',
-          height: '60vh',
-        },
-        errorMessage: '',
-        lastTypingState: false,
-        typingIdleTimer: null,
-      }
-    },
+  data() {
+    return {
+      message: '',
+      attachments: [] as any[],
+      showEmoji: false,
+      emojiPanelStyle: {
+        left: '0px',
+        top: '0px',
+        width: '28rem',
+        height: '60vh',
+      },
+      errorMessage: '',
+      lastTypingState: false,
+      typingIdleTimer: null as any,
+    }
+  },
   computed: {
-    isEditing() {
+    isEditing(): boolean {
       return Boolean(this.editingMessage)
     },
-    isReplying() {
+    isReplying(): boolean {
       return Boolean(this.replyingMessage)
     },
-    replyPreviewText() {
+    replyPreviewText(): string {
       if (this.replyingMessage?.is_deleted) return 'Message deleted'
-      const type = String(this.replyingMessage?.message_type || this.replyingMessage?.type || 'text').toLowerCase()
+      const type = String(
+        this.replyingMessage?.message_type || this.replyingMessage?.type || 'text',
+      ).toLowerCase()
       if (type === 'gif') return 'GIF'
       if (type === 'sticker') return 'Sticker'
       if (this.replyingMessage?.content?.trim()) return this.replyingMessage.content.trim()
@@ -340,12 +380,13 @@ export default {
       if (this.replyPreviewMedia?.kind === 'image') return 'Photo'
       return 'Message'
     },
-    replyPreviewMedia() {
+    replyPreviewMedia(): any {
       const message = this.replyingMessage
       if (!message || message.is_deleted) return null
       const type = String(message?.message_type || message?.type || 'text').toLowerCase()
       const mediaType = String(message?.media_type || '').toLowerCase()
-      const preview = message?.media_preview || message?.preview || message?.last_message_preview || null
+      const preview =
+        message?.media_preview || message?.preview || message?.last_message_preview || null
       const raw =
         type === 'gif'
           ? message?.gif_url || message?.external_url || preview?.url || ''
@@ -362,7 +403,7 @@ export default {
         /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(String(url))
       return { kind: isVideo ? 'video' : 'image', url }
     },
-    replyingSenderName() {
+    replyingSenderName(): string {
       if (String(this.replyingSenderId) === String(this.currentUserId ?? '')) {
         return 'You'
       }
@@ -374,7 +415,7 @@ export default {
         'Message'
       )
     },
-    replyingSenderId() {
+    replyingSenderId(): string | number {
       const sender = this.replyingMessage?.sender
       if (sender && typeof sender === 'object') {
         return sender.id ?? sender.user_id ?? sender.pk ?? ''
@@ -384,7 +425,7 @@ export default {
   },
   watch: {
     attachments: {
-      handler(newFiles, oldFiles) {
+      handler(newFiles: any[], oldFiles: any[]) {
         const oldUrls = (oldFiles || []).map((item) => item.previewUrl)
         const currentUrls = (newFiles || []).map((item) => item.previewUrl)
         oldUrls.forEach((url) => {
@@ -397,7 +438,7 @@ export default {
     },
     editingMessage: {
       immediate: true,
-      handler(val) {
+      handler(val: any) {
         this.errorMessage = ''
         this.showEmoji = false
         this.clearFiles()
@@ -408,7 +449,7 @@ export default {
     },
     draftText: {
       immediate: true,
-      handler(val) {
+      handler(val: string) {
         if (this.isEditing) return
         const nextValue = val || ''
         if (nextValue !== this.message) {
@@ -424,7 +465,7 @@ export default {
     disabled() {
       this.syncTypingState(true)
     },
-    showEmoji(isOpen) {
+    showEmoji(isOpen: boolean) {
       if (!isOpen) {
         window.removeEventListener('resize', this.repositionEmojiPanel)
         window.removeEventListener('scroll', this.repositionEmojiPanel, true)
@@ -452,7 +493,7 @@ export default {
     window.removeEventListener('scroll', this.repositionEmojiPanel, true)
   },
   methods: {
-    syncTypingState(force = false) {
+    syncTypingState(force: boolean = false) {
       const isTyping = Boolean(this.message?.trim()) && !this.disabled && !this.isEditing
       if (force || isTyping !== this.lastTypingState) {
         this.lastTypingState = isTyping
@@ -474,7 +515,7 @@ export default {
       this.$emit('draft-change', this.message)
       this.syncTypingState()
     },
-    handleKeydown(event) {
+    handleKeydown(event: any) {
       if (event?.key === 'Enter') return
       this.syncTypingState(true)
     },
@@ -490,7 +531,7 @@ export default {
       this.$emit('typing', false)
     },
     adjustHeight() {
-      const el = this.$refs.inputArea
+      const el = this.$refs.inputArea as HTMLTextAreaElement | null
       if (el) {
         el.style.height = 'auto'
         el.style.height = `${el.scrollHeight}px`
@@ -498,11 +539,11 @@ export default {
     },
     openFilePicker() {
       if (this.disabled || this.isEditing) return
-      this.$refs.fileInput?.click()
+      ;(this.$refs.fileInput as HTMLInputElement | null)?.click()
     },
-    onFileChange(event) {
+    onFileChange(event: any) {
       if (this.isEditing) return
-      const files = Array.from(event.target?.files || [])
+      const files = Array.from(event.target?.files || []) as File[]
       if (!files.length) return
 
       if (files.length > 1) {
@@ -530,8 +571,15 @@ export default {
       this.errorMessage = ''
       this.attachments = files.map((file) => ({
         file,
-        kind: file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : 'file',
-        previewUrl: file.type.startsWith('image/') || file.type.startsWith('video/') ? URL.createObjectURL(file) : '',
+        kind: file.type.startsWith('image/')
+          ? 'image'
+          : file.type.startsWith('video/')
+            ? 'video'
+            : 'file',
+        previewUrl:
+          file.type.startsWith('image/') || file.type.startsWith('video/')
+            ? URL.createObjectURL(file)
+            : '',
       }))
     },
     toggleEmoji() {
@@ -553,7 +601,10 @@ export default {
       const viewportWidth = window.innerWidth
       const viewportHeight = window.innerHeight
       const panelWidth = Math.min(420, Math.max(280, viewportWidth - 20))
-      const panelHeight = Math.min(Math.max(420, Math.round(viewportHeight * 0.7)), viewportHeight - 16)
+      const panelHeight = Math.min(
+        Math.max(420, Math.round(viewportHeight * 0.7)),
+        viewportHeight - 16,
+      )
       const gutter = 12
 
       const left = Math.max(
@@ -562,7 +613,8 @@ export default {
       )
       const aboveTop = rect.top - panelHeight - gutter
       const belowTop = rect.bottom + gutter
-      const top = aboveTop >= gutter ? aboveTop : Math.min(belowTop, viewportHeight - panelHeight - gutter)
+      const top =
+        aboveTop >= gutter ? aboveTop : Math.min(belowTop, viewportHeight - panelHeight - gutter)
 
       this.emojiPanelStyle = {
         left: `${left}px`,
@@ -571,14 +623,14 @@ export default {
         height: `${panelHeight}px`,
       }
     },
-    pickEmoji(emoji) {
+    pickEmoji(emoji: string) {
       if (!emoji) return
       this.message = `${this.message}${emoji}`
       this.$emit('draft-change', this.message)
       this.$nextTick(() => this.adjustHeight())
       this.$nextTick(() => this.focusInputWithoutScroll())
     },
-    pickMedia(item) {
+    pickMedia(item: any) {
       if (!item || this.disabled || this.isEditing) return
       if (!item.sendUrl) return
 
@@ -608,18 +660,20 @@ export default {
       }
       this.$emit('typing', false)
       this.$nextTick(() => {
-        if (this.$refs.inputArea) this.$refs.inputArea.style.height = 'auto'
+        const inputArea = this.$refs.inputArea as HTMLTextAreaElement | null
+        if (inputArea) inputArea.style.height = 'auto'
       })
       this.clearFiles()
       this.showEmoji = false
     },
-    removeAttachment(index) {
+    removeAttachment(index: number) {
       const [removed] = this.attachments.splice(index, 1)
       if (removed?.previewUrl) {
         URL.revokeObjectURL(removed.previewUrl)
       }
-      if (this.$refs.fileInput) {
-        this.$refs.fileInput.value = ''
+      const fileInput = this.$refs.fileInput as HTMLInputElement | null
+      if (fileInput) {
+        fileInput.value = ''
       }
       this.errorMessage = ''
     },
@@ -630,13 +684,14 @@ export default {
         }
       })
       this.attachments = []
-      if (this.$refs.fileInput) {
-        this.$refs.fileInput.value = ''
+      const fileInput = this.$refs.fileInput as HTMLInputElement | null
+      if (fileInput) {
+        fileInput.value = ''
       }
       this.errorMessage = ''
     },
     focusInputWithoutScroll() {
-      const input = this.$refs.inputArea
+      const input = this.$refs.inputArea as HTMLTextAreaElement | null
       if (!input || typeof input.focus !== 'function') return
       try {
         input.focus({ preventScroll: true })
@@ -661,13 +716,14 @@ export default {
       }
       this.$emit('typing', false)
       this.$nextTick(() => {
-        if (this.$refs.inputArea) this.$refs.inputArea.style.height = 'auto'
+        const inputArea = this.$refs.inputArea as HTMLTextAreaElement | null
+        if (inputArea) inputArea.style.height = 'auto'
       })
       this.clearFiles()
       this.showEmoji = false
     },
   },
-}
+})
 </script>
 
 <style scoped>
@@ -686,10 +742,12 @@ export default {
   display: none;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

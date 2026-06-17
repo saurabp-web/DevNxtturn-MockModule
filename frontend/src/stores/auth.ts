@@ -24,7 +24,7 @@ export interface User {
 }
 
 // Interface for registration data
-interface RegistrationData {
+export interface RegistrationData {
   email?: string
   username?: string
   password1?: string

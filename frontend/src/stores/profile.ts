@@ -465,6 +465,7 @@ export const useProfileStore = defineStore('profile', () => {
     currentProfile,
     postIdsByUsername,
     nextPageUrlByUsername,
+    profilesByUsername,
     isLoadingProfile,
     isLoadingPosts,
     errorProfile,

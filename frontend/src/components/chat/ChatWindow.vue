@@ -1,3 +1,1281 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+import chatApi from '@/services/messageApi'
+import MessageInput from './MessageInput.vue'
+import MessageBubble from './MessageBubble.vue'
+import FloatingEmojiLayer from './FloatingEmojiLayer.vue'
+import StableAvatar from './StableAvatar.vue'
+import { mapState, mapActions } from 'pinia'
+import { useAuthStore } from '@/stores/auth'
+import { useProfileStore } from '@/stores/profile'
+import { getAvatarUrl } from '@/utils/avatars'
+import eventBus from '@/services/eventBus'
+import {
+  getConversationMessages,
+  markConversationAsRead,
+  sendConversationMessage,
+} from '@/services/messagingCompat'
+import { isCelebrationEmoji } from './emoji-catalog'
+import { getEmojiCount, isEmojiOnlyMessage, tokenizeMessageText } from './emoji-parser'
+
+export default defineComponent({
+  props: {
+    user: {
+      type: Object,
+      default: null,
+    },
+    showMobileBack: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['back'],
+  components: {
+    MessageBubble,
+    MessageInput,
+    FloatingEmojiLayer,
+    StableAvatar,
+  },
+  data() {
+    return {
+      messages: [] as any[],
+      loading: false,
+      sendError: '',
+      pollTimer: null as any,
+      readSyncTimer: null as any,
+      readSyncInFlight: false,
+      ws: null as WebSocket | null,
+      wsConnected: false,
+      showScrollDown: false,
+      totalCount: 0,
+      hasMore: false,
+      loadingMore: false,
+      loadOffset: 0,
+      editingMessage: null as any,
+      replyingMessage: null as any,
+      revealUnreadOnLoad: false,
+      unreadDividerSnapshot: null as any,
+      isPartnerTyping: false,
+      typingIndicatorTimer: null as any,
+      isLocallyTyping: false,
+      typingSendTimer: null as any,
+      draftsByConversation: {} as Record<string, string>,
+      stickToBottom: true,
+      suppressLoadMoreUntil: 0,
+      initialScrollDone: false,
+      canLoadOlderFromUserScroll: false,
+      userPresenceOverride: null as boolean | null,
+      keepUnreadDividerVisible: false,
+
+      showReactions: false,
+      lastTap: 0 as number,
+      wasScrolling: false,
+      pressTimer: null as any,
+      pointerIsDown: false,
+      activePointerType: '',
+      showImagePreview: false,
+      previewUrl: '',
+      previewType: 'image',
+      previewVideoPaused: true,
+      previewVideoCurrentTime: 0 as number,
+      previewVideoDuration: 0 as number,
+      mediaOrientation: 'landscape',
+      showActions: false,
+      showEmojiPalette: false,
+      actionMenuX: 0 as number,
+      actionMenuY: 0 as number,
+      emojiPaletteX: 12 as number,
+      emojiPaletteY: 12 as number,
+      mediaLoading: true,
+      mediaError: false,
+      _cachedTimestamp: null as any,
+      _cachedFormattedTime: null as any,
+      _cachedMediaUrl: null as any,
+      _previousBodyOverflow: '',
+    }
+  },
+  computed: {
+    ...mapState(useAuthStore, ['currentUser', 'authToken']),
+    ...mapState(useProfileStore, ['currentProfile', 'profilesByUsername']),
+    currentUserId(): number | undefined {
+      return this.currentUser?.id
+    },
+    conversationKey(): string {
+      return this.user ? String(this.user.id ?? this.user.username ?? '') : ''
+    },
+    draftText(): string {
+      if (!this.conversationKey) return ''
+      return this.draftsByConversation[this.conversationKey] || ''
+    },
+    selectedUserProfile(): any {
+      const username = this.user?.username
+      if (!username) return null
+      return (
+        this.profilesByUsername?.[username] ||
+        (this.currentProfile?.user?.username === username ? this.currentProfile : null)
+      )
+    },
+    userPresenceLabel(): string {
+      if (!this.user) return ''
+      return this.isSelectedUserOnline ? 'Online' : 'Offline'
+    },
+    userPresenceClass(): string {
+      return this.isSelectedUserOnline ? 'text-emerald-600' : 'text-slate-500'
+    },
+    userPresenceDotClass(): string {
+      return this.isSelectedUserOnline ? 'bg-emerald-500' : 'bg-slate-400'
+    },
+    isSelectedUserOnline(): boolean {
+      if (!this.user) return false
+      if (this.userPresenceOverride !== null) return Boolean(this.userPresenceOverride)
+      return Boolean(this.user?.is_online)
+    },
+    chatAvatarUrl(): string {
+      const profile = this.selectedUserProfile
+      const avatar =
+        this.user?.avatar_url ||
+        this.user?.picture ||
+        this.user?.picture_url ||
+        this.user?.avatar ||
+        this.user?.user?.picture ||
+        this.user?.user?.picture_url ||
+        profile?.picture ||
+        ''
+      const firstName =
+        profile?.display_name ||
+        profile?.user?.first_name ||
+        this.user?.display_name ||
+        this.user?.first_name ||
+        this.user?.user?.first_name ||
+        this.user?.username ||
+        ''
+      const lastName =
+        profile?.user?.last_name || this.user?.last_name || this.user?.user?.last_name || ''
+
+      return getAvatarUrl(
+        avatar,
+        firstName,
+        lastName,
+        this.user?.username || profile?.user?.username || '',
+      )
+    },
+    groupedMessages(): any[] {
+      const groups = [] as any[]
+      let lastDateKey = null as string | null
+      let unreadDividerAdded = false
+      const unreadInfo = this.getUnreadDividerInfo()
+      const unreadDividerLabel =
+        unreadInfo.count > 0
+          ? `${unreadInfo.count} unread message${unreadInfo.count === 1 ? '' : 's'}`
+          : 'Unread messages'
+
+      this.messages.forEach((message: any, index: number) => {
+        const isUnreadIncoming =
+          !unreadDividerAdded && !message?.is_deleted && index === unreadInfo.index
+
+        const timestamp = message?.timestamp
+        if (timestamp) {
+          const dateKey = this.getLocalDateKey(timestamp)
+
+          if (dateKey !== lastDateKey) {
+            groups.push({
+              type: 'date',
+              key: `date-${dateKey}-${groups.length}`,
+              label: this.getDateLabel(timestamp),
+            })
+            lastDateKey = dateKey
+          }
+        }
+
+        if (isUnreadIncoming) {
+          groups.push({
+            type: 'unread-divider',
+            key: `unread-divider-${message.id ?? groups.length}`,
+            label: unreadDividerLabel,
+          })
+          unreadDividerAdded = true
+        }
+
+        groups.push({
+          type: 'message',
+          key: `message-${message.id}`,
+          message,
+        })
+      })
+
+      return groups
+    },
+    unreadInThreadCount(): number {
+      return this.getUnreadDividerInfo().count
+    },
+  },
+  async created() {
+    await this.loadSelectedUserProfile()
+  },
+  watch: {
+    user() {
+      if (!this.user) {
+        this.messages = []
+        this.editingMessage = null
+        this.replyingMessage = null
+        this.revealUnreadOnLoad = false
+        this.unreadDividerSnapshot = null
+        this.initialScrollDone = false
+        this.canLoadOlderFromUserScroll = false
+        this.userPresenceOverride = null
+        this.keepUnreadDividerVisible = false
+        this.stopReadSyncTimer()
+        this.clearTypingIndicator()
+        this.stopPolling()
+        this.closeWebSocket()
+        return
+      }
+      this.editingMessage = null
+      this.replyingMessage = null
+      this.revealUnreadOnLoad = false
+      this.unreadDividerSnapshot = null
+      this.initialScrollDone = false
+      this.canLoadOlderFromUserScroll = false
+      this.suppressLoadMoreUntil = Date.now() + 1000
+      this.userPresenceOverride = null
+      this.keepUnreadDividerVisible = false
+      this.stopReadSyncTimer()
+      this.clearTypingIndicator()
+      this.refreshThread(true)
+      this.loadSelectedUserProfile()
+    },
+  },
+  mounted() {
+    this.revealUnreadOnLoad = false
+    this.refreshThread(true)
+    this.loadSelectedUserProfile()
+    document.addEventListener('visibilitychange', this.handleVisibilityChange)
+    eventBus.on('messaging-presence-updated', this.handlePresenceBusEvent)
+  },
+  beforeUnmount() {
+    void this.syncConversationReadState({ requireVisible: false })
+    this.stopPolling()
+    this.stopReadSyncTimer()
+    this.clearTypingIndicator()
+    this.closeWebSocket()
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange)
+    eventBus.off('messaging-presence-updated', this.handlePresenceBusEvent)
+    if (this.showImagePreview && document.body) {
+      document.body.style.overflow = this._previousBodyOverflow || ''
+    }
+  },
+  methods: {
+    ...mapActions(useProfileStore, ['fetchProfile']),
+    stopReadSyncTimer() {
+      if (this.readSyncTimer) {
+        clearTimeout(this.readSyncTimer)
+        this.readSyncTimer = null
+      }
+    },
+    clearTypingIndicator() {
+      this.isPartnerTyping = false
+      if (this.typingIndicatorTimer) {
+        clearTimeout(this.typingIndicatorTimer)
+        this.typingIndicatorTimer = null
+      }
+    },
+    clearTypingSenderTimer() {
+      if (this.typingSendTimer) {
+        clearTimeout(this.typingSendTimer)
+        this.typingSendTimer = null
+      }
+    },
+    scheduleTypingIndicatorReset() {
+      if (this.typingIndicatorTimer) {
+        clearTimeout(this.typingIndicatorTimer)
+      }
+      this.typingIndicatorTimer = window.setTimeout(() => {
+        this.isPartnerTyping = false
+        this.typingIndicatorTimer = null
+      }, 2500)
+    },
+    sendTypingState(isTyping: boolean) {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
+      this.ws.send(
+        JSON.stringify({
+          event: 'typing',
+          is_typing: Boolean(isTyping),
+        }),
+      )
+      return true
+    },
+    scheduleReadSync(delay: number = 250, options: any = {}) {
+      if (!this.user || !this.authToken || document.hidden) return
+      this.stopReadSyncTimer()
+      this.readSyncTimer = window.setTimeout(() => {
+        this.readSyncTimer = null
+        void this.syncConversationReadState(options)
+      }, delay)
+    },
+    sendReadStateOverSocket() {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
+      this.ws.send(
+        JSON.stringify({
+          event: 'read',
+        }),
+      )
+      return true
+    },
+    async syncConversationReadState(options: any = {}) {
+      const requireVisible = options?.requireVisible !== false
+      const activeUser = this.user
+      if (
+        !activeUser ||
+        !this.authToken ||
+        this.readSyncInFlight ||
+        (requireVisible && !this.isChatPaneVisible())
+      )
+        return
+      this.readSyncInFlight = true
+      try {
+        let readState = null as any
+        const sentOverSocket = this.sendReadStateOverSocket()
+        if (!sentOverSocket) {
+          readState = await markConversationAsRead(activeUser)
+        }
+        this.markThreadAsReadLocally()
+        eventBus.emit('messaging-thread-read', {
+          reader_id: this.currentUserId as number,
+          sender_id: activeUser.id,
+          updated_count:
+            readState?.updated_count === undefined ? undefined : Number(readState.updated_count),
+          unread_count:
+            readState?.unread_count === undefined ? undefined : Number(readState.unread_count),
+        })
+      } catch {
+        // keep the UI responsive even if the backend read call fails
+      } finally {
+        this.readSyncInFlight = false
+      }
+    },
+    handleVisibilityChange() {
+      if (document.hidden) this.stopReadSyncTimer()
+      else this.scheduleReadSync(150)
+    },
+    async handleBackToList() {
+      await this.syncConversationReadState({ requireVisible: false })
+      this.$emit('back')
+    },
+    isChatPaneVisible() {
+      if (document.hidden || !this.user) return false
+      const el = this.$refs.messageList as HTMLElement | null
+      if (!el || !el.isConnected) return false
+      const rect = el.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight
+    },
+    getMessageUserId(value: any): any {
+      if (value && typeof value === 'object') {
+        return value.id ?? value.user_id ?? value.pk ?? value.user?.id ?? ''
+      }
+      return value ?? ''
+    },
+    getMessageSenderId(message: any): any {
+      return this.getMessageUserId(message?.sender ?? message?.sender_id ?? message?.sender_user)
+    },
+    getMessageReceiverId(message: any): any {
+      return this.getMessageUserId(
+        message?.receiver ?? message?.receiver_id ?? message?.recipient ?? message?.recipient_id,
+      )
+    },
+    isIncomingMessage(message: any): boolean {
+      if (!message) return false
+      const currentUserId = String(this.currentUserId ?? '')
+      const senderId = String(this.getMessageSenderId(message) ?? '')
+      if (!currentUserId || !senderId) return false
+      return senderId !== currentUserId
+    },
+    isUnreadIncomingMessage(message: any): boolean {
+      return !message?.is_deleted && !message?.is_read && this.isIncomingMessage(message)
+    },
+    captureUnreadDividerSnapshot() {
+      const messages = Array.isArray(this.messages) ? this.messages : []
+      const unreadMessages = messages.filter((message) => this.isUnreadIncomingMessage(message))
+
+      this.unreadDividerSnapshot = unreadMessages.length
+        ? {
+            count: unreadMessages.length,
+            firstMessageId: unreadMessages[0]?.id ?? null,
+          }
+        : this.getUnreadSnapshotFromInitialCount(messages)
+    },
+    clearUnreadDividerSnapshot() {
+      this.keepUnreadDividerVisible = false
+      this.unreadDividerSnapshot = null
+    },
+    rememberUnreadIncomingMessage(message: any) {
+      if (!message?.id || !this.isIncomingMessage(message)) return
+
+      if (!this.unreadDividerSnapshot?.count) {
+        this.unreadDividerSnapshot = {
+          count: 1,
+          firstMessageId: message.id,
+        }
+        this.keepUnreadDividerVisible = true
+        return
+      }
+
+      this.unreadDividerSnapshot = {
+        ...this.unreadDividerSnapshot,
+        count: this.unreadDividerSnapshot.count + 1,
+      }
+      this.keepUnreadDividerVisible = true
+    },
+    getInitialUnreadCount(): number {
+      return Number(this.user?.initial_unread_count || this.user?.unread_count || 0)
+    },
+    getUnreadSnapshotFromInitialCount(messages: any[]): any {
+      const initialUnreadCount = this.getInitialUnreadCount()
+      if (initialUnreadCount <= 0) return null
+
+      const incomingMessages = messages.filter(
+        (message) => !message?.is_deleted && this.isIncomingMessage(message),
+      )
+      if (!incomingMessages.length) return null
+
+      const firstUnread =
+        incomingMessages[Math.max(0, incomingMessages.length - initialUnreadCount)] || null
+      return firstUnread
+        ? {
+            count: Math.min(initialUnreadCount, incomingMessages.length),
+            firstMessageId: firstUnread.id ?? null,
+          }
+        : null
+    },
+    getUnreadDividerInfo(): any {
+      if (this.unreadDividerSnapshot?.count > 0) {
+        const firstMessageId = this.unreadDividerSnapshot.firstMessageId
+        const index = this.messages.findIndex(
+          (message) => String(message?.id) === String(firstMessageId),
+        )
+        if (index >= 0) {
+          return { count: this.unreadDividerSnapshot.count, index }
+        }
+      }
+
+      const messages = Array.isArray(this.messages) ? this.messages : []
+      const flaggedUnread = messages.filter((message) => this.isUnreadIncomingMessage(message))
+
+      if (flaggedUnread.length > 0) {
+        const index = messages.findIndex((message) => this.isUnreadIncomingMessage(message))
+        return { count: flaggedUnread.length, index }
+      }
+      return { count: 0, index: -1 }
+    },
+    getCelebrationEmojiFromMessage(message: any): string {
+      const raw = String(message?.content || '').trim()
+      if (!raw) return ''
+
+      const tokens = tokenizeMessageText(raw)
+      if (!isEmojiOnlyMessage(tokens) || getEmojiCount(tokens) !== 1) return ''
+
+      const celebrationEmoji = [...tokens]
+        .reverse()
+        .find((token) => token?.type === 'emoji' && isCelebrationEmoji(token.value))
+
+      return celebrationEmoji?.value || ''
+    },
+    async loadSelectedUserProfile() {
+      const username = this.user?.username
+      if (!username) return
+      if (this.profilesByUsername?.[username]) return
+      try {
+        await this.fetchProfile(username)
+      } catch {
+        // Keep the existing fallback avatar if profile loading fails.
+      }
+    },
+    refreshThread(forceScroll: boolean = false) {
+      if (!this.user) {
+        this.messages = []
+        this.editingMessage = null
+        this.replyingMessage = null
+        this.revealUnreadOnLoad = false
+        this.unreadDividerSnapshot = null
+        this.keepUnreadDividerVisible = false
+        this.stickToBottom = true
+        this.stopPolling()
+        this.closeWebSocket()
+        return
+      }
+      this.stickToBottom = true
+      this.initialScrollDone = false
+      this.canLoadOlderFromUserScroll = false
+      this.suppressLoadMoreUntil = Date.now() + 1000
+      this.getMessages({ forceScroll })
+      this.connectWebSocket()
+    },
+    startPolling() {
+      this.stopPolling()
+      if (this.wsConnected) return
+      this.pollTimer = setInterval(() => {
+        this.getMessages()
+      }, 5000)
+    },
+    stopPolling() {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer)
+        this.pollTimer = null
+      }
+    },
+    connectWebSocket() {
+      this.closeWebSocket()
+      if (!this.user || !this.authToken) {
+        this.startPolling()
+        return
+      }
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      const host = window.location.host
+      const wsBase = import.meta.env.VITE_WS_BASE_URL || '/ws/'
+      const wsUrl = `${protocol}//${host}${wsBase}chat/${this.user.id}/?token=${this.authToken}`
+
+      try {
+        this.ws = new WebSocket(wsUrl)
+      } catch {
+        this.startPolling()
+        return
+      }
+
+      this.ws.onopen = () => {
+        this.wsConnected = true
+        this.stopPolling()
+        if (this.isLocallyTyping) {
+          this.sendTypingState(true)
+        }
+      }
+      this.ws.onclose = () => {
+        this.wsConnected = false
+        this.startPolling()
+      }
+      this.ws.onerror = () => {
+        this.wsConnected = false
+        this.startPolling()
+      }
+      this.ws.onmessage = async (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          if (data?.event === 'deleted' && data?.message?.id) {
+            this.applyMessagePatch(data.message)
+          } else if (data?.event === 'edited' && data?.message?.id) {
+            this.applyMessagePatch(data.message)
+          } else if (data?.message) {
+            this.addMessageUnique(
+              data.message,
+              String(this.getMessageSenderId(data?.message)) === String(this.currentUserId),
+            )
+          } else if (data?.reaction) {
+            this.applyReactionUpdate(data.reaction)
+          } else if (data?.typing) {
+            this.handleTypingEvent(data.typing)
+          } else if (data?.read) {
+            this.handleReadEvent(data.read)
+          } else if (data?.presence) {
+            this.handlePresenceEvent(data.presence)
+          }
+        } catch {
+          // ignore
+        }
+      }
+    },
+    closeWebSocket() {
+      if (this.ws) {
+        this.ws.close()
+        this.ws = null
+      }
+      this.wsConnected = false
+      this.clearTypingIndicator()
+      this.clearTypingSenderTimer()
+    },
+    markManualHistoryScroll() {
+      this.canLoadOlderFromUserScroll = true
+    },
+    onScroll() {
+      const el = this.$refs.messageList as HTMLElement | null
+      if (!el) return
+
+      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+      this.showScrollDown = !nearBottom
+      this.stickToBottom = nearBottom
+      if (nearBottom) {
+        if (Date.now() > this.suppressLoadMoreUntil) {
+          this.clearUnreadDividerSnapshot()
+        }
+      }
+
+      if (
+        el.scrollTop < 50 &&
+        this.hasMore &&
+        !this.loadingMore &&
+        !this.loading &&
+        this.canLoadOlderFromUserScroll &&
+        Date.now() > this.suppressLoadMoreUntil
+      ) {
+        this.canLoadOlderFromUserScroll = false
+        this.loadMoreMessages()
+      }
+    },
+    shouldAutoScroll(): boolean {
+      const el = this.$refs.messageList as HTMLElement | null
+      if (!el) return true
+      return el.scrollHeight - el.scrollTop - el.clientHeight < 80
+    },
+    getLocalDateKey(timestamp: string): string {
+      const date = new Date(timestamp)
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+        date.getDate(),
+      ).padStart(2, '0')}`
+    },
+    getDateLabel(timestamp: string): string {
+      if (!timestamp) return 'Unknown date'
+
+      const messageDate = new Date(timestamp)
+      const today = new Date()
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      const startOfMessage = new Date(
+        messageDate.getFullYear(),
+        messageDate.getMonth(),
+        messageDate.getDate(),
+      )
+      const dayDiff = Math.round((startOfToday.getTime() - startOfMessage.getTime()) / 86400000)
+
+      if (dayDiff === 0) return 'Today'
+      if (dayDiff === 1) return 'Yesterday'
+
+      return messageDate.toLocaleDateString([], {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    },
+    async getMessages(options: any = {}) {
+      const forceScroll = Boolean(options.forceScroll)
+      if (!this.user || !this.authToken) return
+      this.loading = true
+      const el = this.$refs.messageList as HTMLElement | null
+      const wasNearBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 80 : true
+      const previousScrollTop = el ? el.scrollTop : 0
+      const previousScrollHeight = el ? el.scrollHeight : 0
+      try {
+        const data = await getConversationMessages(this.user, { limit: 50, offset: 0 })
+        this.messages = data.messages || []
+        this.totalCount = data.total_count || 0
+        this.hasMore = data.has_more || false
+        this.loadOffset = this.messages.length
+        this.captureUnreadDividerSnapshot()
+        const shouldRevealUnread =
+          forceScroll && !this.initialScrollDone && this.unreadInThreadCount > 0
+        this.keepUnreadDividerVisible = shouldRevealUnread
+        this.stickToBottom = !shouldRevealUnread
+
+        this.$nextTick(() => {
+          const list = this.$refs.messageList as HTMLElement | null
+          if (!list) return
+
+          if (shouldRevealUnread) {
+            this.$nextTick(() => {
+              window.requestAnimationFrame(() => {
+                this.revealUnreadThreadPosition()
+                this.initialScrollDone = true
+                this.canLoadOlderFromUserScroll = false
+                this.scheduleReadSync(2500)
+              })
+            })
+            return
+          }
+
+          if (forceScroll || wasNearBottom) {
+            this.scrollToBottom(true)
+            this.initialScrollDone = true
+            this.canLoadOlderFromUserScroll = false
+            this.showScrollDown = false
+            this.scheduleReadSync(150)
+            return
+          }
+
+          const nextScrollHeight = list.scrollHeight
+          const heightDelta = nextScrollHeight - previousScrollHeight
+          list.scrollTop = Math.max(0, previousScrollTop + heightDelta)
+          this.showScrollDown = true
+        })
+      } catch {
+        this.totalCount = 0
+        this.hasMore = false
+      } finally {
+        this.loading = false
+      }
+    },
+    async loadMoreMessages() {
+      if (!this.user || !this.authToken || !this.hasMore || this.loadingMore) return
+
+      this.loadingMore = true
+      const el = this.$refs.messageList as HTMLElement | null
+      if (!el) {
+        this.loadingMore = false
+        return
+      }
+
+      const prevScrollHeight = el.scrollHeight
+      const prevScrollTop = el.scrollTop
+
+      try {
+        const data = await getConversationMessages(this.user, {
+          limit: 50,
+          offset: this.loadOffset,
+        })
+        const newMessages = data.messages || []
+
+        if (newMessages.length > 0) {
+          this.messages = [...newMessages, ...this.messages]
+          this.loadOffset += newMessages.length
+          this.hasMore = data.has_more || false
+          this.canLoadOlderFromUserScroll = false
+
+          this.$nextTick(() => {
+            const newScrollHeight = el.scrollHeight
+            el.scrollTop = newScrollHeight - prevScrollHeight + prevScrollTop
+          })
+        } else {
+          this.hasMore = false
+        }
+      } catch {
+        this.hasMore = false
+      } finally {
+        this.loadingMore = false
+      }
+    },
+    async sendMessage(payload: any) {
+      const text = typeof payload === 'string' ? payload : payload?.text || ''
+      const files = typeof payload === 'string' ? [] : payload?.files || []
+      const media = typeof payload === 'string' ? null : payload?.media || null
+      const editingMessageId =
+        typeof payload === 'string' ? null : payload?.editingMessageId || null
+      const replyToMessageId =
+        typeof payload === 'string' ? null : payload?.replyToMessageId || null
+
+      if (!text.trim() && !files.length && !media) return
+      try {
+        this.sendError = ''
+        if (editingMessageId) {
+          await this.updateMessage(editingMessageId, text.trim())
+          return
+        }
+        if (media) {
+          const mediaPayload = {
+            content: text.trim(),
+            reply_to_message_id: replyToMessageId,
+            message_type: media.kind,
+            gif_url: media.kind === 'gif' ? media.sendUrl : '',
+            sticker_url: media.kind === 'sticker' ? media.sendUrl : '',
+            provider: media.provider || 'giphy',
+            provider_id: media.providerId,
+            animated: Boolean(media.animated),
+            media_title: media.title || '',
+          }
+
+          if (this.wsConnected && this.ws) {
+            this.ws.send(JSON.stringify(mediaPayload))
+          } else {
+            const message = await sendConversationMessage(this.user, {
+              ...mediaPayload,
+              recipientUsername: this.user.username,
+            })
+            this.addMessageUnique(message, true)
+          }
+          this.replyingMessage = null
+          this.markThreadAsReadLocally()
+          this.$nextTick(() => this.scrollToBottom(true))
+          void this.syncConversationReadState()
+          return
+        }
+        if (files.length) {
+          for (let index = 0; index < files.length; index += 1) {
+            const file = files[index]
+            const form = new FormData()
+            form.append('media', file)
+            if (index === 0 && text.trim()) {
+              form.append('content', text.trim())
+            }
+            if (replyToMessageId) {
+              form.append('reply_to_message_id', replyToMessageId)
+            }
+            const res = await fetch(
+              `${window.location.origin}/api/messaging/conversations/${this.user.id}/media/`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: this.authToken ? `Token ${this.authToken}` : '',
+                },
+                body: form,
+              },
+            ).catch(() => null)
+            if (!res || !res.ok) {
+              throw new Error('Media messages are not supported on this backend.')
+            }
+            const json = await res.json()
+            this.addMessageUnique(json)
+          }
+          this.replyingMessage = null
+          this.markThreadAsReadLocally()
+          this.$nextTick(() => this.scrollToBottom(true))
+          void this.syncConversationReadState()
+          return
+        }
+
+        if (text.trim()) {
+          if (this.wsConnected && this.ws) {
+            this.ws.send(
+              JSON.stringify({
+                content: text.trim(),
+                reply_to_message_id: replyToMessageId,
+              }),
+            )
+          } else {
+            const message = await sendConversationMessage(this.user, {
+              content: text.trim(),
+              reply_to_message_id: replyToMessageId,
+              recipientUsername: this.user.username,
+            })
+            this.addMessageUnique(message, true)
+          }
+          this.replyingMessage = null
+          this.markThreadAsReadLocally()
+          this.$nextTick(() => this.scrollToBottom(true))
+          void this.syncConversationReadState()
+        }
+      } catch (err: any) {
+        this.sendError = err?.response?.data?.error || err?.message || 'Message failed to send.'
+      }
+    },
+    async sendReaction(payload: any) {
+      const messageId = payload?.messageId
+      const emoji = payload?.emoji
+      if (!messageId || !emoji) return
+      try {
+        const res = await chatApi.post('messaging/messages/react/', {
+          message_id: messageId,
+          emoji,
+        })
+        this.applyReactionUpdate(res.data)
+      } catch {
+        // ignore
+      }
+    },
+    handleTyping(isTyping: boolean) {
+      this.isLocallyTyping = Boolean(isTyping)
+      this.clearTypingSenderTimer()
+      if (!this.wsConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) return
+      this.sendTypingState(isTyping)
+      if (isTyping) {
+        this.typingSendTimer = window.setTimeout(() => {
+          this.typingSendTimer = null
+          if (this.isLocallyTyping) {
+            this.sendTypingState(true)
+          }
+        }, 1200)
+      }
+    },
+    handleTypingEvent(typing: any) {
+      const senderId = String(typing?.user_id ?? typing?.sender_id ?? '')
+      if (senderId && senderId === String(this.currentUserId)) {
+        return
+      }
+
+      if (typing?.is_typing) {
+        this.isPartnerTyping = true
+        this.scheduleTypingIndicatorReset()
+        return
+      }
+
+      this.clearTypingIndicator()
+    },
+    handleReadEvent(read: any) {
+      const readerId = String(read?.reader_id ?? read?.user_id ?? '')
+      if (!readerId) return
+
+      if (readerId === String(this.currentUserId)) {
+        this.markThreadAsReadLocally()
+        eventBus.emit('messaging-thread-read', read)
+        return
+      }
+
+      this.messages = this.messages.map((message) => {
+        const senderId = String(this.getMessageSenderId(message) ?? '')
+        const receiverId = String(this.getMessageReceiverId(message) ?? '')
+        if (
+          !message ||
+          senderId !== String(this.currentUserId) ||
+          (receiverId && receiverId !== readerId)
+        ) {
+          return message
+        }
+        return {
+          ...message,
+          is_read: true,
+        }
+      })
+      eventBus.emit('messaging-thread-read', read)
+    },
+    handlePresenceEvent(presence: any) {
+      const userId = String(presence?.user_id ?? '')
+      if (!userId) return
+      eventBus.emit('messaging-presence-updated', presence)
+      this.applyPresenceOverride(presence)
+    },
+    handlePresenceBusEvent(presence: any) {
+      this.applyPresenceOverride(presence)
+    },
+    applyPresenceOverride(presence: any) {
+      const userId = String(presence?.user_id ?? '')
+      if (this.user && userId === String(this.user.id)) {
+        this.userPresenceOverride = Boolean(presence?.is_online)
+      }
+    },
+    openReactionPicker() {
+      ;(this.$refs.messageInput as any)?.openEmojiPicker?.()
+    },
+    beginEditMessage(message: any) {
+      if (!message) return
+      const type = String(message?.message_type || '').toLowerCase()
+      const mediaType = String(message?.media_type || '').toLowerCase()
+      const mediaUrl = String(message?.media_url || message?.media || '').toLowerCase()
+      const isVisualFile =
+        type === 'file' &&
+        (mediaType.startsWith('image/') ||
+          mediaType.startsWith('video/') ||
+          /\.(jpg|jpeg|png|gif|webp|mp4|webm|ogg|mov)(\?|#|$)/i.test(mediaUrl))
+      const isEditableMediaCaption = isVisualFile && Boolean(message?.content?.trim())
+      if (
+        String(this.getMessageSenderId(message)) !== String(this.currentUserId) ||
+        message.is_deleted ||
+        (message.can_edit === false && !isEditableMediaCaption) ||
+        ['gif', 'sticker'].includes(type) ||
+        (type === 'file' && !isEditableMediaCaption)
+      )
+        return
+      this.replyingMessage = null
+      this.editingMessage = { ...message }
+      this.sendError = ''
+      this.$nextTick(() => this.scrollToBottom(true))
+    },
+    beginReplyMessage(message: any) {
+      if (!message || message.is_deleted) return
+      this.editingMessage = null
+      this.replyingMessage = { ...message }
+      this.sendError = ''
+      this.$nextTick(() => {
+        const input = (this.$refs.messageInput as any)?.$refs
+          ?.inputArea as HTMLTextAreaElement | null
+        if (input) {
+          input.focus()
+        }
+      })
+    },
+    cancelEditMessage() {
+      this.editingMessage = null
+    },
+    cancelReplyMessage() {
+      this.replyingMessage = null
+    },
+    async updateMessage(messageId: any, content: string) {
+      if (!messageId || !content.trim()) return
+      try {
+        const res = await chatApi.patch(`messaging/messages/${messageId}/`, {
+          content: content.trim(),
+        })
+        this.applyMessagePatch(res.data)
+        this.editingMessage = null
+        eventBus.emit('messaging-read-updated')
+      } catch (err: any) {
+        this.sendError = err?.response?.data?.error || err?.message || 'Message failed to update.'
+      }
+    },
+    async deleteMessage(message: any) {
+      if (!message?.id) return
+      if (String(this.getMessageSenderId(message)) !== String(this.currentUserId)) return
+      const confirmed = window.confirm('Delete this message?')
+      if (!confirmed) return
+      try {
+        const res = await chatApi.delete(`messaging/messages/${message.id}/`)
+        this.applyMessagePatch(res.data)
+        eventBus.emit('messaging-read-updated')
+        if (this.editingMessage?.id === message.id) {
+          this.editingMessage = null
+        }
+      } catch (err: any) {
+        this.sendError = err?.response?.data?.error || err?.message || 'Message failed to delete.'
+      }
+    },
+    applyReactionUpdate(update: any) {
+      const messageId = update?.message_id
+      if (!messageId) return
+      const idx = this.messages.findIndex((msg) => String(msg.id) === String(messageId))
+      if (idx === -1) return
+      const existing = this.messages[idx]
+      const reactorId = String(update?.reactor_id ?? '')
+      const isCurrentUserReaction = reactorId && reactorId === String(this.currentUserId)
+      this.messages[idx] = {
+        ...existing,
+        reactions: update.reactions || [],
+        my_reaction: isCurrentUserReaction
+          ? update.selected_emoji || ''
+          : existing.my_reaction || '',
+      }
+    },
+    applyMessagePatch(message: any) {
+      if (!message?.id) return
+      const idx = this.messages.findIndex((msg) => String(msg.id) === String(message.id))
+      if (idx === -1) {
+        this.messages.push(message)
+        this.triggerEmojiEffectForMessage(message)
+        return
+      }
+      this.messages[idx] = {
+        ...this.messages[idx],
+        ...message,
+      }
+      if (this.editingMessage?.id === message.id && message.is_deleted) {
+        this.editingMessage = null
+      }
+      if (this.replyingMessage?.id === message.id) {
+        this.replyingMessage = message.is_deleted ? null : { ...this.replyingMessage, ...message }
+      }
+      this.patchReplyPreviewsForMessage(message)
+    },
+    getReplyPreviewTextForMessage(message: any): string {
+      if (!message) return ''
+      if (message.is_deleted) return 'Message deleted'
+      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
+      if (type === 'gif') return 'GIF'
+      if (type === 'sticker') return 'Sticker'
+      if (message.content?.trim()) return message.content.trim()
+      if (type === 'file') {
+        const mediaType = String(message?.media_type || '').toLowerCase()
+        const url = String(message?.media_url || message?.media || '').toLowerCase()
+        if (mediaType.startsWith('video/') || /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(url))
+          return 'Video'
+        if (mediaType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)(\?|#|$)/i.test(url))
+          return 'Photo'
+      }
+      return ''
+    },
+    patchReplyPreviewsForMessage(message: any) {
+      if (!message?.id) return
+      this.messages = this.messages.map((row) => {
+        const reply = row?.reply_to_message
+        if (!reply || String(reply.id) !== String(message.id)) return row
+        return {
+          ...row,
+          reply_to_message: {
+            ...reply,
+            content: this.getReplyPreviewTextForMessage(message),
+            type: message.message_type || message.type || reply.type,
+            message_type: message.message_type || message.type || reply.message_type,
+            media_url: message.media_url || reply.media_url || '',
+            media: message.media || reply.media || '',
+            media_type: message.media_type || reply.media_type || '',
+            media_preview:
+              message.media_preview ||
+              message.preview ||
+              reply.media_preview ||
+              reply.preview ||
+              null,
+            gif_url: message.gif_url || reply.gif_url || '',
+            sticker_url: message.sticker_url || reply.sticker_url || '',
+            external_url: message.external_url || reply.external_url || '',
+            sender_display_name: message.sender_display_name || reply.sender_display_name,
+            sender_username: message.sender_username || reply.sender_username,
+            is_deleted: Boolean(message.is_deleted),
+          },
+        }
+      })
+    },
+    addMessageUnique(message: any, forceScroll: boolean = false) {
+      if (!message) return
+      const exists = this.messages.some((msg) => String(msg.id) === String(message.id))
+      if (!exists) {
+        const wasNearBottom = this.shouldAutoScroll()
+        const isMine = String(this.getMessageSenderId(message)) === String(this.currentUserId)
+        const isIncoming = this.isIncomingMessage(message)
+        this.messages.push(message)
+        this.totalCount += 1
+        this.triggerEmojiEffectForMessage(message)
+        this.emitLastMessageUpdate(message, isMine)
+
+        if (isIncoming) {
+          this.clearTypingIndicator()
+          if (this.isChatPaneVisible()) {
+            this.clearUnreadDividerSnapshot()
+            this.markThreadAsReadLocally()
+            this.scheduleReadSync(150, { requireVisible: false })
+          } else if (wasNearBottom) {
+            this.clearUnreadDividerSnapshot()
+            this.scheduleReadSync(200, { requireVisible: false })
+          } else {
+            this.rememberUnreadIncomingMessage(message)
+          }
+        }
+
+        if (forceScroll || wasNearBottom || isMine) {
+          this.stickToBottom = true
+          this.$nextTick(() => this.scrollToBottom(true))
+        } else {
+          this.stickToBottom = false
+          this.showScrollDown = true
+        }
+      }
+    },
+    getSidebarConversationUserId(message: any): any {
+      const senderId = this.getMessageSenderId(message)
+      const isMine = String(senderId) === String(this.currentUserId)
+      return isMine ? this.user?.id : senderId || this.user?.id
+    },
+    getSidebarLastMessageText(message: any): string {
+      if (!message || message.is_deleted) return ''
+      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
+      if (type === 'gif' || type === 'sticker') return ''
+      return String(message?.content || '').trim()
+    },
+    getSidebarMessagePreview(message: any): any {
+      if (!message || message.is_deleted) return null
+      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
+      if (type === 'gif') {
+        const url = message?.gif_url || message?.external_url || ''
+        return url ? { kind: 'gif', url } : null
+      }
+      if (type === 'sticker') {
+        const url = message?.sticker_url || message?.external_url || ''
+        return url ? { kind: 'sticker', url } : null
+      }
+
+      const url = message?.media_url || message?.media || ''
+      if (!url) return null
+      const mediaType = String(message?.media_type || '').toLowerCase()
+      const isVideo =
+        mediaType.startsWith('video/') || /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(String(url))
+      return {
+        kind: isVideo ? 'video' : 'image',
+        url,
+      }
+    },
+    emitLastMessageUpdate(message: any, isMine: boolean) {
+      const userId = this.getSidebarConversationUserId(message)
+      if (!userId) return
+      eventBus.emit('messaging-last-message-updated', {
+        user_id: userId,
+        last_message: this.getSidebarLastMessageText(message),
+        timestamp: message?.timestamp || new Date().toISOString(),
+        is_mine: Boolean(isMine),
+        preview: this.getSidebarMessagePreview(message),
+      })
+    },
+    markThreadAsReadLocally() {
+      if (!this.keepUnreadDividerVisible) {
+        this.clearUnreadDividerSnapshot()
+      }
+      const currentUserId = String(this.currentUserId ?? '')
+      this.messages = this.messages.map((message) => {
+        if (!message || String(this.getMessageSenderId(message)) === currentUserId) {
+          return message
+        }
+        return {
+          ...message,
+          is_read: true,
+        }
+      })
+    },
+    updateDraftText(text: string) {
+      if (!this.conversationKey) return
+      this.draftsByConversation = {
+        ...this.draftsByConversation,
+        [this.conversationKey]: text || '',
+      }
+    },
+    handleMessageMediaLoad() {
+      if (!this.stickToBottom) return
+      this.$nextTick(() => this.scrollToBottom(true))
+    },
+    handleMessageMediaError() {
+      if (!this.stickToBottom) return
+      this.$nextTick(() => this.scrollToBottom(true))
+    },
+    scrollToBottom(force: boolean = false) {
+      const el = this.$refs.messageList as HTMLElement | null
+      if (!el) return
+      if (!force && !this.shouldAutoScroll()) {
+        this.showScrollDown = true
+        return
+      }
+      this.suppressLoadMoreUntil = Date.now() + 400
+      el.scrollTop = el.scrollHeight
+      this.showScrollDown = false
+      this.stickToBottom = true
+      this.clearUnreadDividerSnapshot()
+    },
+    revealUnreadThreadPosition() {
+      const el = this.$refs.messageList as HTMLElement | null
+      if (!el) return
+
+      const unreadInfo = this.getUnreadDividerInfo()
+      const targetMessage = unreadInfo.index >= 0 ? this.messages[unreadInfo.index] || null : null
+      let didScroll = false
+
+      const dividerEl = el.querySelector('[data-unread-divider]')
+      if (dividerEl?.scrollIntoView) {
+        const listRect = el.getBoundingClientRect()
+        const dividerRect = dividerEl.getBoundingClientRect()
+        const offsetTop = dividerRect.top - listRect.top
+        const nextTop = el.scrollTop + offsetTop - 72
+        this.suppressLoadMoreUntil = Date.now() + 400
+        el.scrollTop = Math.max(0, nextTop)
+        didScroll = true
+      } else if (targetMessage?.id != null) {
+        const targetEl = el.querySelector(`[data-message-id="${String(targetMessage.id)}"]`)
+        if (targetEl?.scrollIntoView) {
+          const listRect = el.getBoundingClientRect()
+          const targetRect = targetEl.getBoundingClientRect()
+          const offsetTop = targetRect.top - listRect.top
+          const nextTop = el.scrollTop + offsetTop - 96
+          this.suppressLoadMoreUntil = Date.now() + 400
+          el.scrollTop = Math.max(0, nextTop)
+          didScroll = true
+        }
+      }
+
+      if (!didScroll) {
+        this.scrollToBottom(true)
+      } else {
+        const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+        this.showScrollDown = !nearBottom
+        this.stickToBottom = nearBottom
+      }
+
+      const latestMessage =
+        [...this.messages].reverse().find((message) => !message?.is_deleted) || null
+      const latestEmoji = this.getCelebrationEmojiFromMessage(latestMessage)
+      if (latestEmoji) {
+        this.$nextTick(() => {
+          this.triggerEmojiEffect(latestEmoji)
+        })
+      }
+    },
+    triggerEmojiEffect(emoji: string, origin?: any) {
+      ;(this.$refs.emojiLayer as any)?.play?.(emoji, origin)
+    },
+    triggerEmojiEffectForMessage(message: any) {
+      const emoji = this.getCelebrationEmojiFromMessage(message)
+      if (!emoji) return
+      this.$nextTick(() => {
+        this.triggerEmojiEffect(emoji)
+      })
+    },
+  },
+})
+</script>
+
 <template>
   <section class="relative h-full min-h-0 flex-1 overflow-hidden">
     <!-- Dynamic Ambient Background -->
@@ -100,14 +1378,7 @@
           <div>
             <div class="text-lg font-bold tracking-tight text-slate-800">{{ user.username }}</div>
             <div class="flex items-center gap-1.5 text-xs font-medium" :class="userPresenceClass">
-              <!-- <span class="h-1.5 w-1.5 rounded-full" :class="userPresenceDotClass"></span> -->
               <span>{{ userPresenceLabel }}</span>
-              <!-- <span
-                v-if="unreadInThreadCount > 0"
-                class="ml-1 rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm"
-              >
-                {{ unreadInThreadCount > 99 ? '99+' : unreadInThreadCount }} unread
-              </span> -->
             </div>
           </div>
         </div>
@@ -422,1244 +1693,3 @@
   }
 }
 </style>
-
-<script>
-import chatApi from '@/services/messageApi'
-import MessageInput from './MessageInput.vue'
-import MessageBubble from './MessageBubble.vue'
-import FloatingEmojiLayer from './FloatingEmojiLayer.vue'
-import StableAvatar from './StableAvatar.vue'
-import { mapState } from 'pinia'
-import { useAuthStore } from '@/stores/auth'
-import { mapActions } from 'pinia'
-import { useProfileStore } from '@/stores/profile'
-import { getAvatarUrl } from '@/utils/avatars'
-import eventBus from '@/services/eventBus'
-import {
-  getConversationMessages,
-  markConversationAsRead,
-  sendConversationMessage,
-} from '@/services/messagingCompat'
-import { isCelebrationEmoji } from './emoji-catalog'
-import { getEmojiCount, isEmojiOnlyMessage, tokenizeMessageText } from './emoji-parser'
-
-export default {
-  props: {
-    user: {
-      type: Object,
-      default: null,
-    },
-    showMobileBack: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['back'],
-  components: {
-    MessageBubble,
-    MessageInput,
-    FloatingEmojiLayer,
-    StableAvatar,
-  },
-  data() {
-    return {
-      messages: [],
-      loading: false,
-      sendError: '',
-      pollTimer: null,
-      readSyncTimer: null,
-      readSyncInFlight: false,
-      ws: null,
-      wsConnected: false,
-      showScrollDown: false,
-      totalCount: 0,
-      hasMore: false,
-      loadingMore: false,
-      loadOffset: 0,
-      editingMessage: null,
-      replyingMessage: null,
-      revealUnreadOnLoad: false,
-      unreadDividerSnapshot: null,
-      isPartnerTyping: false,
-      typingIndicatorTimer: null,
-      isLocallyTyping: false,
-      typingSendTimer: null,
-      draftsByConversation: {},
-      stickToBottom: true,
-      suppressLoadMoreUntil: 0,
-      initialScrollDone: false,
-      canLoadOlderFromUserScroll: false,
-      userPresenceOverride: null,
-      keepUnreadDividerVisible: false,
-    }
-  },
-  computed: {
-    ...mapState(useAuthStore, ['currentUser', 'authToken']),
-    ...mapState(useProfileStore, ['currentProfile', 'profilesByUsername']),
-    currentUserId() {
-      return this.currentUser?.id
-    },
-    conversationKey() {
-      return this.user ? String(this.user.id ?? this.user.username ?? '') : ''
-    },
-    draftText() {
-      if (!this.conversationKey) return ''
-      return this.draftsByConversation[this.conversationKey] || ''
-    },
-    selectedUserProfile() {
-      const username = this.user?.username
-      if (!username) return null
-      return (
-        this.profilesByUsername?.[username] ||
-        (this.currentProfile?.user?.username === username ? this.currentProfile : null)
-      )
-    },
-    userPresenceLabel() {
-      if (!this.user) return ''
-      return this.isSelectedUserOnline ? 'Online' : 'Offline'
-    },
-    userPresenceClass() {
-      return this.isSelectedUserOnline ? 'text-emerald-600' : 'text-slate-500'
-    },
-    userPresenceDotClass() {
-      return this.isSelectedUserOnline ? 'bg-emerald-500' : 'bg-slate-400'
-    },
-    isSelectedUserOnline() {
-      if (!this.user) return false
-      if (this.userPresenceOverride !== null) return Boolean(this.userPresenceOverride)
-      return Boolean(this.user?.is_online)
-    },
-    chatAvatarUrl() {
-      const profile = this.selectedUserProfile
-      const avatar =
-        this.user?.avatar_url ||
-        this.user?.picture ||
-        this.user?.picture_url ||
-        this.user?.avatar ||
-        this.user?.user?.picture ||
-        this.user?.user?.picture_url ||
-        profile?.picture ||
-        ''
-      const firstName =
-        profile?.display_name ||
-        profile?.user?.first_name ||
-        this.user?.display_name ||
-        this.user?.first_name ||
-        this.user?.user?.first_name ||
-        this.user?.username ||
-        ''
-      const lastName =
-        profile?.user?.last_name || this.user?.last_name || this.user?.user?.last_name || ''
-
-      return getAvatarUrl(
-        avatar,
-        firstName,
-        lastName,
-        this.user?.username || profile?.user?.username || '',
-      )
-    },
-    groupedMessages() {
-      const groups = []
-      let lastDateKey = null
-      let unreadDividerAdded = false
-      const unreadInfo = this.getUnreadDividerInfo()
-      const unreadDividerLabel =
-        unreadInfo.count > 0
-          ? `${unreadInfo.count} unread message${unreadInfo.count === 1 ? '' : 's'}`
-          : 'Unread messages'
-
-      this.messages.forEach((message, index) => {
-        const isUnreadIncoming =
-          !unreadDividerAdded && !message?.is_deleted && index === unreadInfo.index
-
-        const timestamp = message?.timestamp
-        if (timestamp) {
-          const dateKey = this.getLocalDateKey(timestamp)
-
-          if (dateKey !== lastDateKey) {
-            groups.push({
-              type: 'date',
-              key: `date-${dateKey}-${groups.length}`,
-              label: this.getDateLabel(timestamp),
-            })
-            lastDateKey = dateKey
-          }
-        }
-
-        if (isUnreadIncoming) {
-          groups.push({
-            type: 'unread-divider',
-            key: `unread-divider-${message.id ?? groups.length}`,
-            label: unreadDividerLabel,
-          })
-          unreadDividerAdded = true
-        }
-
-        groups.push({
-          type: 'message',
-          key: `message-${message.id}`,
-          message,
-        })
-      })
-
-      return groups
-    },
-    unreadInThreadCount() {
-      return this.getUnreadDividerInfo().count
-    },
-  },
-  async created() {
-    await this.loadSelectedUserProfile()
-  },
-  watch: {
-    user() {
-      if (!this.user) {
-        this.messages = []
-        this.editingMessage = null
-        this.replyingMessage = null
-        this.revealUnreadOnLoad = false
-        this.unreadDividerSnapshot = null
-        this.initialScrollDone = false
-        this.canLoadOlderFromUserScroll = false
-        this.userPresenceOverride = null
-        this.keepUnreadDividerVisible = false
-        this.stopReadSyncTimer()
-        this.clearTypingIndicator()
-        this.stopPolling()
-        this.closeWebSocket()
-        return
-      }
-      this.editingMessage = null
-      this.replyingMessage = null
-      this.revealUnreadOnLoad = false
-      this.unreadDividerSnapshot = null
-      this.initialScrollDone = false
-      this.canLoadOlderFromUserScroll = false
-      this.suppressLoadMoreUntil = Date.now() + 1000
-      this.userPresenceOverride = null
-      this.keepUnreadDividerVisible = false
-      this.stopReadSyncTimer()
-      this.clearTypingIndicator()
-      this.refreshThread(true)
-      this.loadSelectedUserProfile()
-    },
-  },
-  mounted() {
-    this.revealUnreadOnLoad = false
-    this.refreshThread(true)
-    this.loadSelectedUserProfile()
-    document.addEventListener('visibilitychange', this.handleVisibilityChange)
-    eventBus.on('messaging-presence-updated', this.handlePresenceBusEvent)
-  },
-  beforeUnmount() {
-    void this.syncConversationReadState({ requireVisible: false })
-    this.stopPolling()
-    this.stopReadSyncTimer()
-    this.clearTypingIndicator()
-    this.closeWebSocket()
-    document.removeEventListener('visibilitychange', this.handleVisibilityChange)
-    eventBus.off('messaging-presence-updated', this.handlePresenceBusEvent)
-  },
-  methods: {
-    ...mapActions(useProfileStore, ['fetchProfile']),
-    stopReadSyncTimer() {
-      if (this.readSyncTimer) {
-        clearTimeout(this.readSyncTimer)
-        this.readSyncTimer = null
-      }
-    },
-    clearTypingIndicator() {
-      this.isPartnerTyping = false
-      if (this.typingIndicatorTimer) {
-        clearTimeout(this.typingIndicatorTimer)
-        this.typingIndicatorTimer = null
-      }
-    },
-    clearTypingSenderTimer() {
-      if (this.typingSendTimer) {
-        clearTimeout(this.typingSendTimer)
-        this.typingSendTimer = null
-      }
-    },
-    scheduleTypingIndicatorReset() {
-      if (this.typingIndicatorTimer) {
-        clearTimeout(this.typingIndicatorTimer)
-      }
-      this.typingIndicatorTimer = window.setTimeout(() => {
-        this.isPartnerTyping = false
-        this.typingIndicatorTimer = null
-      }, 2500)
-    },
-    sendTypingState(isTyping) {
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
-      this.ws.send(
-        JSON.stringify({
-          event: 'typing',
-          is_typing: Boolean(isTyping),
-        }),
-      )
-      return true
-    },
-    scheduleReadSync(delay = 250, options = {}) {
-      if (!this.user || !this.authToken || document.hidden) return
-      this.stopReadSyncTimer()
-      this.readSyncTimer = window.setTimeout(() => {
-        this.readSyncTimer = null
-        void this.syncConversationReadState(options)
-      }, delay)
-    },
-    sendReadStateOverSocket() {
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
-      this.ws.send(
-        JSON.stringify({
-          event: 'read',
-        }),
-      )
-      return true
-    },
-    async syncConversationReadState(options = {}) {
-      const requireVisible = options?.requireVisible !== false
-      const activeUser = this.user
-      if (
-        !activeUser ||
-        !this.authToken ||
-        this.readSyncInFlight ||
-        (requireVisible && !this.isChatPaneVisible())
-      )
-        return
-      this.readSyncInFlight = true
-      try {
-        let readState = null
-        const sentOverSocket = this.sendReadStateOverSocket()
-        if (!sentOverSocket) {
-          readState = await markConversationAsRead(activeUser)
-        }
-        this.markThreadAsReadLocally()
-        eventBus.emit('messaging-thread-read', {
-          reader_id: this.currentUserId,
-          sender_id: activeUser.id,
-          updated_count:
-            readState?.updated_count === undefined ? undefined : Number(readState.updated_count),
-          unread_count:
-            readState?.unread_count === undefined ? undefined : Number(readState.unread_count),
-        })
-      } catch {
-        // keep the UI responsive even if the backend read call fails
-      } finally {
-        this.readSyncInFlight = false
-      }
-    },
-    handleVisibilityChange() {
-      if (document.hidden) this.stopReadSyncTimer()
-      else this.scheduleReadSync(150)
-    },
-    async handleBackToList() {
-      await this.syncConversationReadState({ requireVisible: false })
-      this.$emit('back')
-    },
-    isChatPaneVisible() {
-      if (document.hidden || !this.user) return false
-      const el = this.$refs.messageList
-      if (!el || !el.isConnected) return false
-      const rect = el.getBoundingClientRect()
-      return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight
-    },
-    getMessageUserId(value) {
-      if (value && typeof value === 'object') {
-        return value.id ?? value.user_id ?? value.pk ?? value.user?.id ?? ''
-      }
-      return value ?? ''
-    },
-    getMessageSenderId(message) {
-      return this.getMessageUserId(message?.sender ?? message?.sender_id ?? message?.sender_user)
-    },
-    getMessageReceiverId(message) {
-      return this.getMessageUserId(
-        message?.receiver ?? message?.receiver_id ?? message?.recipient ?? message?.recipient_id,
-      )
-    },
-    isIncomingMessage(message) {
-      if (!message) return false
-      const currentUserId = String(this.currentUserId ?? '')
-      const senderId = String(this.getMessageSenderId(message) ?? '')
-      if (!currentUserId || !senderId) return false
-      return senderId !== currentUserId
-    },
-    isUnreadIncomingMessage(message) {
-      return !message?.is_deleted && !message?.is_read && this.isIncomingMessage(message)
-    },
-    captureUnreadDividerSnapshot() {
-      const messages = Array.isArray(this.messages) ? this.messages : []
-      const unreadMessages = messages.filter((message) => this.isUnreadIncomingMessage(message))
-
-      this.unreadDividerSnapshot = unreadMessages.length
-        ? {
-            count: unreadMessages.length,
-            firstMessageId: unreadMessages[0]?.id ?? null,
-          }
-        : this.getUnreadSnapshotFromInitialCount(messages)
-    },
-    clearUnreadDividerSnapshot() {
-      this.keepUnreadDividerVisible = false
-      this.unreadDividerSnapshot = null
-    },
-    rememberUnreadIncomingMessage(message) {
-      if (!message?.id || !this.isIncomingMessage(message)) return
-
-      if (!this.unreadDividerSnapshot?.count) {
-        this.unreadDividerSnapshot = {
-          count: 1,
-          firstMessageId: message.id,
-        }
-        this.keepUnreadDividerVisible = true
-        return
-      }
-
-      this.unreadDividerSnapshot = {
-        ...this.unreadDividerSnapshot,
-        count: this.unreadDividerSnapshot.count + 1,
-      }
-      this.keepUnreadDividerVisible = true
-    },
-    getInitialUnreadCount() {
-      return Number(this.user?.initial_unread_count || this.user?.unread_count || 0)
-    },
-    getUnreadSnapshotFromInitialCount(messages) {
-      const initialUnreadCount = this.getInitialUnreadCount()
-      if (initialUnreadCount <= 0) return null
-
-      const incomingMessages = messages.filter(
-        (message) => !message?.is_deleted && this.isIncomingMessage(message),
-      )
-      if (!incomingMessages.length) return null
-
-      const firstUnread =
-        incomingMessages[Math.max(0, incomingMessages.length - initialUnreadCount)] || null
-      return firstUnread
-        ? {
-            count: Math.min(initialUnreadCount, incomingMessages.length),
-            firstMessageId: firstUnread.id ?? null,
-          }
-        : null
-    },
-    getUnreadDividerInfo() {
-      if (this.unreadDividerSnapshot?.count > 0) {
-        const firstMessageId = this.unreadDividerSnapshot.firstMessageId
-        const index = this.messages.findIndex(
-          (message) => String(message?.id) === String(firstMessageId),
-        )
-        if (index >= 0) {
-          return { count: this.unreadDividerSnapshot.count, index }
-        }
-      }
-
-      const messages = Array.isArray(this.messages) ? this.messages : []
-      const flaggedUnread = messages.filter((message) => this.isUnreadIncomingMessage(message))
-
-      if (flaggedUnread.length > 0) {
-        const index = messages.findIndex((message) => this.isUnreadIncomingMessage(message))
-        return { count: flaggedUnread.length, index }
-      }
-      return { count: 0, index: -1 }
-    },
-    getCelebrationEmojiFromMessage(message) {
-      const raw = String(message?.content || '').trim()
-      if (!raw) return ''
-
-      const tokens = tokenizeMessageText(raw)
-      if (!isEmojiOnlyMessage(tokens) || getEmojiCount(tokens) !== 1) return ''
-
-      const celebrationEmoji = [...tokens]
-        .reverse()
-        .find((token) => token?.type === 'emoji' && isCelebrationEmoji(token.value))
-
-      return celebrationEmoji?.value || ''
-    },
-    async loadSelectedUserProfile() {
-      const username = this.user?.username
-      if (!username) return
-      if (this.profilesByUsername?.[username]) return
-      try {
-        await this.fetchProfile(username)
-      } catch {
-        // Keep the existing fallback avatar if profile loading fails.
-      }
-    },
-    refreshThread(forceScroll = false) {
-      if (!this.user) {
-        this.messages = []
-        this.editingMessage = null
-        this.replyingMessage = null
-        this.revealUnreadOnLoad = false
-        this.unreadDividerSnapshot = null
-        this.keepUnreadDividerVisible = false
-        this.stickToBottom = true
-        this.stopPolling()
-        this.closeWebSocket()
-        return
-      }
-      this.stickToBottom = true
-      this.initialScrollDone = false
-      this.canLoadOlderFromUserScroll = false
-      this.suppressLoadMoreUntil = Date.now() + 1000
-      this.getMessages({ forceScroll })
-      this.connectWebSocket()
-    },
-    startPolling() {
-      this.stopPolling()
-      if (this.wsConnected) return
-      this.pollTimer = setInterval(() => {
-        this.getMessages()
-      }, 5000)
-    },
-    stopPolling() {
-      if (this.pollTimer) {
-        clearInterval(this.pollTimer)
-        this.pollTimer = null
-      }
-    },
-    connectWebSocket() {
-      this.closeWebSocket()
-      if (!this.user || !this.authToken) {
-        this.startPolling()
-        return
-      }
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-      const host = window.location.host
-      const wsBase = import.meta.env.VITE_WS_BASE_URL || '/ws/'
-      const wsUrl = `${protocol}//${host}${wsBase}chat/${this.user.id}/?token=${this.authToken}`
-
-      try {
-        this.ws = new WebSocket(wsUrl)
-      } catch {
-        this.startPolling()
-        return
-      }
-
-      this.ws.onopen = () => {
-        this.wsConnected = true
-        this.stopPolling()
-        if (this.isLocallyTyping) {
-          this.sendTypingState(true)
-        }
-      }
-      this.ws.onclose = () => {
-        this.wsConnected = false
-        this.startPolling()
-      }
-      this.ws.onerror = () => {
-        this.wsConnected = false
-        this.startPolling()
-      }
-      this.ws.onmessage = async (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          if (data?.event === 'deleted' && data?.message?.id) {
-            this.applyMessagePatch(data.message)
-          } else if (data?.event === 'edited' && data?.message?.id) {
-            this.applyMessagePatch(data.message)
-          } else if (data?.message) {
-            this.addMessageUnique(
-              data.message,
-              String(this.getMessageSenderId(data?.message)) === String(this.currentUserId),
-            )
-          } else if (data?.reaction) {
-            this.applyReactionUpdate(data.reaction)
-          } else if (data?.typing) {
-            this.handleTypingEvent(data.typing)
-          } else if (data?.read) {
-            this.handleReadEvent(data.read)
-          } else if (data?.presence) {
-            this.handlePresenceEvent(data.presence)
-          }
-        } catch {
-          // ignore
-        }
-      }
-    },
-    closeWebSocket() {
-      if (this.ws) {
-        this.ws.close()
-        this.ws = null
-      }
-      this.wsConnected = false
-      this.clearTypingIndicator()
-      this.clearTypingSenderTimer()
-    },
-    markManualHistoryScroll() {
-      this.canLoadOlderFromUserScroll = true
-    },
-    onScroll() {
-      const el = this.$refs.messageList
-      if (!el) return
-
-      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
-      this.showScrollDown = !nearBottom
-      this.stickToBottom = nearBottom
-      if (nearBottom) {
-        if (Date.now() > this.suppressLoadMoreUntil) {
-          this.clearUnreadDividerSnapshot()
-        }
-      }
-
-      if (
-        el.scrollTop < 50 &&
-        this.hasMore &&
-        !this.loadingMore &&
-        !this.loading &&
-        this.canLoadOlderFromUserScroll &&
-        Date.now() > this.suppressLoadMoreUntil
-      ) {
-        this.canLoadOlderFromUserScroll = false
-        this.loadMoreMessages()
-      }
-    },
-    shouldAutoScroll() {
-      const el = this.$refs.messageList
-      if (!el) return true
-      return el.scrollHeight - el.scrollTop - el.clientHeight < 80
-    },
-    getLocalDateKey(timestamp) {
-      const date = new Date(timestamp)
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
-        date.getDate(),
-      ).padStart(2, '0')}`
-    },
-    getDateLabel(timestamp) {
-      if (!timestamp) return 'Unknown date'
-
-      const messageDate = new Date(timestamp)
-      const today = new Date()
-      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-      const startOfMessage = new Date(
-        messageDate.getFullYear(),
-        messageDate.getMonth(),
-        messageDate.getDate(),
-      )
-      const dayDiff = Math.round((startOfToday - startOfMessage) / 86400000)
-
-      if (dayDiff === 0) return 'Today'
-      if (dayDiff === 1) return 'Yesterday'
-
-      return messageDate.toLocaleDateString([], {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      })
-    },
-    async getMessages(options = {}) {
-      const forceScroll = Boolean(options.forceScroll)
-      if (!this.user || !this.authToken) return
-      this.loading = true
-      const el = this.$refs.messageList
-      const wasNearBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 80 : true
-      const previousScrollTop = el ? el.scrollTop : 0
-      const previousScrollHeight = el ? el.scrollHeight : 0
-      try {
-        const data = await getConversationMessages(this.user, { limit: 50, offset: 0 })
-        this.messages = data.messages || []
-        this.totalCount = data.total_count || 0
-        this.hasMore = data.has_more || false
-        this.loadOffset = this.messages.length
-        this.captureUnreadDividerSnapshot()
-        const shouldRevealUnread =
-          forceScroll && !this.initialScrollDone && this.unreadInThreadCount > 0
-        this.keepUnreadDividerVisible = shouldRevealUnread
-        this.stickToBottom = !shouldRevealUnread
-
-        this.$nextTick(() => {
-          const list = this.$refs.messageList
-          if (!list) return
-
-          if (shouldRevealUnread) {
-            this.$nextTick(() => {
-              window.requestAnimationFrame(() => {
-                this.revealUnreadThreadPosition()
-                this.initialScrollDone = true
-                this.canLoadOlderFromUserScroll = false
-                this.scheduleReadSync(2500)
-              })
-            })
-            return
-          }
-
-          if (forceScroll || wasNearBottom) {
-            this.scrollToBottom(true)
-            this.initialScrollDone = true
-            this.canLoadOlderFromUserScroll = false
-            this.showScrollDown = false
-            this.scheduleReadSync(150)
-            return
-          }
-
-          const nextScrollHeight = list.scrollHeight
-          const heightDelta = nextScrollHeight - previousScrollHeight
-          list.scrollTop = Math.max(0, previousScrollTop + heightDelta)
-          this.showScrollDown = true
-        })
-      } catch {
-        this.totalCount = 0
-        this.hasMore = false
-      } finally {
-        this.loading = false
-      }
-    },
-    async loadMoreMessages() {
-      if (!this.user || !this.authToken || !this.hasMore || this.loadingMore) return
-
-      this.loadingMore = true
-      const el = this.$refs.messageList
-      if (!el) {
-        this.loadingMore = false
-        return
-      }
-
-      const prevScrollHeight = el.scrollHeight
-      const prevScrollTop = el.scrollTop
-
-      try {
-        const data = await getConversationMessages(this.user, {
-          limit: 50,
-          offset: this.loadOffset,
-        })
-        const newMessages = data.messages || []
-
-        if (newMessages.length > 0) {
-          this.messages = [...newMessages, ...this.messages]
-          this.loadOffset += newMessages.length
-          this.hasMore = data.has_more || false
-          this.canLoadOlderFromUserScroll = false
-
-          this.$nextTick(() => {
-            const newScrollHeight = el.scrollHeight
-            el.scrollTop = newScrollHeight - prevScrollHeight + prevScrollTop
-          })
-        } else {
-          this.hasMore = false
-        }
-      } catch {
-        this.hasMore = false
-      } finally {
-        this.loadingMore = false
-      }
-    },
-    async sendMessage(payload) {
-      const text = typeof payload === 'string' ? payload : payload?.text || ''
-      const files = typeof payload === 'string' ? [] : payload?.files || []
-      const media = typeof payload === 'string' ? null : payload?.media || null
-      const editingMessageId =
-        typeof payload === 'string' ? null : payload?.editingMessageId || null
-      const replyToMessageId =
-        typeof payload === 'string' ? null : payload?.replyToMessageId || null
-
-      if (!text.trim() && !files.length && !media) return
-      try {
-        this.sendError = ''
-        if (editingMessageId) {
-          await this.updateMessage(editingMessageId, text.trim())
-          return
-        }
-        if (media) {
-          const mediaPayload = {
-            content: text.trim(),
-            reply_to_message_id: replyToMessageId,
-            message_type: media.kind,
-            gif_url: media.kind === 'gif' ? media.sendUrl : '',
-            sticker_url: media.kind === 'sticker' ? media.sendUrl : '',
-            provider: media.provider || 'giphy',
-            provider_id: media.providerId,
-            animated: Boolean(media.animated),
-            media_title: media.title || '',
-          }
-
-          if (this.wsConnected && this.ws) {
-            this.ws.send(JSON.stringify(mediaPayload))
-          } else {
-            const message = await sendConversationMessage(this.user, {
-              ...mediaPayload,
-              recipientUsername: this.user.username,
-            })
-            this.addMessageUnique(message, true)
-          }
-          this.replyingMessage = null
-          this.markThreadAsReadLocally()
-          this.$nextTick(() => this.scrollToBottom(true))
-          void this.syncConversationReadState()
-          return
-        }
-        if (files.length) {
-          for (let index = 0; index < files.length; index += 1) {
-            const file = files[index]
-            const form = new FormData()
-            form.append('media', file)
-            if (index === 0 && text.trim()) {
-              form.append('content', text.trim())
-            }
-            if (replyToMessageId) {
-              form.append('reply_to_message_id', replyToMessageId)
-            }
-            const res = await fetch(
-              `${window.location.origin}/api/messaging/conversations/${this.user.id}/media/`,
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: this.authToken ? `Token ${this.authToken}` : '',
-                },
-                body: form,
-              },
-            ).catch(() => null)
-            if (!res || !res.ok) {
-              throw new Error('Media messages are not supported on this backend.')
-            }
-            const json = await res.json()
-            this.addMessageUnique(json)
-          }
-          this.replyingMessage = null
-          this.markThreadAsReadLocally()
-          this.$nextTick(() => this.scrollToBottom(true))
-          void this.syncConversationReadState()
-          return
-        }
-
-        if (text.trim()) {
-          if (this.wsConnected && this.ws) {
-            this.ws.send(
-              JSON.stringify({
-                content: text.trim(),
-                reply_to_message_id: replyToMessageId,
-              }),
-            )
-          } else {
-            const message = await sendConversationMessage(this.user, {
-              content: text.trim(),
-              reply_to_message_id: replyToMessageId,
-              recipientUsername: this.user.username,
-            })
-            this.addMessageUnique(message, true)
-          }
-          this.replyingMessage = null
-          this.markThreadAsReadLocally()
-          this.$nextTick(() => this.scrollToBottom(true))
-          void this.syncConversationReadState()
-        }
-      } catch (err) {
-        this.sendError = err?.response?.data?.error || err?.message || 'Message failed to send.'
-      }
-    },
-    async sendReaction(payload) {
-      const messageId = payload?.messageId
-      const emoji = payload?.emoji
-      if (!messageId || !emoji) return
-      try {
-        const res = await chatApi.post('messaging/messages/react/', {
-          message_id: messageId,
-          emoji,
-        })
-        this.applyReactionUpdate(res.data)
-      } catch {
-        // ignore
-      }
-    },
-    handleTyping(isTyping) {
-      this.isLocallyTyping = Boolean(isTyping)
-      this.clearTypingSenderTimer()
-      if (!this.wsConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) return
-      this.sendTypingState(isTyping)
-      if (isTyping) {
-        this.typingSendTimer = window.setTimeout(() => {
-          this.typingSendTimer = null
-          if (this.isLocallyTyping) {
-            this.sendTypingState(true)
-          }
-        }, 1200)
-      }
-    },
-    handleTypingEvent(typing) {
-      const senderId = String(typing?.user_id ?? typing?.sender_id ?? '')
-      if (senderId && senderId === String(this.currentUserId)) {
-        return
-      }
-
-      if (typing?.is_typing) {
-        this.isPartnerTyping = true
-        this.scheduleTypingIndicatorReset()
-        return
-      }
-
-      this.clearTypingIndicator()
-    },
-    handleReadEvent(read) {
-      const readerId = String(read?.reader_id ?? read?.user_id ?? '')
-      if (!readerId) return
-
-      if (readerId === String(this.currentUserId)) {
-        this.markThreadAsReadLocally()
-        eventBus.emit('messaging-thread-read', read)
-        return
-      }
-
-      this.messages = this.messages.map((message) => {
-        const senderId = String(this.getMessageSenderId(message) ?? '')
-        const receiverId = String(this.getMessageReceiverId(message) ?? '')
-        if (
-          !message ||
-          senderId !== String(this.currentUserId) ||
-          (receiverId && receiverId !== readerId)
-        ) {
-          return message
-        }
-        return {
-          ...message,
-          is_read: true,
-        }
-      })
-      eventBus.emit('messaging-thread-read', read)
-    },
-    handlePresenceEvent(presence) {
-      const userId = String(presence?.user_id ?? '')
-      if (!userId) return
-      eventBus.emit('messaging-presence-updated', presence)
-      this.applyPresenceOverride(presence)
-    },
-    handlePresenceBusEvent(presence) {
-      this.applyPresenceOverride(presence)
-    },
-    applyPresenceOverride(presence) {
-      const userId = String(presence?.user_id ?? '')
-      if (this.user && userId === String(this.user.id)) {
-        this.userPresenceOverride = Boolean(presence?.is_online)
-      }
-    },
-    openReactionPicker() {
-      this.$refs.messageInput?.openEmojiPicker?.()
-    },
-    beginEditMessage(message) {
-      if (!message) return
-      const type = String(message?.message_type || '').toLowerCase()
-      const mediaType = String(message?.media_type || '').toLowerCase()
-      const mediaUrl = String(message?.media_url || message?.media || '').toLowerCase()
-      const isVisualFile =
-        type === 'file' &&
-        (mediaType.startsWith('image/') ||
-          mediaType.startsWith('video/') ||
-          /\.(jpg|jpeg|png|gif|webp|mp4|webm|ogg|mov)(\?|#|$)/i.test(mediaUrl))
-      const isEditableMediaCaption = isVisualFile && Boolean(message?.content?.trim())
-      if (
-        String(this.getMessageSenderId(message)) !== String(this.currentUserId) ||
-        message.is_deleted ||
-        (message.can_edit === false && !isEditableMediaCaption) ||
-        ['gif', 'sticker'].includes(type) ||
-        (type === 'file' && !isEditableMediaCaption)
-      )
-        return
-      this.replyingMessage = null
-      this.editingMessage = { ...message }
-      this.sendError = ''
-      this.$nextTick(() => this.scrollToBottom(true))
-    },
-    beginReplyMessage(message) {
-      if (!message || message.is_deleted) return
-      this.editingMessage = null
-      this.replyingMessage = { ...message }
-      this.sendError = ''
-      this.$nextTick(() => {
-        const input = this.$refs.messageInput?.$refs?.inputArea
-        if (input) {
-          input.focus()
-        }
-      })
-    },
-    cancelEditMessage() {
-      this.editingMessage = null
-    },
-    cancelReplyMessage() {
-      this.replyingMessage = null
-    },
-    async updateMessage(messageId, content) {
-      if (!messageId || !content.trim()) return
-      try {
-        const res = await chatApi.patch(`messaging/messages/${messageId}/`, {
-          content: content.trim(),
-        })
-        this.applyMessagePatch(res.data)
-        this.editingMessage = null
-        eventBus.emit('messaging-read-updated')
-      } catch (err) {
-        this.sendError = err?.response?.data?.error || err?.message || 'Message failed to update.'
-      }
-    },
-    async deleteMessage(message) {
-      if (!message?.id) return
-      if (String(this.getMessageSenderId(message)) !== String(this.currentUserId)) return
-      const confirmed = window.confirm('Delete this message?')
-      if (!confirmed) return
-      try {
-        const res = await chatApi.delete(`messaging/messages/${message.id}/`)
-        this.applyMessagePatch(res.data)
-        eventBus.emit('messaging-read-updated')
-        if (this.editingMessage?.id === message.id) {
-          this.editingMessage = null
-        }
-      } catch (err) {
-        this.sendError = err?.response?.data?.error || err?.message || 'Message failed to delete.'
-      }
-    },
-    applyReactionUpdate(update) {
-      const messageId = update?.message_id
-      if (!messageId) return
-      const idx = this.messages.findIndex((msg) => String(msg.id) === String(messageId))
-      if (idx === -1) return
-      const existing = this.messages[idx]
-      const reactorId = String(update?.reactor_id ?? '')
-      const isCurrentUserReaction = reactorId && reactorId === String(this.currentUserId)
-      this.messages[idx] = {
-        ...existing,
-        reactions: update.reactions || [],
-        my_reaction: isCurrentUserReaction
-          ? update.selected_emoji || ''
-          : existing.my_reaction || '',
-      }
-    },
-    applyMessagePatch(message) {
-      if (!message?.id) return
-      const idx = this.messages.findIndex((msg) => String(msg.id) === String(message.id))
-      if (idx === -1) {
-        this.messages.push(message)
-        this.triggerEmojiEffectForMessage(message)
-        return
-      }
-      this.messages[idx] = {
-        ...this.messages[idx],
-        ...message,
-      }
-      if (this.editingMessage?.id === message.id && message.is_deleted) {
-        this.editingMessage = null
-      }
-      if (this.replyingMessage?.id === message.id) {
-        this.replyingMessage = message.is_deleted ? null : { ...this.replyingMessage, ...message }
-      }
-      this.patchReplyPreviewsForMessage(message)
-    },
-    getReplyPreviewTextForMessage(message) {
-      if (!message) return ''
-      if (message.is_deleted) return 'Message deleted'
-      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
-      if (type === 'gif') return 'GIF'
-      if (type === 'sticker') return 'Sticker'
-      if (message.content?.trim()) return message.content.trim()
-      if (type === 'file') {
-        const mediaType = String(message?.media_type || '').toLowerCase()
-        const url = String(message?.media_url || message?.media || '').toLowerCase()
-        if (mediaType.startsWith('video/') || /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(url)) return 'Video'
-        if (mediaType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)(\?|#|$)/i.test(url)) return 'Photo'
-      }
-      return ''
-    },
-    patchReplyPreviewsForMessage(message) {
-      if (!message?.id) return
-      this.messages = this.messages.map((row) => {
-        const reply = row?.reply_to_message
-        if (!reply || String(reply.id) !== String(message.id)) return row
-        return {
-          ...row,
-          reply_to_message: {
-            ...reply,
-            content: this.getReplyPreviewTextForMessage(message),
-            type: message.message_type || message.type || reply.type,
-            message_type: message.message_type || message.type || reply.message_type,
-            media_url: message.media_url || reply.media_url || '',
-            media: message.media || reply.media || '',
-            media_type: message.media_type || reply.media_type || '',
-            media_preview: message.media_preview || message.preview || reply.media_preview || reply.preview || null,
-            gif_url: message.gif_url || reply.gif_url || '',
-            sticker_url: message.sticker_url || reply.sticker_url || '',
-            external_url: message.external_url || reply.external_url || '',
-            sender_display_name: message.sender_display_name || reply.sender_display_name,
-            sender_username: message.sender_username || reply.sender_username,
-            is_deleted: Boolean(message.is_deleted),
-          },
-        }
-      })
-    },
-    addMessageUnique(message, forceScroll = false) {
-      if (!message) return
-      const exists = this.messages.some((msg) => String(msg.id) === String(message.id))
-      if (!exists) {
-        const wasNearBottom = this.shouldAutoScroll()
-        const isMine = String(this.getMessageSenderId(message)) === String(this.currentUserId)
-        const isIncoming = this.isIncomingMessage(message)
-        this.messages.push(message)
-        this.totalCount += 1
-        this.triggerEmojiEffectForMessage(message)
-        this.emitLastMessageUpdate(message, isMine)
-
-        if (isIncoming) {
-          this.clearTypingIndicator()
-          if (this.isChatPaneVisible()) {
-            this.clearUnreadDividerSnapshot()
-            this.markThreadAsReadLocally()
-            this.scheduleReadSync(150, { requireVisible: false })
-          } else if (wasNearBottom) {
-            this.clearUnreadDividerSnapshot()
-            this.scheduleReadSync(200, { requireVisible: false })
-          } else {
-            this.rememberUnreadIncomingMessage(message)
-          }
-        }
-
-        if (forceScroll || wasNearBottom || isMine) {
-          this.stickToBottom = true
-          this.$nextTick(() => this.scrollToBottom(true))
-        } else {
-          this.stickToBottom = false
-          this.showScrollDown = true
-        }
-      }
-    },
-    getSidebarConversationUserId(message) {
-      const senderId = this.getMessageSenderId(message)
-      const isMine = String(senderId) === String(this.currentUserId)
-      return isMine ? this.user?.id : senderId || this.user?.id
-    },
-    getSidebarLastMessageText(message) {
-      if (!message || message.is_deleted) return ''
-      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
-      if (type === 'gif' || type === 'sticker') return ''
-      return String(message?.content || '').trim()
-    },
-    getSidebarMessagePreview(message) {
-      if (!message || message.is_deleted) return null
-      const type = String(message?.message_type || message?.type || 'text').toLowerCase()
-      if (type === 'gif') {
-        const url = message?.gif_url || message?.external_url || ''
-        return url ? { kind: 'gif', url } : null
-      }
-      if (type === 'sticker') {
-        const url = message?.sticker_url || message?.external_url || ''
-        return url ? { kind: 'sticker', url } : null
-      }
-
-      const url = message?.media_url || message?.media || ''
-      if (!url) return null
-      const mediaType = String(message?.media_type || '').toLowerCase()
-      const isVideo =
-        mediaType.startsWith('video/') || /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(String(url))
-      return {
-        kind: isVideo ? 'video' : 'image',
-        url,
-      }
-    },
-    emitLastMessageUpdate(message, isMine) {
-      const userId = this.getSidebarConversationUserId(message)
-      if (!userId) return
-      eventBus.emit('messaging-last-message-updated', {
-        user_id: userId,
-        last_message: this.getSidebarLastMessageText(message),
-        timestamp: message?.timestamp || new Date().toISOString(),
-        is_mine: Boolean(isMine),
-        preview: this.getSidebarMessagePreview(message),
-      })
-    },
-    markThreadAsReadLocally() {
-      if (!this.keepUnreadDividerVisible) {
-        this.clearUnreadDividerSnapshot()
-      }
-      const currentUserId = String(this.currentUserId ?? '')
-      this.messages = this.messages.map((message) => {
-        if (!message || String(this.getMessageSenderId(message)) === currentUserId) {
-          return message
-        }
-        return {
-          ...message,
-          is_read: true,
-        }
-      })
-    },
-    updateDraftText(text) {
-      if (!this.conversationKey) return
-      this.draftsByConversation = {
-        ...this.draftsByConversation,
-        [this.conversationKey]: text || '',
-      }
-    },
-    handleMessageMediaLoad() {
-      if (!this.stickToBottom) return
-      this.$nextTick(() => this.scrollToBottom(true))
-    },
-    handleMessageMediaError() {
-      if (!this.stickToBottom) return
-      this.$nextTick(() => this.scrollToBottom(true))
-    },
-    scrollToBottom(force = false) {
-      const el = this.$refs.messageList
-      if (!el) return
-      if (!force && !this.shouldAutoScroll()) {
-        this.showScrollDown = true
-        return
-      }
-      this.suppressLoadMoreUntil = Date.now() + 400
-      el.scrollTop = el.scrollHeight
-      this.showScrollDown = false
-      this.stickToBottom = true
-      this.clearUnreadDividerSnapshot()
-    },
-    revealUnreadThreadPosition() {
-      const el = this.$refs.messageList
-      if (!el) return
-
-      const unreadInfo = this.getUnreadDividerInfo()
-      const targetMessage = unreadInfo.index >= 0 ? this.messages[unreadInfo.index] || null : null
-      let didScroll = false
-
-      const dividerEl = el.querySelector('[data-unread-divider]')
-      if (dividerEl?.scrollIntoView) {
-        const listRect = el.getBoundingClientRect()
-        const dividerRect = dividerEl.getBoundingClientRect()
-        const offsetTop = dividerRect.top - listRect.top
-        const nextTop = el.scrollTop + offsetTop - 72
-        this.suppressLoadMoreUntil = Date.now() + 400
-        el.scrollTop = Math.max(0, nextTop)
-        didScroll = true
-      } else if (targetMessage?.id != null) {
-        const targetEl = el.querySelector(`[data-message-id="${String(targetMessage.id)}"]`)
-        if (targetEl?.scrollIntoView) {
-          const listRect = el.getBoundingClientRect()
-          const targetRect = targetEl.getBoundingClientRect()
-          const offsetTop = targetRect.top - listRect.top
-          const nextTop = el.scrollTop + offsetTop - 96
-          this.suppressLoadMoreUntil = Date.now() + 400
-          el.scrollTop = Math.max(0, nextTop)
-          didScroll = true
-        }
-      }
-
-      if (!didScroll) {
-        this.scrollToBottom(true)
-      } else {
-        const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
-        this.showScrollDown = !nearBottom
-        this.stickToBottom = nearBottom
-      }
-
-      const latestMessage =
-        [...this.messages].reverse().find((message) => !message?.is_deleted) || null
-      const latestEmoji = this.getCelebrationEmojiFromMessage(latestMessage)
-      if (latestEmoji) {
-        this.$nextTick(() => {
-          this.triggerEmojiEffect(latestEmoji)
-        })
-      }
-    },
-    triggerEmojiEffect(emoji, origin) {
-      this.$refs.emojiLayer?.play?.(emoji, origin)
-    },
-    triggerEmojiEffectForMessage(message) {
-      const emoji = this.getCelebrationEmojiFromMessage(message)
-      if (!emoji) return
-      this.$nextTick(() => {
-        this.triggerEmojiEffect(emoji)
-      })
-    },
-  },
-}
-</script>
