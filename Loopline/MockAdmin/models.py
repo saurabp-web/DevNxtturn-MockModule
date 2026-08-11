@@ -196,6 +196,8 @@ class Exam(models.Model):
     exam_pattern = models.TextField(null=True, blank=True)
     logo = models.URLField(max_length=500, null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    is_trending = models.BooleanField(default=False, db_index=True)
+    trending_score = models.IntegerField(default=0, db_index=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
@@ -258,6 +260,7 @@ class Chapter(models.Model):
 class Question(models.Model):
     question_id = models.AutoField(primary_key=True)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, db_column='exam_id', null=True, blank=True)
+    mock_exam = models.ForeignKey(MockExam, on_delete=models.CASCADE, db_column='mockexam_name', null=True, blank=True)
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, db_column='chapter_id', null=True, blank=True)
     question_text = models.TextField()
     question_type = models.CharField(max_length=50, null=True, blank=True)  # MCQ / MSQ / Numeric

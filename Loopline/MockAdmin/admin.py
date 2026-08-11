@@ -20,13 +20,23 @@ class ExamAdmin(admin.ModelAdmin):
     @admin.display(description='Education Level')
     def education_level_list(self, obj):
         return ", ".join(el.education_level for el in obj.education_levels.all()) or "—"
+    
 
+class MockExamAdmin(admin.ModelAdmin):
+    list_display = ('mockexam_id', 'mockexam_name', 'year', 'description', 'total_marks','duration_minutes','is_active')
+    search_fields = ('exam__mockexam_name',)
+
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ('question_id', 'exam', 'chapter', 'question_text', 'question_type')
+    search_fields = ('question_text',)
+    
 
 # Register your models here.
 admin.site.register(Exam, ExamAdmin)
 admin.site.register(Subject)
 admin.site.register(Chapter)
-admin.site.register(Question)
+admin.site.register(Question,QuestionAdmin)
 admin.site.register(QuestionOption)
 admin.site.register(Solution)
 admin.site.register(CorrectAnswer)
+admin.site.register(MockExam, MockExamAdmin)

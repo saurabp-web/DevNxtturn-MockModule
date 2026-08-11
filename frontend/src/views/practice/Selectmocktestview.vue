@@ -93,7 +93,9 @@ const filterAttempt    = ref('')
 const filterLanguage   = ref('')
 const filterDifficulty = ref('')
 
-// ── Mock test data — fetched from the real /api/exams/ endpoint ──
+// ── Mock test data — fetched from /api/mockexams/, scoped to the
+// selected exam via its exam_code (not the broken exam_category
+// text-match against /api/exams/ this used to do) ──
 const mockTests       = ref<MockTest[]>([])
 const loadingTests     = ref(false)
 const loadTestsError   = ref('')
@@ -115,49 +117,35 @@ async function loadMockTests() {
   loadTestsError.value = ''
   mockTests.value      = []
   try {
-    const category = (store.exam?.category ?? '').trim()
+    const examCode = store.exam?.code
+    if (!examCode) throw new Error('No exam selected.')
 
-    // Pull every page from /api/exams/ (PAGE_SIZE=4 server-side).
-    const allExams: any[] = []
+    // Pull every page from /api/mockexams/?exam_code=... (PAGE_SIZE=20 server-side).
+    const allMockExams: any[] = []
     let page = 1
     while (true) {
-      const res = await fetch(`/api/exams/?page=${page}`)
+      const res = await fetch(`/api/mockexams/?exam_code=${encodeURIComponent(examCode)}&page=${page}`)
       if (!res.ok) throw new Error(`Server error ${res.status}`)
       const json = await res.json()
-      allExams.push(...(json.results ?? []))
-      if (allExams.length >= (json.count ?? 0) || (json.results ?? []).length === 0) break
+      allMockExams.push(...(json.results ?? []))
+      if (allMockExams.length >= (json.count ?? 0) || (json.results ?? []).length === 0) break
       page++
     }
 
-    // exam_category in the DB is inconsistent free text (e.g. "Engineering"
-    // vs "Engineering Entrance Exam"), so match loosely in both directions
-    // instead of relying on the backend's exact exam_category filter.
-    const filtered = category
-      ? allExams.filter((e: any) => {
-          const cat = (e.exam_category ?? '').toLowerCase()
-          const name = (e.exam_name ?? '').toLowerCase()
-          const code = (e.exam_code ?? '').toLowerCase()
-          const c = category.toLowerCase()
-          return cat.includes(c) || c.includes(cat) || name.includes(c) || code.includes(c)
-        })
-      : allExams
+    if (allMockExams.length === 0) throw new Error('No mock tests available for this exam yet.')
 
-    const pool = filtered.length > 0 ? filtered : allExams
-    if (pool.length === 0) throw new Error('No mock tests available for this exam yet.')
-
-    // Most recent year first, consistent with the API's own ordering
-    pool.sort((a: any, b: any) => (b.exam_year ?? 0) - (a.exam_year ?? 0))
-
-    mockTests.value = pool.map((e: any, idx: number) => ({
-      id:         e.exam_id,
-      name:       e.exam_name,
-      questions:  e.question_count ?? 0,
-      // JEE-style marking: +4 correct — matches sectionScore() in
-      // MocktestattemptView.vue, since the exam API doesn't return total marks.
-      marks:      (e.question_count ?? 0) * 4,
-      duration:   formatDuration(e.duration_minutes ?? 180),
-      difficulty: normalizeDifficulty(e.difficulty),
-      language:   e.language || 'English',
+    // Backend already orders by -year, mockexam_name; keep that order.
+    mockTests.value = allMockExams.map((m: any, idx: number) => ({
+      id:         m.mockexam_id,
+      name:       m.mockexam_name,
+      // MockExam has no question_count / difficulty / language fields yet
+      // (see MockExamSerializer note) — default the same way the UI
+      // already did, until those are added to the schema.
+      questions:  m.question_count ?? 0,
+      marks:      m.total_marks ?? (m.question_count ?? 0) * 4,
+      duration:   formatDuration(m.duration_minutes ?? 180),
+      difficulty: normalizeDifficulty(m.difficulty),
+      language:   m.language || 'English',
       attempted:  false,   // no attempt-history endpoint yet
       isLatest:   idx === 0,
     }))

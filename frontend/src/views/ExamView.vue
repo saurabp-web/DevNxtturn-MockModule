@@ -108,19 +108,54 @@
                 @click="goToFilteredExam(exam)"
               >
                 <div class="filtered-row-icon">
-                  <img 
-                    v-if="exam.logo" 
-                    :src="exam.logo" 
-                    :alt="exam.exam_name" 
-                    class="filtered-row-logo-img" 
-                    @error="onLogoError" 
+                  <img
+                    v-if="exam.logo"
+                    :src="exam.logo"
+                    :alt="exam.exam_name"
+                    class="filtered-row-logo-img"
+                    @error="onLogoError"
                   />
                   <span v-else>{{ getExamInitials(exam.exam_name) }}</span>
                 </div>
-                <div class="filtered-row-divider"></div>
-                <div class="filtered-row-code">{{ getExamCode(exam) }}</div>
-                <div class="filtered-row-name">{{ getExamFullName(exam) }}</div>
-                <span class="filtered-row-tag" :class="getExamTagClass(exam)">{{ getExamTag(exam) }}</span>
+
+                <div class="filtered-row-namecol">
+                  <div class="filtered-row-nametop">
+                    <span class="filtered-row-code-inline">{{ getExamCode(exam) }}</span>
+                    <span v-if="exam.is_trending" class="filtered-row-trending">🔥 Trending</span>
+                  </div>
+                  <div class="filtered-row-name">{{ getExamFullName(exam) }}</div>
+                </div>
+
+                <div class="filtered-row-meta">
+                  <svg class="filtered-row-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>
+                  </svg>
+                  <div class="filtered-row-meta-text">
+                    <span class="filtered-row-meta-label">Exam Type</span>
+                    <span class="filtered-row-meta-value">{{ getExamTag(exam) }}</span>
+                  </div>
+                </div>
+
+                <div class="filtered-row-meta">
+                  <svg class="filtered-row-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/>
+                  </svg>
+                  <div class="filtered-row-meta-text">
+                    <span class="filtered-row-meta-label">Level</span>
+                    <span class="filtered-row-meta-value">{{ getExamLevelLabel(exam) }}</span>
+                  </div>
+                </div>
+
+                <div class="filtered-row-meta">
+                  <svg class="filtered-row-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>
+                  </svg>
+                  <div class="filtered-row-meta-text">
+                    <span class="filtered-row-meta-label">Purpose</span>
+                    <span class="filtered-row-meta-value">{{ getExamPurpose(exam) }}</span>
+                  </div>
+                </div>
+
                 <svg class="filtered-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="m9 6 6 6-6 6"/>
                 </svg>
@@ -295,6 +330,7 @@ interface PopularExam {
   description: string
   testCount: string
   category: 'entrance' | 'job' | 'school'
+  examCode: string   // backend Exam.exam_code — needed downstream for /api/mockexams/
 }
 
 /** Rotates through a fixed palette so cards still get varied icon colors
@@ -321,8 +357,6 @@ function resolveDescription(exam: Exam): string {
   return exam.category_name || exam.conducting_body || exam.exam_type_name || ''
 }
 
-/** "12.5K+" style short count from question_count. Falls back to a plain
- *  number (or "—") when there isn't enough to abbreviate. */
 function formatTestCount(count?: number | null): string {
   if (!count) return '—'
   if (count >= 1000) return `${(count / 1000).toFixed(1).replace(/\.0$/, '')}K+`
@@ -340,6 +374,7 @@ function mapApiExamToPopular(exam: Exam, index: number): PopularExam {
     description: resolveDescription(exam),
     testCount: formatTestCount(exam.question_count),
     category: resolveCategory(exam),
+    examCode: exam.exam_code || '',
   }
 }
 
@@ -526,6 +561,50 @@ function getExamCode(exam: { exam_name?: string | null; exam_code?: string | nul
   return getExamInitials(exam.exam_name)
 }
 
+/** Returns the exam's level label. The seed data (exams_by_type_merged_filled.json)
+ *  stores a real `state` on state-specific exams (e.g. MHT-CET -> "Maharashtra")
+ *  and leaves it null for national ones, so this reads that directly instead of
+ *  guessing — "National" is only a fallback for the rare case state_name is unset
+ *  and level_name isn't provided either. */
+function getExamLevelLabel(exam: { level_name?: string | null; state_name?: string | null }): string {
+  if (exam.state_name) return `State (${exam.state_name})`
+  return exam.level_name || 'National'
+}
+
+/** Returns the "Purpose" text. The seed data already stores a real, human-written
+ *  description per exam (e.g. JEE Main -> "Engineering Entrance (National)",
+ *  NEET-UG -> "Medical Entrance (UG)"), so this uses that directly. The keyword
+ *  map below only kicks in for exams with no description at all, to still show
+ *  something reasonable rather than a blank field. */
+function getExamPurpose(exam: { exam_name?: string | null; category_name?: string | null; description?: string | null; exam_type_name?: string | null }): string {
+  if (exam.description) return exam.description
+
+  const name = (exam.exam_name || '').toLowerCase()
+
+  const KEYWORD_PURPOSE: Array<[RegExp, string]> = [
+    [/neet.?ug/, 'MBBS / BDS Admissions'],
+    [/neet.?pg/, 'MD / MS / PG Medical Admissions'],
+    [/jee.?adv/, 'IIT Admissions'],
+    [/jee/, 'Engineering Admissions'],
+    [/bitsat/, 'Engineering Admissions (BITS Campuses)'],
+    [/cuet/, 'UG University Admissions'],
+    [/clat/, 'Law (UG & PG) Admissions'],
+    [/mht.?cet/, 'Engineering & Pharma Admissions'],
+    [/cat\b/, 'MBA Admissions'],
+    [/gate/, 'M.Tech / PSU Recruitment'],
+    [/upsc/, 'Civil Services Recruitment'],
+    [/ssc/, 'Government Job Recruitment'],
+    [/net\b|ugc/, 'Assistant Professor / JRF Eligibility'],
+  ]
+
+  for (const [pattern, purpose] of KEYWORD_PURPOSE) {
+    if (pattern.test(name)) return purpose
+  }
+
+  if (exam.category_name) return exam.category_name
+  return exam.exam_type_name ? `${exam.exam_type_name} Admissions` : 'Admissions'
+}
+
 /** Picks a badge color for the exam-type tag so Management/Medical/etc.
  *  stand out from the default purple "Engineering Entrance" style badge. */
 function getExamTagClass(exam: { exam_name?: string | null; category_name?: string | null; exam_type_name?: string | null; conducting_body?: string | null }): string {
@@ -549,6 +628,7 @@ function goToExam(examId: string): void {
     id: exam.id,
     label: exam.label,
     category: exam.description,
+    code: exam.examCode,
   })
   store.setExamType({ id: exam.id, dbId: Number(exam.id), label: exam.label })
   router.push({ name: 'practice-test-type' })
@@ -801,6 +881,7 @@ function goToFilteredExam(exam: Exam): void {
     id: String(exam.exam_id),
     label: exam.exam_name,
     category: exam.category_name ?? exam.exam_type_name ?? '',
+    code: exam.exam_code || '',
   })
   store.setExamType({ id: String(exam.exam_id), dbId: exam.exam_id, label: exam.exam_name })
   router.push({ name: 'practice-test-type' })
@@ -1084,15 +1165,18 @@ onMounted(() => {
 }
 
 .filtered-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 48px minmax(140px, 1.4fr) repeat(3, minmax(0, 1fr)) 16px;
   align-items: center;
-  gap: 14px;
+  column-gap: 13px;
   background: #fff;
   border: 1.5px solid #ececf5;
-  border-radius: 12px;
-  padding: 14px 18px;
+  border-radius: 14px;
+  padding: 16px 18px;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
+  min-width: 0;
+  overflow: hidden;
 }
 .filtered-row:hover {
   border-color: #c4b5fd;
@@ -1100,31 +1184,54 @@ onMounted(() => {
 }
 
 .filtered-row-icon {
-  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: #fff; border: 1.5px solid #ddd6fe;
-  font-size: 12.5px; font-weight: 700; color: #6d28d9;
+  font-size: 13px; font-weight: 700; color: #6d28d9;
+  overflow: hidden;
+}
+.filtered-row-logo-img {
+  width: 100%; height: 100%; object-fit: contain; object-position: center;
 }
 
-.filtered-row-divider {
-  width: 1px; align-self: stretch; background: #ececf5; flex-shrink: 0;
+.filtered-row-namecol {
+  min-width: 0;
+  display: flex; flex-direction: column; gap: 4px;
 }
-
-.filtered-row-code {
-  font-size: 13.5px; font-weight: 700; color: #1e2536;
-  width: 130px; flex-shrink: 0;
+.filtered-row-nametop {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
-
+.filtered-row-code-inline {
+  font-size: 15px; font-weight: 800; color: #1e2536; letter-spacing: 0.2px;
+}
 .filtered-row-name {
-  font-size: 13.5px; color: #4b5065; flex: 1; min-width: 0;
-  line-height: 1.4;
+  font-size: 12.5px; color: #6b7280; line-height: 1.35;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.filtered-row-tag {
-  font-size: 12px; font-weight: 600; padding: 6px 14px;
+.filtered-row-meta {
+  display: flex; align-items: flex-start; gap: 8px;
+  min-width: 0; height: 100%;
+}
+.filtered-row-meta-icon {
+  width: 18px; height: 18px; color: #7c3aed; flex-shrink: 0; margin-top: 2px;
+}
+.filtered-row-meta-text {
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.filtered-row-meta-label {
+  font-size: 11.5px; color: #9ca3af; font-weight: 500; white-space: nowrap;
+}
+.filtered-row-meta-value {
+  font-size: 13px; color: #1e2536; font-weight: 600; line-height: 1.3;
+  word-break: break-word;
+}
+
+.filtered-row-trending {
+  font-size: 11px; font-weight: 700; padding: 4px 10px;
   border-radius: 999px; white-space: nowrap; flex-shrink: 0;
+  background: #fff1e6; color: #c2410c; border: 1px solid #fed7aa;
 }
 .tag-purple { background: #ede9fe; color: #6d28d9; }
 .tag-amber  { background: #fef3c7; color: #b45309; }
@@ -1133,14 +1240,17 @@ onMounted(() => {
 .tag-green  { background: #d1fae5; color: #047857; }
 
 .filtered-row-chevron {
-  width: 18px; height: 18px; color: #9ca3af; flex-shrink: 0;
+  width: 16px; height: 16px; color: #9ca3af; flex-shrink: 0;
 }
 
 @media (max-width: 900px) {
-  .filtered-row { flex-wrap: wrap; }
-  .filtered-row-divider { display: none; }
-  .filtered-row-code { width: auto; }
-  .filtered-row-name { flex-basis: 100%; order: 3; }
+  .filtered-row {
+    grid-template-columns: 48px 1fr;
+    row-gap: 12px;
+  }
+  .filtered-row-namecol { grid-column: 2 / 3; }
+  .filtered-row-meta { grid-column: 1 / -1; }
+  .filtered-row-chevron { display: none; }
 }
 
 /* ── Filtered Results footer: "View All Exams" / "Show Less" ── */

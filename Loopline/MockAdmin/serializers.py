@@ -132,7 +132,7 @@ from .models import (
     State, Board, Stream, Field, SubField, EducationLevel,
     ExamType, SchoolExamCategory, EntranceExamCategory,
     JobCategory, JobExamCategory, ExamLevel, Exam,
-    Subject, Chapter, Question, QuestionOption, CorrectAnswer, Solution,
+    Subject, Chapter, Question, QuestionOption, CorrectAnswer, Solution,MockExam
 )
 
 
@@ -453,3 +453,32 @@ class QuestionSerializer(serializers.ModelSerializer):
             data['correct_answer'] = []
             data['solution'] = []
         return data
+    
+
+class MockExamSerializer(serializers.ModelSerializer):
+    """
+    Serializes MockExam rows for the Select Mock Test screen.
+ 
+    NOTE: MockExam currently has no `difficulty`, `language`, or
+    `question_count` fields in the schema (only exam_name, year,
+    description, total_marks, duration_minutes). The frontend defaults
+    these to "Medium" / "English" / 0 respectively, matching what the
+    UI already showed before. If you want real per-test difficulty and
+    a real question count, either:
+      (a) add `difficulty` / `language` CharFields to MockExam, and a
+          `mockexam` FK on Question so a per-test question_count can be
+          annotated here the same way ExamListView annotates it, or
+      (b) derive marks/questions from TestDefinition rows of
+          test_type='Mock' linked via the same mockexam_id, if that's
+          where your question sets actually live.
+    """
+    exam_id = serializers.IntegerField(source='exam.exam_id', read_only=True)
+    exam_code = serializers.CharField(source='exam.exam_code', read_only=True)
+ 
+    class Meta:
+        model = MockExam
+        fields = (
+            'mockexam_id', 'exam_id', 'exam_code', 'mockexam_name', 'year',
+            'description', 'total_marks', 'duration_minutes',
+            'is_active', 'created_at', 'updated_at',
+        )

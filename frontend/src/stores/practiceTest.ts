@@ -40,7 +40,8 @@ export interface MockTest {
 export interface PracticeExam {
   id: string
   label: string
-  category: string   // e.g. 'JEE', 'NEET' — used for API calls
+  category: string   // display-only text (description/category name) — NOT the exam code
+  code: string        // real backend Exam.exam_code, e.g. "JEE_MAIN" — used for API calls like /api/mockexams/
 }
 
 export interface PracticeExamType {

@@ -4,12 +4,13 @@ from .views import (
     SubjectListView, ChapterListView, ExamListView, CustomQuestionListView,
     ExamTypeListView, ExamCategoryListView, EducationLevelListView,
     StreamListView, FieldListView, SubFieldListView, BoardListView,
-    StateListView, ExamLevelListView, JobCategoryListView,ExamFilterView
+    StateListView, ExamLevelListView, JobCategoryListView,ExamFilterView,MockExamListView
 )
 
 urlpatterns = [
     # ── Exams & Question bank (existing) ──
     path('exams/', ExamListView.as_view(), name='exam-list'),
+    path('mockexams/', MockExamListView.as_view(), name='mockexam-list'),
     path('subjects/', SubjectListView.as_view(), name='subject-list'),
     path('chapters/', ChapterListView.as_view(), name='chapter-list'),
     path('questions/', QuestionListView.as_view(), name='question-list'),

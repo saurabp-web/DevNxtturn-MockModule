@@ -8,14 +8,14 @@ from .models import (
     State, Board, Stream, Field, SubField, EducationLevel,
     ExamType, SchoolExamCategory, EntranceExamCategory,
     JobCategory, JobExamCategory, ExamLevel, Exam,
-    Subject, Chapter, Question,
+    Subject, Chapter, Question,MockExam
 )
 from .serializers import (
     StateSerializer, BoardSerializer, StreamSerializer, FieldSerializer,
     SubFieldSerializer,FieldWithSubFieldsSerializer, EducationLevelSerializer, ExamTypeSerializer,
     SchoolExamCategorySerializer, EntranceExamCategorySerializer,
     JobCategorySerializer, JobExamCategorySerializer, ExamLevelSerializer,
-    ExamSerializer, SubjectSerializer, ChapterSerializer, QuestionSerializer,
+    ExamSerializer, SubjectSerializer, ChapterSerializer, QuestionSerializer,MockExamSerializer
 )
 
 
@@ -446,7 +446,7 @@ class ExamFilterView(APIView):
             # M2M filters below (without it, question_count gets multiplied
             # once per matching education_level/stream row).
             .annotate(question_count=Count('question', distinct=True))
-            .order_by('exam_name')
+            .order_by('-is_trending', '-trending_score', '-question_count', 'exam_name')
         )
  
         # ── 4. Apply all standard integer FK filters ───────────────────────
@@ -670,6 +670,76 @@ class ExamListView(APIView):
         serializer = ExamSerializer(page.object_list, many=True)
         return Response({'results': serializer.data, 'count': paginator.count})
 
+class MockExamListView(APIView):
+    """
+    GET /api/mockexams/
+
+    Returns actual attemptable mock papers (MockExam rows), e.g.
+    "JEE Main 2024 Shift 1", for ONE parent Exam program — as opposed to
+    /api/exams/ which lists exam *programs* themselves (e.g. "JEE Main")
+    on the Select Exam screen.
+
+    This is what "Select Mock Test" (step 3 of Practice/Mock flow) must
+    call. Previously that screen called /api/exams/ and tried to
+    text-match a removed `exam_category` field, which silently matched
+    nothing and fell back to listing ALL exams alphabetically (AAFT,
+    ACJ, AEEE... under "JEE Main"). MockExam rows are tied to their
+    parent Exam via a real FK, so filtering here is exact.
+
+    Params (provide exam_code OR exam_id — exam_code takes priority
+    if both are passed):
+        exam_code – Exam.exam_code, e.g. "JEE-MAIN" (unique, human-readable).
+        exam_id   – PK of the parent Exam. Optional alternative to exam_code.
+        page      – page number, default 1.
+        search    – optional icontains match on mockexam_name.
+    """
+    PAGE_SIZE = 20
+
+    def get(self, request):
+        exam_code = request.query_params.get('exam_code', '').strip()
+        exam_id   = request.query_params.get('exam_id', '').strip()
+
+        if not exam_code and not exam_id:
+            return Response(
+                {'error': 'exam_code (or exam_id) is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        qs = MockExam.objects.filter(is_active=True)
+
+        if exam_code:
+            qs = qs.filter(exam__exam_code=exam_code)
+        else:
+            if not exam_id.isdigit():
+                return Response(
+                    {'error': f'exam_id must be a valid integer, got "{exam_id}".'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            qs = qs.filter(exam_id=int(exam_id))
+
+        qs = qs.select_related('exam').order_by('-year', 'mockexam_name')
+
+        if not qs.exists() and exam_code:
+            # exam_code didn't match any Exam row at all — distinguish
+            # "wrong/unknown code" from "valid exam, just no mock tests yet"
+            if not Exam.objects.filter(exam_code=exam_code).exists():
+                return Response(
+                    {'error': f'No exam found with exam_code "{exam_code}".'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        search = request.query_params.get('search', '').strip()
+        if search:
+            qs = qs.filter(mockexam_name__icontains=search)
+
+        page_param = request.query_params.get('page', '1').strip()
+        page_number = int(page_param) if page_param.isdigit() else 1
+
+        paginator = Paginator(qs, self.PAGE_SIZE)
+        page = paginator.get_page(page_number)
+
+        serializer = MockExamSerializer(page.object_list, many=True)
+        return Response({'results': serializer.data, 'count': paginator.count})
 
 class SubjectListView(APIView):
     """
