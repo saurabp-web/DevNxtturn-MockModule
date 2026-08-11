@@ -47,6 +47,8 @@
     "axios": "^1.8.4",
     "browser-image-compression": "^2.0.2",
     "date-fns": "^4.1.0",
+    "emoji-mart": "^5.6.0",
+    "jspdf": "^4.2.1",
     "lodash-es": "^4.17.21",
     "lucide-vue-next": "^0.553.0",
     "mitt": "^3.0.1",
@@ -60,8 +62,7 @@
     "vue-router": "^4.5.0",
     "vue-toastification": "^2.0.0-rc.5",
     "vue3-google-signin": "^2.1.1",
-    "vue3-lottie": "^3.3.1",
-    "emoji-mart": "^5.6.0"
+    "vue3-lottie": "^3.3.1"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.10.0",

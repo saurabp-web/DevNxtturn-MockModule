@@ -1,0 +1,1728 @@
+{
+  "Test Series by Categories": [
+    {
+      "name": "MP RAEO Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/467.png"
+    },
+    {
+      "name": "SBI Clerk (Junior Associate) Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/62.png"
+    },
+    {
+      "name": "IBPS Clerk Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/36.png"
+    },
+    {
+      "name": "IBPS SO IT Officer Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/786.png"
+    },
+    {
+      "name": "IBPS RRB Clerk Pre Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/29.png"
+    },
+    {
+      "name": "SSC Stenographer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/103.png"
+    },
+    {
+      "name": "SSC CPO Tier 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/60.png"
+    },
+    {
+      "name": "NABARD Grade A Phase I Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/70.png"
+    },
+    {
+      "name": "SSC CHSL Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/50.png"
+    },
+    {
+      "name": "Canara Bank PO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/58.png"
+    },
+    {
+      "name": "South Indian Bank Probationary Clerk Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/56.png"
+    },
+    {
+      "name": "RBI Grade B Phase 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/21.png"
+    },
+    {
+      "name": "SSC CGL Tier-2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/61.png"
+    },
+    {
+      "name": "AFCAT  Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/65.png"
+    },
+    {
+      "name": "IDBI Banking Executive Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/68.png"
+    },
+    {
+      "name": "IBPS Clerk Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/52.png"
+    },
+    {
+      "name": "RBI Assistant Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/41.png"
+    },
+    {
+      "name": "RBI Assistant Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/51.png"
+    },
+    {
+      "name": "SBI PO Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/20.png"
+    },
+    {
+      "name": "IBPS PO Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/34.png"
+    },
+    {
+      "name": "Rajasthan Police Constable Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/43.png"
+    },
+    {
+      "name": "IBPS SO(AFO) MAINS Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/53.png"
+    },
+    {
+      "name": "IBPS RRB Office Assistant Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/37.png"
+    },
+    {
+      "name": "IBPS RRB Officer Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/38.png"
+    },
+    {
+      "name": "IBPS RRB Officer Pre Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/28.png"
+    },
+    {
+      "name": "Railway RRB Group D Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/3.png"
+    },
+    {
+      "name": "SBI Clerk Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/69.png"
+    },
+    {
+      "name": "MAT Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/63.png"
+    },
+    {
+      "name": "South Indian Bank Probationary Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/74.png"
+    },
+    {
+      "name": "NABARD Grade A Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/78.png"
+    },
+    {
+      "name": "Bank of India Credit Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/76.png"
+    },
+    {
+      "name": "Saraswat Bank Clerical Cadre Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/77.png"
+    },
+    {
+      "name": "Syndicate Bank PO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/57.png"
+    },
+    {
+      "name": "RBI Grade B Phase II Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/27.png"
+    },
+    {
+      "name": "Bank of Baroda (BOB) PO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/79.png"
+    },
+    {
+      "name": "NIACL Assistant Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/85.png"
+    },
+    {
+      "name": "FEDERAL Bank PO/Clerk  Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/87.png"
+    },
+    {
+      "name": "Indian Bank PO Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/86.png"
+    },
+    {
+      "name": "NABARD Development Assistant Phase 1 and Phase 2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/88.png"
+    },
+    {
+      "name": "KVS (PRT/TGT/PGT) Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/90.png"
+    },
+    {
+      "name": "SEBI Grade A Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/91.png"
+    },
+    {
+      "name": "NIACL Assistant Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/94.png"
+    },
+    {
+      "name": "ESIC  SSO Exam  Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/96.png"
+    },
+    {
+      "name": "Indian Bank PO Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/99.png"
+    },
+    {
+      "name": "Army Public School Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/100.png"
+    },
+    {
+      "name": "Intelligence Bureau (IB) Tier 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/101.png"
+    },
+    {
+      "name": "SEBI Grade A Officer Phase II Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/106.png"
+    },
+    {
+      "name": "DRDO Senior Technical Assistant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/102.png"
+    },
+    {
+      "name": "ESIC SSO Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/107.png"
+    },
+    {
+      "name": "Haryana Teacher Eligibility Test (HTET) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/108.png"
+    },
+    {
+      "name": "RBI Security Guards Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/105.png"
+    },
+    {
+      "name": "Uttar Pradesh Police Constable Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/109.png"
+    },
+    {
+      "name": "Bank Of Baroda Specialist Officer SO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/113.png"
+    },
+    {
+      "name": "Laxmi Vilas Bank PO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/111.png"
+    },
+    {
+      "name": "CMAT Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/110.png"
+    },
+    {
+      "name": "NIACL Administrative Officer (AO) Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/112.png"
+    },
+    {
+      "name": "Railway Protection Force (RPF) Sub Inspector Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/115.png"
+    },
+    {
+      "name": "Allahabad High Court Group B and C Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/114.png"
+    },
+    {
+      "name": "RRB Junior Engineer (JE) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/117.png"
+    },
+    {
+      "name": "SSC Constable (GD) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/95.png"
+    },
+    {
+      "name": "RPF Constable Ancillary Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/118.png"
+    },
+    {
+      "name": "SIDBI Internal Promotion Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/120.png"
+    },
+    {
+      "name": "NIACL AO Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/121.png"
+    },
+    {
+      "name": "NVS (Navodaya Vidyalaya) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/119.png"
+    },
+    {
+      "name": "Central Warehousing Corporation (CWC) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/123.png"
+    },
+    {
+      "name": "LIC (AAO) Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/127.png"
+    },
+    {
+      "name": "FCI AG III - General (Prelims) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/125.png"
+    },
+    {
+      "name": "RRB NTPC 1st Stage CBT Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/126.png"
+    },
+    {
+      "name": "LIC (AAO) Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/130.png"
+    },
+    {
+      "name": "IDBI Bank Assistant Manager Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/134.png"
+    },
+    {
+      "name": "J & K Bank PO Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/131.png"
+    },
+    {
+      "name": "J & K Bank Associate(Clerk) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/132.png"
+    },
+    {
+      "name": "National Housing Bank (NHB) Assistant Manager Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/133.png"
+    },
+    {
+      "name": "LIC ADO Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/138.png"
+    },
+    {
+      "name": "EPFO Assistant Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/139.png"
+    },
+    {
+      "name": "J & K Bank PO Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/137.png"
+    },
+    {
+      "name": "Repco Bank Junior Associate Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/143.png"
+    },
+    {
+      "name": "EPFO SSA (Social Security Assistant) Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/151.png"
+    },
+    {
+      "name": "IBPS RRB Scale III Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/147.png"
+    },
+    {
+      "name": "IBPS RRB Officer Scale-II Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/144.png"
+    },
+    {
+      "name": "Central Warehousing Corporation (CWC) Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/152.png"
+    },
+    {
+      "name": "HSSC 2019 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/154.png"
+    },
+    {
+      "name": "Nainital Bank Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/158.png"
+    },
+    {
+      "name": "FCI Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/160.png"
+    },
+    {
+      "name": "Nainital Bank Clerk Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/156.png"
+    },
+    {
+      "name": "LIC ADO Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/161.png"
+    },
+    {
+      "name": "EPFO Assistant Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/163.png"
+    },
+    {
+      "name": "EPFO SSA Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/164.png"
+    },
+    {
+      "name": "Indian Navy MR Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/165.png"
+    },
+    {
+      "name": "LIC HFL Assistant Associates Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/167.png"
+    },
+    {
+      "name": "Uttrakhand AAO(Assistant Agriculture officer)  Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/169.png"
+    },
+    {
+      "name": "SSC Selection Post Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/166.png"
+    },
+    {
+      "name": "NABARD Development Assistant Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/173.png"
+    },
+    {
+      "name": "LIC Assistant (Clerk) Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/175.png"
+    },
+    {
+      "name": "IBPS SO (IT Officer Scale 1) Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/186.png"
+    },
+    {
+      "name": "FCI Manager Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/177.png"
+    },
+    {
+      "name": "FCI Manager Phase 2 - Paper 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/191.png"
+    },
+    {
+      "name": "Central Bank SO(Specialist Officers) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/195.png"
+    },
+    {
+      "name": "LIC Assistant (Clerk) Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/176.png"
+    },
+    {
+      "name": "Delhi Police Head Constable Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/193.png"
+    },
+    {
+      "name": "LIC AAO IT Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/203.png"
+    },
+    {
+      "name": "PFRDA Assistant Manager Grade A Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/206.png"
+    },
+    {
+      "name": "Delhi Police Constable Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/194.png"
+    },
+    {
+      "name": "JAIIB Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/198.png"
+    },
+    {
+      "name": "SBI Apprentice Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/219.png"
+    },
+    {
+      "name": "IB ACIO Tier 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/220.png"
+    },
+    {
+      "name": "NPS Grade B Officer (Manager) Phase I Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/222.png"
+    },
+    {
+      "name": "NPS Grade A Officer (Assistant Manager) Phase I Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/221.png"
+    },
+    {
+      "name": "ECGC PO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/225.png"
+    },
+    {
+      "name": "MP Police Constable Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/229.png"
+    },
+    {
+      "name": "CLAT Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/66.png"
+    },
+    {
+      "name": "RBI Office Attendant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/235.png"
+    },
+    {
+      "name": "FCI AGM General Admin Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/237.png"
+    },
+    {
+      "name": "FCI Assistant Gen. Manager(Accountant) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/238.png"
+    },
+    {
+      "name": "ESIC UDC and Stenographer exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/239.png"
+    },
+    {
+      "name": "FCI Assistant Gen. Manager(Technical) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/241.png"
+    },
+    {
+      "name": "FCI Assistant Gen. Manager(Legal) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/242.png"
+    },
+    {
+      "name": "GIC Assistant Manager Scale 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/245.png"
+    },
+    {
+      "name": "GIC Assistant Manager (Insurance) Scale 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/247.png"
+    },
+    {
+      "name": "EMRS Teacher Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/248.png"
+    },
+    {
+      "name": "NPS Grade B Officer(Manager) Phase 2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/249.png"
+    },
+    {
+      "name": "IBPS SO Law Officer Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/251.png"
+    },
+    {
+      "name": "NABARD Grade B Mains Paper III Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/257.png"
+    },
+    {
+      "name": "Indian Airforce Airman Group X and Y Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/260.png"
+    },
+    {
+      "name": "NBEMS Senior Assistant CBT Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/262.png"
+    },
+    {
+      "name": "NBEMS Junior Assistant CBT Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/261.png"
+    },
+    {
+      "name": "State Bank of Sikkim Assistant Manager Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/266.png"
+    },
+    {
+      "name": "RRB Group D Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/269.png"
+    },
+    {
+      "name": "HPSCB Junior Clerk Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/270.png"
+    },
+    {
+      "name": "HSSC Sub-Inspector Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/271.png"
+    },
+    {
+      "name": "RRB NTPC Stage 2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/67.png"
+    },
+    {
+      "name": "UP Police SI Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/274.png"
+    },
+    {
+      "name": "Goa Police SI & Constable Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/277.png"
+    },
+    {
+      "name": "DSSSB Other Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/252.png"
+    },
+    {
+      "name": "Indian Coast Guard Navik GD & DB Section I Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/275.png"
+    },
+    {
+      "name": "National Water Development Agency (NWDA) UDC and LDC Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/276.png"
+    },
+    {
+      "name": "ICAR AO and Finance & Account Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/282.png"
+    },
+    {
+      "name": "Ministry of Defence Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/283.png"
+    },
+    {
+      "name": "Union Bank of India SO (Forex Officer) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/291.png"
+    },
+    {
+      "name": "ESIC Deputy Director Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/293.png"
+    },
+    {
+      "name": "Bank of Maharashtra AFO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/294.png"
+    },
+    {
+      "name": "LIC AAO Rajbhasha Main Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/295.png"
+    },
+    {
+      "name": "UPSC EPFO APFC Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/302.png"
+    },
+    {
+      "name": "IBPS RA and Hindi Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/312.png"
+    },
+    {
+      "name": "IBPS SO Rajbhasha Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/311.png"
+    },
+    {
+      "name": "IBPS SO HR Officer Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/319.png"
+    },
+    {
+      "name": "IBPS SO Marketing Officer Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/320.png"
+    },
+    {
+      "name": "FSSAI Technical Officer and Central Food Safety Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/316.png"
+    },
+    {
+      "name": "IRDA Assistant Manager Phase 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/321.png"
+    },
+    {
+      "name": "IRDA Manager Phase I Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/325.png"
+    },
+    {
+      "name": "AIC Management Trainee Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/327.png"
+    },
+    {
+      "name": "SBI Circle Based Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/210.png"
+    },
+    {
+      "name": "RBI Gr B DEPR Paper I Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/230.png"
+    },
+    {
+      "name": "Rajasthan Constable Home Guard Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/340.png"
+    },
+    {
+      "name": "MP High Court Stenographer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/339.png"
+    },
+    {
+      "name": "SER Good Guards Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/338.png"
+    },
+    {
+      "name": "HIMACHAL PRADESH STAFF SELECTION COMMISSION Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/337.png"
+    },
+    {
+      "name": "ESIC Stenographer Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/240.png"
+    },
+    {
+      "name": "ESIC Multi-Tasking Staff Phase 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/342.png"
+    },
+    {
+      "name": "ESIC UDC Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/343.png"
+    },
+    {
+      "name": "ESIC MTS Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/344.png"
+    },
+    {
+      "name": "Odisha State Cooperative Bank AM Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/346.png"
+    },
+    {
+      "name": "Odisha State Cooperative Bank Banking Associate Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/347.png"
+    },
+    {
+      "name": "RBI Non CSG Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/243.png"
+    },
+    {
+      "name": "RBI Grade A Rajbhasha Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/348.png"
+    },
+    {
+      "name": "SEBI Grade A Rajbhasha Officer Phase I Paper II Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/349.png"
+    },
+    {
+      "name": "ICAR IARI Technician Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/350.png"
+    },
+    {
+      "name": "UP Lekhpal Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/351.png"
+    },
+    {
+      "name": "Nainital Bank SO - AFO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/159.png"
+    },
+    {
+      "name": "SIDBI Gr A Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/355.png"
+    },
+    {
+      "name": "EXIM Bank AM Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/356.png"
+    },
+    {
+      "name": "IFFCO AGT Prelims Test Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/360.png"
+    },
+    {
+      "name": "PNB SO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/214.png"
+    },
+    {
+      "name": "PNB SO Scale 2 Risk Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/362.png"
+    },
+    {
+      "name": "SSC JHT Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/361.png"
+    },
+    {
+      "name": "ICAR JRF Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/365.png"
+    },
+    {
+      "name": "ICAR Assistant Prelims Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/368.png"
+    },
+    {
+      "name": "MSc Agriculture Entrance exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/370.png"
+    },
+    {
+      "name": "Indian Bank SO Credit Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/372.png"
+    },
+    {
+      "name": "Indian Bank SO AM IDO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/373.png"
+    },
+    {
+      "name": "AAI JE Air Traffic Controller Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/376.png"
+    },
+    {
+      "name": "HPSC ADO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/317.png"
+    },
+    {
+      "name": "Supremecourt of India JCA Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/377.png"
+    },
+    {
+      "name": "Coal India Limited Management Trainee paper 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/378.png"
+    },
+    {
+      "name": "HPCL Law Officer recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/381.png"
+    },
+    {
+      "name": "SSC CPO Tier II Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/324.png"
+    },
+    {
+      "name": "OPSC AAO Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/383.png"
+    },
+    {
+      "name": "LIC HFL Assistant Manager Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/168.png"
+    },
+    {
+      "name": "MPPEB (Vyapam) Group C Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/384.png"
+    },
+    {
+      "name": "Cent Bank HFL Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/385.png"
+    },
+    {
+      "name": "DRDO STA 'B' Tier II Computer Science Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/390.png"
+    },
+    {
+      "name": "DRDO STA 'B' Tier II Agriculture Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/391.png"
+    },
+    {
+      "name": "NABARD Development Assistant Hindi Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/393.png"
+    },
+    {
+      "name": "HP State Cooperative Bank (HPSCB) Assistant Manager Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/395.png"
+    },
+    {
+      "name": "NABARD Development Assistant Hindi Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/394.png"
+    },
+    {
+      "name": "SSC Scientific Assistant IMD Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/397.png"
+    },
+    {
+      "name": "UPSC CSE Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/398.png"
+    },
+    {
+      "name": "National Housing Bank(NHB) AM Hindi Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/399.png"
+    },
+    {
+      "name": "BOM Generalists Officer Scale 2 and 3 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/353.png"
+    },
+    {
+      "name": "Bank Of Maharashtra Forex Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/403.png"
+    },
+    {
+      "name": "ISRO Assistant Rajbahsha Adhikari Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/404.png"
+    },
+    {
+      "name": "SEBI Grade A Officer Phase I Paper 2 Research Stream Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/216.png"
+    },
+    {
+      "name": "SEBI Grade A Officer Phase I Paper 2 Legal Stream Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/208.png"
+    },
+    {
+      "name": "SEBI Grade A Officer Phase I Paper 2 IT Stream Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/200.png"
+    },
+    {
+      "name": "ISRO JPA (Junior Personal Assistant ) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/416.png"
+    },
+    {
+      "name": "Central Silk Board Recruitment UDC Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/418.png"
+    },
+    {
+      "name": "Central Silk Board Junior Translator Hindi Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/419.png"
+    },
+    {
+      "name": "ISRO Assistant/UDC Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/415.png"
+    },
+    {
+      "name": "AIC Generalist Management Trainee Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/422.png"
+    },
+    {
+      "name": "DRDO CEPTAM JTO Tier I Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/414.png"
+    },
+    {
+      "name": "ESIC Junior Translation Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/423.png"
+    },
+    {
+      "name": "Bank of Maharashtra SO (Rajbhasha) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/424.png"
+    },
+    {
+      "name": "Indian Coast Guard Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/279.png"
+    },
+    {
+      "name": "IFSCA Gr A Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/427.png"
+    },
+    {
+      "name": "UPSC EPFO EO/AO Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/433.png"
+    },
+    {
+      "name": "APEDA Assistant Manager Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/439.png"
+    },
+    {
+      "name": "IIFCL Gr A recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/442.png"
+    },
+    {
+      "name": "NIC Scientific Officer & STA Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/451.png"
+    },
+    {
+      "name": "NIC Scientist B Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/453.png"
+    },
+    {
+      "name": "Haryana Assistant District Attorney Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/454.png"
+    },
+    {
+      "name": "All State Judiciary exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/429.png"
+    },
+    {
+      "name": "SSC CHSL Tier II Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/458.png"
+    },
+    {
+      "name": "CUET PG Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/461.png"
+    },
+    {
+      "name": "IGNOU JAT Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/459.png"
+    },
+    {
+      "name": "KRIBHCO Field Representative Trainee (FRT) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/466.png"
+    },
+    {
+      "name": "IDFC First Bank Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/465.png"
+    },
+    {
+      "name": "HDFC Bank Exams Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/464.png"
+    },
+    {
+      "name": "CRPF Constable  (Technical & Tradesman) Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/463.png"
+    },
+    {
+      "name": "ICICI Bank PO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/470.png"
+    },
+    {
+      "name": "Axis Bank PO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/472.png"
+    },
+    {
+      "name": "IFSCA Gr A Phase II Paper II Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/473.png"
+    },
+    {
+      "name": "MP Patwari Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/475.png"
+    },
+    {
+      "name": "Rajasthan Informatics Assistant (Suchna Sahayak) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/477.png"
+    },
+    {
+      "name": "MP State Corporative Bank Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/478.png"
+    },
+    {
+      "name": "UPSSSC Technical Assistant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/483.png"
+    },
+    {
+      "name": "UGC NET Law Paper 2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/488.png"
+    },
+    {
+      "name": "BSF Head Constable RO and RM Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/296.png"
+    },
+    {
+      "name": "SNAP Exam (Symbiosis National Aptitude Test) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/491.png"
+    },
+    {
+      "name": "EPFO Stenographer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/490.png"
+    },
+    {
+      "name": "AMCAT Module 1 and 2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/474.png"
+    },
+    {
+      "name": "IBSAT Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/492.png"
+    },
+    {
+      "name": "ICAR Assistant Mains Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/496.png"
+    },
+    {
+      "name": "PNB SO Scale 1  Credit Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/498.png"
+    },
+    {
+      "name": "Rajasthan University Law Entrance Test - RULET Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/497.png"
+    },
+    {
+      "name": "Intelligence Bureau JIO exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/500.png"
+    },
+    {
+      "name": "Visva-Bharti Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/503.png"
+    },
+    {
+      "name": "NHPC Hindi Translator Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/504.png"
+    },
+    {
+      "name": "EMRS JSA exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/508.png"
+    },
+    {
+      "name": "Chandigarh Police Constable Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/505.png"
+    },
+    {
+      "name": "EMRS Accountant Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/509.png"
+    },
+    {
+      "name": "Central Bank of India Scale 2 Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/510.png"
+    },
+    {
+      "name": "DDA Exams Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/512.png"
+    },
+    {
+      "name": "The Kurmanchal Nagar Sahkari Bank Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/517.png"
+    },
+    {
+      "name": "Rajasthan Staff Selection Board (RSMSSB) Sanganak Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/518.png"
+    },
+    {
+      "name": "EMRS Warden Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/520.png"
+    },
+    {
+      "name": "AAI Junior Executive Finance Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/522.png"
+    },
+    {
+      "name": "AAI Junior Executive Common Cadre Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/523.png"
+    },
+    {
+      "name": "AAI Junior Executive Legal Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/526.png"
+    },
+    {
+      "name": "NPCIL Deputy Manager Finance and Accounts Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/535.png"
+    },
+    {
+      "name": "CWC Accountant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/544.png"
+    },
+    {
+      "name": "CWC Junior Technical Assistant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/545.png"
+    },
+    {
+      "name": "UIICL AO Legal Specialists Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/538.png"
+    },
+    {
+      "name": "NSCL Agriculture Trainee Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/547.png"
+    },
+    {
+      "name": "DFCCIL CBT2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/550.png"
+    },
+    {
+      "name": "HPCL Chartered Accountants Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/552.png"
+    },
+    {
+      "name": "NSIC Assistant manager Finance and Accounts Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/555.png"
+    },
+    {
+      "name": "BEL Probationary Accounts Officer Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/562.png"
+    },
+    {
+      "name": "UPPSC RO ARO Prelims Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/558.png"
+    },
+    {
+      "name": "CBI Assistant Public Prosecutor Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/559.png"
+    },
+    {
+      "name": "NaBFID Risk Management Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/564.png"
+    },
+    {
+      "name": "RAILTEL AM Finance Officer Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/567.png"
+    },
+    {
+      "name": "UKSSSC Varg 1 Assistant Agriculture Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/560.png"
+    },
+    {
+      "name": "NFL Management Trainee Marketing Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/572.png"
+    },
+    {
+      "name": "CSIR CASE SO and ASO Paper I Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/575.png"
+    },
+    {
+      "name": "AIIMS CRE LDC Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/578.png"
+    },
+    {
+      "name": "UIICL Assistant Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/579.png"
+    },
+    {
+      "name": "NICL AO Generalists/Finance/Legal Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/581.png"
+    },
+    {
+      "name": "NICL AO Hindi (Rajbhasha) Adhikari Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/583.png"
+    },
+    {
+      "name": "NICL AO Mains Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/584.png"
+    },
+    {
+      "name": "UIICL AO Generalist Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/590.png"
+    },
+    {
+      "name": "DSSSB Section Officer- Horticulture Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/586.png"
+    },
+    {
+      "name": "BPSC BAO Agriculture science Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/593.png"
+    },
+    {
+      "name": "Union Bank of India Scale 2 Manager Law Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/594.png"
+    },
+    {
+      "name": "IDBI Junior Assistant Manager Recruitment Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/595.png"
+    },
+    {
+      "name": "OICL AO Accounts/Legal Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/600.png"
+    },
+    {
+      "name": "OICL AO Legal Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/598.png"
+    },
+    {
+      "name": "IFSCA Gr A Legal Stream paper II Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/602.png"
+    },
+    {
+      "name": "Bank Of India Legal Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/603.png"
+    },
+    {
+      "name": "Uttarakhand Cooperative Institutional Service Board Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/604.png"
+    },
+    {
+      "name": "Uttarakhand Cooperative Institutional Service Board Manager Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/605.png"
+    },
+    {
+      "name": "NBCC Legal Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/609.png"
+    },
+    {
+      "name": "IBPS RRB SO Scale 2 Agriculture Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/146.png"
+    },
+    {
+      "name": "J & K Apprentice Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/611.png"
+    },
+    {
+      "name": "UPPSC Agriculture Service Prelims Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/606.png"
+    },
+    {
+      "name": "PNB Apprentice Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/614.png"
+    },
+    {
+      "name": "RRB TTE Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/616.png"
+    },
+    {
+      "name": "Indian Bank Apprentice Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/617.png"
+    },
+    {
+      "name": "LIC HFL Junior Assistant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/618.png"
+    },
+    {
+      "name": "OICL AO IT Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/620.png"
+    },
+    {
+      "name": "OICL AO Accounts Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/599.png"
+    },
+    {
+      "name": "Indian Overseas Bank Apprentice Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/622.png"
+    },
+    {
+      "name": "Union Bank of India Apprentice Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/621.png"
+    },
+    {
+      "name": "Bureau of Indian Standards SSA, JSA exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/624.png"
+    },
+    {
+      "name": "CANARA Bank Apprentice Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/628.png"
+    },
+    {
+      "name": "NIACL Apprentice Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/627.png"
+    },
+    {
+      "name": "SBI Assistant Manager (System) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/626.png"
+    },
+    {
+      "name": "HSSC Constable Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/155.png"
+    },
+    {
+      "name": "NABARD Group C (Office Attendant) Exam  Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/631.png"
+    },
+    {
+      "name": "NIACL Administrative Officer (Legal) Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/527.png"
+    },
+    {
+      "name": "NIACL Administrative Officer(IT) Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/528.png"
+    },
+    {
+      "name": "NIACL Administrative Officer (Accounts) Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/529.png"
+    },
+    {
+      "name": "Bank of Maharashtra Apprentice Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/632.png"
+    },
+    {
+      "name": "NICL Assistant Prelims Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/633.png"
+    },
+    {
+      "name": "Union Bank of India Local Bank Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/634.png"
+    },
+    {
+      "name": "RPSC AAO Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/639.png"
+    },
+    {
+      "name": "UIICL AO (Data Analytics) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/640.png"
+    },
+    {
+      "name": "UIICL AO Accounts/Finance Specialists Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/539.png"
+    },
+    {
+      "name": "IDBI Specialist - Agri Asset Officer (AAO) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/643.png"
+    },
+    {
+      "name": "NICL Assistant Mains Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/641.png"
+    },
+    {
+      "name": "UPSSSC Junior Assistant Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/644.png"
+    },
+    {
+      "name": "Supreme court of India PA exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/650.png"
+    },
+    {
+      "name": "GIC Assistant Manager (Legal Stream) Scale 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/648.png"
+    },
+    {
+      "name": "Supreme court of India Senior PA exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/649.png"
+    },
+    {
+      "name": "Supreme court of India Court Master exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/652.png"
+    },
+    {
+      "name": "UGC NET Paper 1 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/651.png"
+    },
+    {
+      "name": "Army Ordnance Corps Matric level Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/655.png"
+    },
+    {
+      "name": "Army Ordnance Corps 12th Level Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/654.png"
+    },
+    {
+      "name": "Army Ordnance Corps Graduate level Material Assistant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/653.png"
+    },
+    {
+      "name": "CBSE Junior Assistant Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/657.png"
+    },
+    {
+      "name": "CBSE Superintendent Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/656.png"
+    },
+    {
+      "name": "HPPSC ADO Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/659.png"
+    },
+    {
+      "name": "AIIMS CRE UDC Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/660.png"
+    },
+    {
+      "name": "DFCCIL MTS Stage 1 CBT Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/661.png"
+    },
+    {
+      "name": "UCO Bank LBO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/664.png"
+    },
+    {
+      "name": "IBPS RRB SO Scale 2 IT Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/145.png"
+    },
+    {
+      "name": "IBPS RRB SO (Scale 2) Law Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/267.png"
+    },
+    {
+      "name": "Agriculture Insurance Company of India Limited- IT Management Trainee Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/335.png"
+    },
+    {
+      "name": "Agriculture Insurance Company of India Limited- Legal Management Trainee Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/329.png"
+    },
+    {
+      "name": "Central Bank of India Scale I Credit Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/665.png"
+    },
+    {
+      "name": "Bank of Baroda Apprentice Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/668.png"
+    },
+    {
+      "name": "CUET UG Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/585.png"
+    },
+    {
+      "name": "Rubber Board  of India Field Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/666.png"
+    },
+    {
+      "name": "BPSC TRE Middle School Exams Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/670.png"
+    },
+    {
+      "name": "Bank of India Apprentice Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/671.png"
+    },
+    {
+      "name": "AAI JUNIOR ASSISTANT(FIRE SERVICE) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/672.png"
+    },
+    {
+      "name": "BPSC TRE PRT  Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/669.png"
+    },
+    {
+      "name": "CISF Constable/Tradesmen Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/673.png"
+    },
+    {
+      "name": "AAI Senior Assistant (Accounts) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/674.png"
+    },
+    {
+      "name": "BHU Junior Clerk Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/678.png"
+    },
+    {
+      "name": "CSIR Junior Secretariat Assistant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/679.png"
+    },
+    {
+      "name": "Indian Army Agniveer Clerk Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/683.png"
+    },
+    {
+      "name": "Indian Army Agniveer General Duty (GD) Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/681.png"
+    },
+    {
+      "name": "Indian Army Agniveer Technical Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/682.png"
+    },
+    {
+      "name": "Punjab and Sind Bank LBO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/686.png"
+    },
+    {
+      "name": "Indian Navy Agniveer SSR Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/684.png"
+    },
+    {
+      "name": "Indian Navy Agniveer SSR (Med) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/685.png"
+    },
+    {
+      "name": "CSIR Junior Stenographer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/687.png"
+    },
+    {
+      "name": "Railway Recruitment (ALP/TECH.) Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/300.png"
+    },
+    {
+      "name": "NTPC Green Energy LTD ET Finance Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/689.png"
+    },
+    {
+      "name": "BSSC SSO/BSO Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/688.png"
+    },
+    {
+      "name": "RSSB (Rajasthan) Group D exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/691.png"
+    },
+    {
+      "name": "SJVN Executive Trainee Law Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/694.png"
+    },
+    {
+      "name": "SJVN Executive Trainee Finance Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/693.png"
+    },
+    {
+      "name": "NaBFID Analyst IT exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/697.png"
+    },
+    {
+      "name": "Union Bank of India AM IT Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/696.png"
+    },
+    {
+      "name": "Union Bank of India AM Credit Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/695.png"
+    },
+    {
+      "name": "NaBFID Accounts Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/568.png"
+    },
+    {
+      "name": "NaBFID Lending Operation Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/563.png"
+    },
+    {
+      "name": "NaBFID General Administration exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/569.png"
+    },
+    {
+      "name": "Bank of Baroda Office Assistant Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/699.png"
+    },
+    {
+      "name": "Indian Overseas Bank LBO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/702.png"
+    },
+    {
+      "name": "HPCL JE Electrical Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/704.png"
+    },
+    {
+      "name": "HPCL JE Mechanical Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/705.png"
+    },
+    {
+      "name": "ICAR AIEEA Horticulture Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/707.png"
+    },
+    {
+      "name": "NMDC Maintenance Assistant Electrical Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/710.png"
+    },
+    {
+      "name": "NMDC Maintenance Assistant Mechanical Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/711.png"
+    },
+    {
+      "name": "NMDC Electrician Gr.-III (Diploma Level) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/712.png"
+    },
+    {
+      "name": "NMDC Mechanic Gr.-III (Diploma Level) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/713.png"
+    },
+    {
+      "name": "NMDC Field Attendant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/709.png"
+    },
+    {
+      "name": "ICAR AIEEA Food Science and Technology Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/708.png"
+    },
+    {
+      "name": "Central Bank of India Specialist Officer Scale II Legal Stream Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/328.png"
+    },
+    {
+      "name": "MPPSC FSO Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/701.png"
+    },
+    {
+      "name": "RBI Grade B Officer DSIM Paper I Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/231.png"
+    },
+    {
+      "name": "Bank of Baroda LBO Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/715.png"
+    },
+    {
+      "name": "NICL AO Finance Mains Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/587.png"
+    },
+    {
+      "name": "NICL AO Legal Mains Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/588.png"
+    },
+    {
+      "name": "NICL AO IT  Mains Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/597.png"
+    },
+    {
+      "name": "CCRAS UDC Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/716.png"
+    },
+    {
+      "name": "CCRAS LDC Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/717.png"
+    },
+    {
+      "name": "OICL Assistant Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/718.png"
+    },
+    {
+      "name": "OICL Assistant Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/719.png"
+    },
+    {
+      "name": "BHARATIYA RESERVE BANK NOTE MUDRAN Dy Manager Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/721.png"
+    },
+    {
+      "name": "LIC AAO SO Legal Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/722.png"
+    },
+    {
+      "name": "IFFCO AGT Mains Test Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/723.png"
+    },
+    {
+      "name": "LIC AAO SO Legal Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/728.png"
+    },
+    {
+      "name": "LIC AAO SO CA Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/729.png"
+    },
+    {
+      "name": "NIACL AO Health Officer Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/731.png"
+    },
+    {
+      "name": "Union Bank of India Wealth Manager Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/730.png"
+    },
+    {
+      "name": "LIC AAO SO CA/CS/Insurance Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/734.png"
+    },
+    {
+      "name": "BOB Agri Sales Officer & Manager exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/667.png"
+    },
+    {
+      "name": "LIC AAO Specialist Mains Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/724.png"
+    },
+    {
+      "name": "Punjab and Sind Bank Scale 2 IT Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/515.png"
+    },
+    {
+      "name": "DDA  JSA Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/742.png"
+    },
+    {
+      "name": "DDA MTS exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/743.png"
+    },
+    {
+      "name": "NIACL AO Risk Engineer Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/732.png"
+    },
+    {
+      "name": "DDA SO Horticulture Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/738.png"
+    },
+    {
+      "name": "IBPS RRB CA Online Course Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/746.png"
+    },
+    {
+      "name": "NHAI Stenographer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/749.png"
+    },
+    {
+      "name": "NHAI Accountant Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/748.png"
+    },
+    {
+      "name": "NHAI F&A Exam Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/751.png"
+    },
+    {
+      "name": "ECGC PO (Rajbhasha Officer) Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/480.png"
+    },
+    {
+      "name": "OICL AO Generalist Mains Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/753.png"
+    },
+    {
+      "name": "OICL AO Rajbhasha Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/755.png"
+    },
+    {
+      "name": "UCO Bank Scale 1 CA Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/758.png"
+    },
+    {
+      "name": "ICAR AIEEA Plant Science Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/763.png"
+    },
+    {
+      "name": "ASRB NET Fruit Science Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/764.png"
+    },
+    {
+      "name": "Central Bank of India Scale I Marketing Officer Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/762.png"
+    },
+    {
+      "name": "ASRB NET Vegetable Science Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/766.png"
+    },
+    {
+      "name": "BSNL Senior ET - Finance Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/767.png"
+    },
+    {
+      "name": "UGC NET Economics Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/769.png"
+    },
+    {
+      "name": "CUET PG Economics Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/770.png"
+    },
+    {
+      "name": "ASRB NET Floriculture & Landscaping Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/771.png"
+    },
+    {
+      "name": "IIT JAM  Mathematical Statistics Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/772.png"
+    },
+    {
+      "name": "ICAI Executive Officer Legal Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/775.png"
+    },
+    {
+      "name": "DSSSB Section Officer Tier II- Horticulture Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/591.png"
+    },
+    {
+      "name": "Coal India Limited Civil Engg Management Trainee Paper 2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/778.png"
+    },
+    {
+      "name": "Coal India Limited System Management Trainee paper 2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/777.png"
+    },
+    {
+      "name": "Coal India Limited Electrical EnggTrainee Paper 2 Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/783.png"
+    },
+    {
+      "name": "SBI Specialist Officer Legal Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/629.png"
+    },
+    {
+      "name": "IBPS SO HR Officer Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/787.png"
+    },
+    {
+      "name": "IBPS SO Rajbhasha Adhikari Prelims Mock Tests",
+      "logo": "https://static.ixambee.com/v5/images/exams_logo/788.png"
+    }
+  ]
+}

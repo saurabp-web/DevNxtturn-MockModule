@@ -1,0 +1,4421 @@
+[
+  {
+    "exam_name": "JEE Main",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "National",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "JEE Advanced",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "National",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MHT CET (PCM)",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "WBJEE",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "KCET",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "TNEA",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "AP EAPCET",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "TS EAMCET",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "KEAM",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "OJEE",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "GUJCET",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "BITSAT",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "VITEEE",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "SRMJEEE",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "KIITEE",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "LPU NEST",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "AEEE",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "COMEDK UGET",
+    "education_level": "UG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "B.Tech / B.E.",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NEET UG",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "National",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "AIIMS Nursing",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "National",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "JIPMER Nursing",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "National",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MH-B.Sc. Nursing CET",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MH-B.P.Th CET",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MHT CET (PCB)",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "JENPAS UG",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "KCET (PCB)",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "AP EAPCET (PCB)",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "TS EAMCET (PCB)",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "GUJCET (PCB)",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "RUHS CET",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "BITSAT B.Pharma",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "Private",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MET Pharmacy",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "Private",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "LPU NEST Health",
+    "education_level": "UG",
+    "category": "Medicine & Allied Health",
+    "tier": "Private",
+    "field_of_study": "MBBS, BDS, B.Sc. Nursing, Pharmacy",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State Medical Counselling (Based on NEET)",
+    "education_level": "UG",
+    "category": "Medical",
+    "tier": "State",
+    "field_of_study": "MBBS, BDS, AYUSH",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Institutional NRI / Management Quotas",
+    "education_level": "UG",
+    "category": "Medical",
+    "tier": "Private",
+    "field_of_study": "MBBS, BDS, AYUSH",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "CUET UG",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "National",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "ICAR AIEEA",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "National",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NEST",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "National",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "IAT",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "National",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MHT CET (Agri)",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "State",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "KCET (Agri)",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "State",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "UPCATET",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "State",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MP PAT",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "State",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "BCECE",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "State",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "OUAT",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "State",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "CUCET",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "Private",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "LPU NEST Science",
+    "education_level": "UG",
+    "category": "Sciences & Agriculture",
+    "tier": "Private",
+    "field_of_study": "B.Sc., BS-MS, B.Sc. Agriculture",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "ICAR AIEEA (via CUET UG)",
+    "education_level": "UG",
+    "category": "Agriculture",
+    "tier": "National",
+    "field_of_study": "B.Sc. Agriculture, Forestry",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "LPU NEST Agriculture",
+    "education_level": "UG",
+    "category": "Agriculture",
+    "tier": "Private",
+    "field_of_study": "B.Sc. Agriculture, Forestry",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "CG PET",
+    "education_level": "UG",
+    "category": "Engineering & Agriculture",
+    "tier": "State",
+    "field_of_study": "B.Tech & B.Sc. Agriculture Track",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "LPU NEST Agri-Engineering",
+    "education_level": "UG",
+    "category": "Engineering & Agriculture",
+    "tier": "Private",
+    "field_of_study": "B.Tech & B.Sc. Agriculture Track",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MHT CET (Combined)",
+    "education_level": "UG",
+    "category": "Engineering & Pharmacy",
+    "tier": "State",
+    "field_of_study": "B.Tech & B.Pharma Track",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "BITSAT (PCM/PCB Option)",
+    "education_level": "UG",
+    "category": "Engineering & Pharmacy",
+    "tier": "Private",
+    "field_of_study": "B.Tech & B.Pharma Track",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "CLAT",
+    "education_level": "UG",
+    "category": "Law",
+    "tier": "National",
+    "field_of_study": "5-Year Integrated LLB",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "AILET",
+    "education_level": "UG",
+    "category": "Law",
+    "tier": "National",
+    "field_of_study": "5-Year Integrated LLB",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MH CET Law (5-Year)",
+    "education_level": "UG",
+    "category": "Law",
+    "tier": "State",
+    "field_of_study": "5-Year Integrated LLB",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "TS LAWCET",
+    "education_level": "UG",
+    "category": "Law",
+    "tier": "State",
+    "field_of_study": "5-Year Integrated LLB",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "AP LAWCET",
+    "education_level": "UG",
+    "category": "Law",
+    "tier": "State",
+    "field_of_study": "5-Year Integrated LLB",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "KLEE",
+    "education_level": "UG",
+    "category": "Law",
+    "tier": "State",
+    "field_of_study": "5-Year Integrated LLB",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "SLAT",
+    "education_level": "UG",
+    "category": "Law",
+    "tier": "Private",
+    "field_of_study": "5-Year Integrated LLB",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "LSAT-India",
+    "education_level": "UG",
+    "category": "Law",
+    "tier": "Private",
+    "field_of_study": "5-Year Integrated LLB",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "ILAT",
+    "education_level": "UG",
+    "category": "Law",
+    "tier": "Private",
+    "field_of_study": "5-Year Integrated LLB",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "IPMAT",
+    "education_level": "UG",
+    "category": "Management & Commerce",
+    "tier": "National",
+    "field_of_study": "BBA, BMS, IPM, B.Com",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "JIPMAT",
+    "education_level": "UG",
+    "category": "Management & Commerce",
+    "tier": "National",
+    "field_of_study": "BBA, BMS, IPM, B.Com",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MAH BBA/BCA/BMS CET",
+    "education_level": "UG",
+    "category": "Management & Commerce",
+    "tier": "State",
+    "field_of_study": "BBA, BMS, IPM, B.Com",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "GGSIPU CET",
+    "education_level": "UG",
+    "category": "Management & Commerce",
+    "tier": "State",
+    "field_of_study": "BBA, BMS, IPM, B.Com",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "LUACMAT",
+    "education_level": "UG",
+    "category": "Management & Commerce",
+    "tier": "State",
+    "field_of_study": "BBA, BMS, IPM, B.Com",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "SET",
+    "education_level": "UG",
+    "category": "Management & Commerce",
+    "tier": "Private",
+    "field_of_study": "BBA, BMS, IPM, B.Com",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NPAT",
+    "education_level": "UG",
+    "category": "Management & Commerce",
+    "tier": "Private",
+    "field_of_study": "BBA, BMS, IPM, B.Com",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "AIMA UGAT",
+    "education_level": "UG",
+    "category": "Management & Commerce",
+    "tier": "Private",
+    "field_of_study": "BBA, BMS, IPM, B.Com",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "PUBDET",
+    "education_level": "UG",
+    "category": "Humanities",
+    "tier": "State",
+    "field_of_study": "B.A., B.A. (Hons)",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Christ University Entrance Test",
+    "education_level": "UG",
+    "category": "Humanities",
+    "tier": "Private",
+    "field_of_study": "B.A., B.A. (Hons)",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Symbiosis SET",
+    "education_level": "UG",
+    "category": "Humanities",
+    "tier": "Private",
+    "field_of_study": "B.A., B.A. (Hons)",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State University Merit Admissions",
+    "education_level": "UG",
+    "category": "Undergraduate Admission",
+    "tier": "State",
+    "field_of_study": "General B.A., B.Sc., B.Com",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NATA",
+    "education_level": "UG",
+    "category": "Architecture",
+    "tier": "National",
+    "field_of_study": "B.Arch, B.Planning",
+    "min_education_text": "12th Standard Pass (With Physics, Chemistry, and Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "JEE Main Paper 2",
+    "education_level": "UG",
+    "category": "Architecture",
+    "tier": "National",
+    "field_of_study": "B.Arch, B.Planning",
+    "min_education_text": "12th Standard Pass (With Physics, Chemistry, and Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "TNEA B.Arch",
+    "education_level": "UG",
+    "category": "Architecture",
+    "tier": "State",
+    "field_of_study": "B.Arch, B.Planning",
+    "min_education_text": "12th Standard Pass (With Physics, Chemistry, and Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MHT CET B.Arch",
+    "education_level": "UG",
+    "category": "Architecture",
+    "tier": "State",
+    "field_of_study": "B.Arch, B.Planning",
+    "min_education_text": "12th Standard Pass (With Physics, Chemistry, and Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "KEAM B.Arch",
+    "education_level": "UG",
+    "category": "Architecture",
+    "tier": "State",
+    "field_of_study": "B.Arch, B.Planning",
+    "min_education_text": "12th Standard Pass (With Physics, Chemistry, and Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Institutional Portfolio Reviews",
+    "education_level": "UG",
+    "category": "Architecture",
+    "tier": "Private",
+    "field_of_study": "B.Arch, B.Planning",
+    "min_education_text": "12th Standard Pass (With Physics, Chemistry, and Mathematics)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NIFT Entrance Exam",
+    "education_level": "UG",
+    "category": "Design",
+    "tier": "National",
+    "field_of_study": "B.Des, B.FTech",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NID DAT",
+    "education_level": "UG",
+    "category": "Design",
+    "tier": "National",
+    "field_of_study": "B.Des, B.FTech",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "UCEED",
+    "education_level": "UG",
+    "category": "Design",
+    "tier": "National",
+    "field_of_study": "B.Des, B.FTech",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State Technical Board Entrance Exams",
+    "education_level": "UG",
+    "category": "Design",
+    "tier": "State",
+    "field_of_study": "B.Des, B.FTech",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "SEED",
+    "education_level": "UG",
+    "category": "Design",
+    "tier": "Private",
+    "field_of_study": "B.Des, B.FTech",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "UID DAT",
+    "education_level": "UG",
+    "category": "Design",
+    "tier": "Private",
+    "field_of_study": "B.Des, B.FTech",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MIT DAT",
+    "education_level": "UG",
+    "category": "Design",
+    "tier": "Private",
+    "field_of_study": "B.Des, B.FTech",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "UPES DAT",
+    "education_level": "UG",
+    "category": "Design",
+    "tier": "Private",
+    "field_of_study": "B.Des, B.FTech",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State Apparel Board Exams",
+    "education_level": "UG",
+    "category": "Fashion & Design",
+    "tier": "State",
+    "field_of_study": "B.FTech, Fashion Design",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Pearl Academy Entrance",
+    "education_level": "UG",
+    "category": "Fashion & Design",
+    "tier": "Private",
+    "field_of_study": "B.FTech, Fashion Design",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "FDDI AIST",
+    "education_level": "UG",
+    "category": "Fashion & Design",
+    "tier": "Private",
+    "field_of_study": "B.FTech, Fashion Design",
+    "min_education_text": "12th Standard Pass (Any Stream / Stream restricted for B.FTech)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MAH AAC CET",
+    "education_level": "UG",
+    "category": "Fine Arts",
+    "tier": "State",
+    "field_of_study": "BFA, BVA",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "JNAFAU FAET",
+    "education_level": "UG",
+    "category": "Fine Arts",
+    "tier": "State",
+    "field_of_study": "BFA, BVA",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Amity Fine Arts Entrance",
+    "education_level": "UG",
+    "category": "Fine Arts",
+    "tier": "Private",
+    "field_of_study": "BFA, BVA",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "LPU NEST Fine Arts",
+    "education_level": "UG",
+    "category": "Fine Arts",
+    "tier": "Private",
+    "field_of_study": "BFA, BVA",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State Merit-Based Science Admissions",
+    "education_level": "UG",
+    "category": "Science & Research",
+    "tier": "State",
+    "field_of_study": "BS-MS Dual Degree, B.Sc. (Hons.)",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Shiv Nadar SNUSAT",
+    "education_level": "UG",
+    "category": "Science & Research",
+    "tier": "Private",
+    "field_of_study": "BS-MS Dual Degree, B.Sc. (Hons.)",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Ashoka Aptitude Assessment",
+    "education_level": "UG",
+    "category": "Multi-Disciplinary",
+    "tier": "Private",
+    "field_of_study": "Integrated Liberal Arts",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "FLAME AAT",
+    "education_level": "UG",
+    "category": "Multi-Disciplinary",
+    "tier": "Private",
+    "field_of_study": "Integrated Liberal Arts",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State Vocational CETs",
+    "education_level": "UG",
+    "category": "Professional Courses",
+    "tier": "State",
+    "field_of_study": "B.Voc, Specialized Vocational Courses",
+    "min_education_text": "12th Standard Pass (Any Stream or Vocational Stream)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Private Institute Aptitude Tests",
+    "education_level": "UG",
+    "category": "Professional Courses",
+    "tier": "Private",
+    "field_of_study": "B.Voc, Specialized Vocational Courses",
+    "min_education_text": "12th Standard Pass (Any Stream or Vocational Stream)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NCHM JEE",
+    "education_level": "UG",
+    "category": "Hospitality",
+    "tier": "National",
+    "field_of_study": "BHM, BHMCT, B.Sc. Hospitality & Hotel Administration",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MAH BHMCT CET",
+    "education_level": "UG",
+    "category": "Hospitality",
+    "tier": "State",
+    "field_of_study": "BHM, BHMCT, B.Sc. Hospitality & Hotel Administration",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "WBJEE JEHOM",
+    "education_level": "UG",
+    "category": "Hospitality",
+    "tier": "State",
+    "field_of_study": "BHM, BHMCT, B.Sc. Hospitality & Hotel Administration",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "UPSEE BHMCT",
+    "education_level": "UG",
+    "category": "Hospitality",
+    "tier": "State",
+    "field_of_study": "BHM, BHMCT, B.Sc. Hospitality & Hotel Administration",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "STEP Oberoi Exam",
+    "education_level": "UG",
+    "category": "Hospitality",
+    "tier": "Private",
+    "field_of_study": "BHM, BHMCT, B.Sc. Hospitality & Hotel Administration",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "IHM Aurangabad Test",
+    "education_level": "UG",
+    "category": "Hospitality",
+    "tier": "Private",
+    "field_of_study": "BHM, BHMCT, B.Sc. Hospitality & Hotel Administration",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Welcomgroup WHTT",
+    "education_level": "UG",
+    "category": "Hospitality",
+    "tier": "Private",
+    "field_of_study": "BHM, BHMCT, B.Sc. Hospitality & Hotel Administration",
+    "min_education_text": "12th Standard Pass (Any Stream - Arts, Science, Commerce)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "IMU CET",
+    "education_level": "UG",
+    "category": "Maritime",
+    "tier": "National",
+    "field_of_study": "B.Sc. Nautical Science, B.Tech Marine",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics with 60% min)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State Maritime Board Admissions",
+    "education_level": "UG",
+    "category": "Maritime",
+    "tier": "State",
+    "field_of_study": "B.Sc. Nautical Science, B.Tech Marine",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics with 60% min)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Tolani Maritime Institute Entrance Test",
+    "education_level": "UG",
+    "category": "Maritime",
+    "tier": "Private",
+    "field_of_study": "B.Sc. Nautical Science, B.Tech Marine",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Mathematics with 60% min)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NDA Entrance Exam",
+    "education_level": "UG",
+    "category": "Defence",
+    "tier": "National",
+    "field_of_study": "Army, Navy, Air Force Entries",
+    "min_education_text": "12th Standard Pass (Army allows any stream; Navy/Air Force requires PCM)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State Sainik School / Police Academy Admissions",
+    "education_level": "UG",
+    "category": "Defence",
+    "tier": "State",
+    "field_of_study": "Army, Navy, Air Force Entries",
+    "min_education_text": "12th Standard Pass (Army allows any stream; Navy/Air Force requires PCM)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "CUET UG (Delhi University",
+    "education_level": "UG",
+    "category": "Psychology & Behavioral Sciences",
+    "tier": "National",
+    "field_of_study": "B.A. / B.Sc. Psychology, Cognitive Science",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "BHU",
+    "education_level": "UG",
+    "category": "Psychology & Behavioral Sciences",
+    "tier": "National",
+    "field_of_study": "B.A. / B.Sc. Psychology, Cognitive Science",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Jamia)",
+    "education_level": "UG",
+    "category": "Psychology & Behavioral Sciences",
+    "tier": "National",
+    "field_of_study": "B.A. / B.Sc. Psychology, Cognitive Science",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State University Merit Entries",
+    "education_level": "UG",
+    "category": "Psychology & Behavioral Sciences",
+    "tier": "State",
+    "field_of_study": "B.A. / B.Sc. Psychology, Cognitive Science",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Christ University ET",
+    "education_level": "UG",
+    "category": "Psychology & Behavioral Sciences",
+    "tier": "Private",
+    "field_of_study": "B.A. / B.Sc. Psychology, Cognitive Science",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NFSU UG Entrance Exam (National Forensic Sciences University)",
+    "education_level": "UG",
+    "category": "Forensic Science",
+    "tier": "National",
+    "field_of_study": "B.Sc. Forensic Science, Criminology",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State Forensic University Seats",
+    "education_level": "UG",
+    "category": "Forensic Science",
+    "tier": "State",
+    "field_of_study": "B.Sc. Forensic Science, Criminology",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "AIFSET (All India Forensic Science Entrance Test)",
+    "education_level": "UG",
+    "category": "Forensic Science",
+    "tier": "Private",
+    "field_of_study": "B.Sc. Forensic Science, Criminology",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "CUET UG (LNIPE Gwalior & National Sports University tracks)",
+    "education_level": "UG",
+    "category": "Sports Science & Physical Ed.",
+    "tier": "National",
+    "field_of_study": "B.Sc. Sports Science, B.P.Ed (Integrated)",
+    "min_education_text": "12th Standard Pass (Any Stream + Sports Merit Certificates)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MAH B.P.Ed CET (Integrated tracks)",
+    "education_level": "UG",
+    "category": "Sports Science & Physical Ed.",
+    "tier": "State",
+    "field_of_study": "B.Sc. Sports Science, B.P.Ed (Integrated)",
+    "min_education_text": "12th Standard Pass (Any Stream + Sports Merit Certificates)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State CETs",
+    "education_level": "UG",
+    "category": "Sports Science & Physical Ed.",
+    "tier": "State",
+    "field_of_study": "B.Sc. Sports Science, B.P.Ed (Integrated)",
+    "min_education_text": "12th Standard Pass (Any Stream + Sports Merit Certificates)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Private Sports Academy Performance Screenings",
+    "education_level": "UG",
+    "category": "Sports Science & Physical Ed.",
+    "tier": "Private",
+    "field_of_study": "B.Sc. Sports Science, B.P.Ed (Integrated)",
+    "min_education_text": "12th Standard Pass (Any Stream + Sports Merit Certificates)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "NEET UG (Gates 15% Veterinary Council of India All-India Quota)",
+    "education_level": "UG",
+    "category": "Veterinary Sciences",
+    "tier": "National",
+    "field_of_study": "B.V.Sc. & A.H. (Animal Husbandry)",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MAFSU Admissions (Maharashtra)",
+    "education_level": "UG",
+    "category": "Veterinary Sciences",
+    "tier": "State",
+    "field_of_study": "B.V.Sc. & A.H. (Animal Husbandry)",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "KCET (Veterinary Track)",
+    "education_level": "UG",
+    "category": "Veterinary Sciences",
+    "tier": "State",
+    "field_of_study": "B.V.Sc. & A.H. (Animal Husbandry)",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Rajasthan RPVT",
+    "education_level": "UG",
+    "category": "Veterinary Sciences",
+    "tier": "State",
+    "field_of_study": "B.V.Sc. & A.H. (Animal Husbandry)",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Private Animal Science Institutional Screenings",
+    "education_level": "UG",
+    "category": "Veterinary Sciences",
+    "tier": "Private",
+    "field_of_study": "B.V.Sc. & A.H. (Animal Husbandry)",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "CFTRI Screening",
+    "education_level": "UG",
+    "category": "Food Technology & Nutrition",
+    "tier": "National",
+    "field_of_study": "B.Tech Food Tech, B.Sc. Food Sciences",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "MHT CET (PCM/PCB)",
+    "education_level": "UG",
+    "category": "Food Technology & Nutrition",
+    "tier": "State",
+    "field_of_study": "B.Tech Food Tech, B.Sc. Food Sciences",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "LPU NEST (Food Tech)",
+    "education_level": "UG",
+    "category": "Food Technology & Nutrition",
+    "tier": "Private",
+    "field_of_study": "B.Tech Food Tech, B.Sc. Food Sciences",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Amity Technology Test",
+    "education_level": "UG",
+    "category": "Food Technology & Nutrition",
+    "tier": "Private",
+    "field_of_study": "B.Tech Food Tech, B.Sc. Food Sciences",
+    "min_education_text": "12th Standard Pass (Science Stream - PCM / PCB)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "ISI Admission Test (Indian Statistical Institute)",
+    "education_level": "UG",
+    "category": "Pure Mathematics & Statistics",
+    "tier": "National",
+    "field_of_study": "B.Math (Hons), B.Stat (Hons), B.Sc. Math",
+    "min_education_text": "12th Standard Pass (Mathematics as a compulsory subject)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "CMI Entrance (Chennai Mathematical Institute)",
+    "education_level": "UG",
+    "category": "Pure Mathematics & Statistics",
+    "tier": "National",
+    "field_of_study": "B.Math (Hons), B.Stat (Hons), B.Sc. Math",
+    "min_education_text": "12th Standard Pass (Mathematics as a compulsory subject)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "State Merit Honors Portals",
+    "education_level": "UG",
+    "category": "Pure Mathematics & Statistics",
+    "tier": "State",
+    "field_of_study": "B.Math (Hons), B.Stat (Hons), B.Sc. Math",
+    "min_education_text": "12th Standard Pass (Mathematics as a compulsory subject)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "KREA University Aptitude Test",
+    "education_level": "UG",
+    "category": "Pure Mathematics & Statistics",
+    "tier": "Private",
+    "field_of_study": "B.Math (Hons), B.Stat (Hons), B.Sc. Math",
+    "min_education_text": "12th Standard Pass (Mathematics as a compulsory subject)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "Plaksha Entrance",
+    "education_level": "UG",
+    "category": "Pure Mathematics & Statistics",
+    "tier": "Private",
+    "field_of_study": "B.Math (Hons), B.Stat (Hons), B.Sc. Math",
+    "min_education_text": "12th Standard Pass (Mathematics as a compulsory subject)",
+    "academic_value": "UG"
+  },
+  {
+    "exam_name": "GATE",
+    "education_level": "PG",
+    "category": "Engineering",
+    "tier": "National",
+    "field_of_study": "M.Tech / M.E. / Ph.D.",
+    "min_education_text": "Completed B.Tech / B.E. / M.Sc.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Karnataka PGCET",
+    "education_level": "PG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "M.Tech / M.E. / Ph.D.",
+    "min_education_text": "Completed B.Tech / B.E. / M.Sc.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "AP PGECET",
+    "education_level": "PG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "M.Tech / M.E. / Ph.D.",
+    "min_education_text": "Completed B.Tech / B.E. / M.Sc.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "TS PGECET",
+    "education_level": "PG",
+    "category": "Engineering",
+    "tier": "State",
+    "field_of_study": "M.Tech / M.E. / Ph.D.",
+    "min_education_text": "Completed B.Tech / B.E. / M.Sc.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "VITMEE",
+    "education_level": "PG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "M.Tech / M.E. / Ph.D.",
+    "min_education_text": "Completed B.Tech / B.E. / M.Sc.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "SRMEE",
+    "education_level": "PG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "M.Tech / M.E. / Ph.D.",
+    "min_education_text": "Completed B.Tech / B.E. / M.Sc.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "LPU NEST PG",
+    "education_level": "PG",
+    "category": "Engineering",
+    "tier": "Private",
+    "field_of_study": "M.Tech / M.E. / Ph.D.",
+    "min_education_text": "Completed B.Tech / B.E. / M.Sc.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CAT",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "National",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "XAT",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "National",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CMAT",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "National",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "ATMA",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "National",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MAH MBA CET",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "State",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "TANCET",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "State",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "KMAT",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "State",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NMAT",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "Private",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "SNAP",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "Private",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "IBSAT",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "Private",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MICAT",
+    "education_level": "PG",
+    "category": "Management",
+    "tier": "Private",
+    "field_of_study": "MBA / PGDM",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NEET PG",
+    "education_level": "PG",
+    "category": "Medicine & Health",
+    "tier": "National",
+    "field_of_study": "M.D. / M.S. / MDS / M.Pharm",
+    "min_education_text": "Completed MBBS / BDS / B.Pharm",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "INI CET (AIIMS/JIPMER)",
+    "education_level": "PG",
+    "category": "Medicine & Health",
+    "tier": "National",
+    "field_of_study": "M.D. / M.S. / MDS / M.Pharm",
+    "min_education_text": "Completed MBBS / BDS / B.Pharm",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "GPAT (Pharmacy)",
+    "education_level": "PG",
+    "category": "Medicine & Health",
+    "tier": "National",
+    "field_of_study": "M.D. / M.S. / MDS / M.Pharm",
+    "min_education_text": "Completed MBBS / BDS / B.Pharm",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State Medical PG Counselling",
+    "education_level": "PG",
+    "category": "Medicine & Health",
+    "tier": "State",
+    "field_of_study": "M.D. / M.S. / MDS / M.Pharm",
+    "min_education_text": "Completed MBBS / BDS / B.Pharm",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NIPER JEE (Pharmacy)",
+    "education_level": "PG",
+    "category": "Medicine & Health",
+    "tier": "Private",
+    "field_of_study": "M.D. / M.S. / MDS / M.Pharm",
+    "min_education_text": "Completed MBBS / BDS / B.Pharm",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "IIT JAM",
+    "education_level": "PG",
+    "category": "Sciences",
+    "tier": "National",
+    "field_of_study": "M.Sc. / Integrated Ph.D.",
+    "min_education_text": "Completed B.Sc. (Relevant Subjects)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NEST (PG)",
+    "education_level": "PG",
+    "category": "Sciences",
+    "tier": "National",
+    "field_of_study": "M.Sc. / Integrated Ph.D.",
+    "min_education_text": "Completed B.Sc. (Relevant Subjects)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "JEST",
+    "education_level": "PG",
+    "category": "Sciences",
+    "tier": "National",
+    "field_of_study": "M.Sc. / Integrated Ph.D.",
+    "min_education_text": "Completed B.Sc. (Relevant Subjects)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "TIFR GS",
+    "education_level": "PG",
+    "category": "Sciences",
+    "tier": "National",
+    "field_of_study": "M.Sc. / Integrated Ph.D.",
+    "min_education_text": "Completed B.Sc. (Relevant Subjects)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "TS CPGET (OUCET)",
+    "education_level": "PG",
+    "category": "Sciences",
+    "tier": "State",
+    "field_of_study": "M.Sc. / Integrated Ph.D.",
+    "min_education_text": "Completed B.Sc. (Relevant Subjects)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "AP PGCET",
+    "education_level": "PG",
+    "category": "Sciences",
+    "tier": "State",
+    "field_of_study": "M.Sc. / Integrated Ph.D.",
+    "min_education_text": "Completed B.Sc. (Relevant Subjects)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "BITS HD",
+    "education_level": "PG",
+    "category": "Sciences",
+    "tier": "Private",
+    "field_of_study": "M.Sc. / Integrated Ph.D.",
+    "min_education_text": "Completed B.Sc. (Relevant Subjects)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CLAT PG",
+    "education_level": "PG",
+    "category": "Law",
+    "tier": "National",
+    "field_of_study": "LL.M. (Master of Laws)",
+    "min_education_text": "Completed 3-Year or 5-Year LL.B.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "AILET PG",
+    "education_level": "PG",
+    "category": "Law",
+    "tier": "National",
+    "field_of_study": "LL.M. (Master of Laws)",
+    "min_education_text": "Completed 3-Year or 5-Year LL.B.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "ILI CAT",
+    "education_level": "PG",
+    "category": "Law",
+    "tier": "National",
+    "field_of_study": "LL.M. (Master of Laws)",
+    "min_education_text": "Completed 3-Year or 5-Year LL.B.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MH CET Law (LLM)",
+    "education_level": "PG",
+    "category": "Law",
+    "tier": "State",
+    "field_of_study": "LL.M. (Master of Laws)",
+    "min_education_text": "Completed 3-Year or 5-Year LL.B.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "TS PGLCET",
+    "education_level": "PG",
+    "category": "Law",
+    "tier": "State",
+    "field_of_study": "LL.M. (Master of Laws)",
+    "min_education_text": "Completed 3-Year or 5-Year LL.B.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "SLS LLM AIAT",
+    "education_level": "PG",
+    "category": "Law",
+    "tier": "Private",
+    "field_of_study": "LL.M. (Master of Laws)",
+    "min_education_text": "Completed 3-Year or 5-Year LL.B.",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CUET PG (Delhi University",
+    "education_level": "PG",
+    "category": "Humanities & General",
+    "tier": "National",
+    "field_of_study": "M.A. / M.Com / MSW",
+    "min_education_text": "Completed Bachelor's Degree",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "JNU",
+    "education_level": "PG",
+    "category": "Humanities & General",
+    "tier": "National",
+    "field_of_study": "M.A. / M.Com / MSW",
+    "min_education_text": "Completed Bachelor's Degree",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "TISS)",
+    "education_level": "PG",
+    "category": "Humanities & General",
+    "tier": "National",
+    "field_of_study": "M.A. / M.Com / MSW",
+    "min_education_text": "Completed Bachelor's Degree",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "IPU CET PG",
+    "education_level": "PG",
+    "category": "Humanities & General",
+    "tier": "State",
+    "field_of_study": "M.A. / M.Com / MSW",
+    "min_education_text": "Completed Bachelor's Degree",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "PUBDGET",
+    "education_level": "PG",
+    "category": "Humanities & General",
+    "tier": "State",
+    "field_of_study": "M.A. / M.Com / MSW",
+    "min_education_text": "Completed Bachelor's Degree",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Symbiosis SET PG",
+    "education_level": "PG",
+    "category": "Humanities & General",
+    "tier": "Private",
+    "field_of_study": "M.A. / M.Com / MSW",
+    "min_education_text": "Completed Bachelor's Degree",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CEED",
+    "education_level": "PG",
+    "category": "Design & Architecture",
+    "tier": "National",
+    "field_of_study": "M.Des / M.Arch",
+    "min_education_text": "Completed B.Des / B.Arch / B.Tech",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NIFT PG",
+    "education_level": "PG",
+    "category": "Design & Architecture",
+    "tier": "National",
+    "field_of_study": "M.Des / M.Arch",
+    "min_education_text": "Completed B.Des / B.Arch / B.Tech",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NID DAT PG",
+    "education_level": "PG",
+    "category": "Design & Architecture",
+    "tier": "National",
+    "field_of_study": "M.Des / M.Arch",
+    "min_education_text": "Completed B.Des / B.Arch / B.Tech",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State Architecture Board PG",
+    "education_level": "PG",
+    "category": "Design & Architecture",
+    "tier": "State",
+    "field_of_study": "M.Des / M.Arch",
+    "min_education_text": "Completed B.Des / B.Arch / B.Tech",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MIT DAT PG",
+    "education_level": "PG",
+    "category": "Design & Architecture",
+    "tier": "Private",
+    "field_of_study": "M.Des / M.Arch",
+    "min_education_text": "Completed B.Des / B.Arch / B.Tech",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "UID PG",
+    "education_level": "PG",
+    "category": "Design & Architecture",
+    "tier": "Private",
+    "field_of_study": "M.Des / M.Arch",
+    "min_education_text": "Completed B.Des / B.Arch / B.Tech",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NIMCET (for NITs)",
+    "education_level": "PG",
+    "category": "Computer Applications",
+    "tier": "National",
+    "field_of_study": "MCA",
+    "min_education_text": "Completed BCA / B.Sc. (with Math)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MAH MCA CET",
+    "education_level": "PG",
+    "category": "Computer Applications",
+    "tier": "State",
+    "field_of_study": "MCA",
+    "min_education_text": "Completed BCA / B.Sc. (with Math)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "WB JEE JECA",
+    "education_level": "PG",
+    "category": "Computer Applications",
+    "tier": "State",
+    "field_of_study": "MCA",
+    "min_education_text": "Completed BCA / B.Sc. (with Math)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Specialized Private Institutional Tests",
+    "education_level": "PG",
+    "category": "Computer Applications",
+    "tier": "Private",
+    "field_of_study": "MCA",
+    "min_education_text": "Completed BCA / B.Sc. (with Math)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CUET PG (Central Universities Education tracks)",
+    "education_level": "PG",
+    "category": "Education & Teaching",
+    "tier": "National",
+    "field_of_study": "M.Ed. / B.Ed. (Post-UG)",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG / B.Ed Professional"
+  },
+  {
+    "exam_name": "MAH B.Ed / M.Ed CET",
+    "education_level": "PG",
+    "category": "Education & Teaching",
+    "tier": "State",
+    "field_of_study": "M.Ed. / B.Ed. (Post-UG)",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG / B.Ed Professional"
+  },
+  {
+    "exam_name": "Rajasthan PTET",
+    "education_level": "PG",
+    "category": "Education & Teaching",
+    "tier": "State",
+    "field_of_study": "M.Ed. / B.Ed. (Post-UG)",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG / B.Ed Professional"
+  },
+  {
+    "exam_name": "UP B.Ed JEE",
+    "education_level": "PG",
+    "category": "Education & Teaching",
+    "tier": "State",
+    "field_of_study": "M.Ed. / B.Ed. (Post-UG)",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG / B.Ed Professional"
+  },
+  {
+    "exam_name": "Amity Education Test",
+    "education_level": "PG",
+    "category": "Education & Teaching",
+    "tier": "Private",
+    "field_of_study": "M.Ed. / B.Ed. (Post-UG)",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG / B.Ed Professional"
+  },
+  {
+    "exam_name": "LPU NEST Education",
+    "education_level": "PG",
+    "category": "Education & Teaching",
+    "tier": "Private",
+    "field_of_study": "M.Ed. / B.Ed. (Post-UG)",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG / B.Ed Professional"
+  },
+  {
+    "exam_name": "IIMC Entrance Exam",
+    "education_level": "PG",
+    "category": "Media, Journalism & Mass Comm.",
+    "tier": "National",
+    "field_of_study": "MJMC / MA Mass Communication",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CUET PG",
+    "education_level": "PG",
+    "category": "Media, Journalism & Mass Comm.",
+    "tier": "National",
+    "field_of_study": "MJMC / MA Mass Communication",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "GGSIPU CET PG",
+    "education_level": "PG",
+    "category": "Media, Journalism & Mass Comm.",
+    "tier": "State",
+    "field_of_study": "MJMC / MA Mass Communication",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MASCOM Entrance Exam",
+    "education_level": "PG",
+    "category": "Media, Journalism & Mass Comm.",
+    "tier": "State",
+    "field_of_study": "MJMC / MA Mass Communication",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "ACJ Entrance Exam",
+    "education_level": "PG",
+    "category": "Media, Journalism & Mass Comm.",
+    "tier": "Private",
+    "field_of_study": "MJMC / MA Mass Communication",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Symbiosis SIMC Test",
+    "education_level": "PG",
+    "category": "Media, Journalism & Mass Comm.",
+    "tier": "Private",
+    "field_of_study": "MJMC / MA Mass Communication",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Xavier Institute (XIC OET)",
+    "education_level": "PG",
+    "category": "Media, Journalism & Mass Comm.",
+    "tier": "Private",
+    "field_of_study": "MJMC / MA Mass Communication",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NCHM MSc JEE",
+    "education_level": "PG",
+    "category": "Hospitality & Tourism",
+    "tier": "National",
+    "field_of_study": "MHM, M.Sc. HA, MBA Tourism",
+    "min_education_text": "Completed Bachelor's Degree (Hotel Management or General)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MAH MHMCT CET",
+    "education_level": "PG",
+    "category": "Hospitality & Tourism",
+    "tier": "State",
+    "field_of_study": "MHM, M.Sc. HA, MBA Tourism",
+    "min_education_text": "Completed Bachelor's Degree (Hotel Management or General)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Karnataka PGCET (Tourism tracks)",
+    "education_level": "PG",
+    "category": "Hospitality & Tourism",
+    "tier": "State",
+    "field_of_study": "MHM, M.Sc. HA, MBA Tourism",
+    "min_education_text": "Completed Bachelor's Degree (Hotel Management or General)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "IHM Aurangabad PG Test",
+    "education_level": "PG",
+    "category": "Hospitality & Tourism",
+    "tier": "Private",
+    "field_of_study": "MHM, M.Sc. HA, MBA Tourism",
+    "min_education_text": "Completed Bachelor's Degree (Hotel Management or General)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Welcomgroup WGSHA Test",
+    "education_level": "PG",
+    "category": "Hospitality & Tourism",
+    "tier": "Private",
+    "field_of_study": "MHM, M.Sc. HA, MBA Tourism",
+    "min_education_text": "Completed Bachelor's Degree (Hotel Management or General)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "ICAR AIEEA (PG)",
+    "education_level": "PG",
+    "category": "Agricultural Sciences & Forestry",
+    "tier": "National",
+    "field_of_study": "M.Sc. Agriculture / M.F.Sc. / M.Sc. Forestry",
+    "min_education_text": "Completed B.Sc. Agriculture / Allied Sciences",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MCAER CET (Maharashtra)",
+    "education_level": "PG",
+    "category": "Agricultural Sciences & Forestry",
+    "tier": "State",
+    "field_of_study": "M.Sc. Agriculture / M.F.Sc. / M.Sc. Forestry",
+    "min_education_text": "Completed B.Sc. Agriculture / Allied Sciences",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "UPCATET PG",
+    "education_level": "PG",
+    "category": "Agricultural Sciences & Forestry",
+    "tier": "State",
+    "field_of_study": "M.Sc. Agriculture / M.F.Sc. / M.Sc. Forestry",
+    "min_education_text": "Completed B.Sc. Agriculture / Allied Sciences",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MP PAT PG",
+    "education_level": "PG",
+    "category": "Agricultural Sciences & Forestry",
+    "tier": "State",
+    "field_of_study": "M.Sc. Agriculture / M.F.Sc. / M.Sc. Forestry",
+    "min_education_text": "Completed B.Sc. Agriculture / Allied Sciences",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "SKUAST",
+    "education_level": "PG",
+    "category": "Agricultural Sciences & Forestry",
+    "tier": "State",
+    "field_of_study": "M.Sc. Agriculture / M.F.Sc. / M.Sc. Forestry",
+    "min_education_text": "Completed B.Sc. Agriculture / Allied Sciences",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "LPU NEST Agriculture (PG)",
+    "education_level": "PG",
+    "category": "Agricultural Sciences & Forestry",
+    "tier": "Private",
+    "field_of_study": "M.Sc. Agriculture / M.F.Sc. / M.Sc. Forestry",
+    "min_education_text": "Completed B.Sc. Agriculture / Allied Sciences",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CUET PG (Tata Institute of Social Sciences - TISS tracks)",
+    "education_level": "PG",
+    "category": "Public Policy & Social Work",
+    "tier": "National",
+    "field_of_study": "MA Public Policy, MSW",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State University MSW CETs",
+    "education_level": "PG",
+    "category": "Public Policy & Social Work",
+    "tier": "State",
+    "field_of_study": "MA Public Policy, MSW",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Azim Premji University NET",
+    "education_level": "PG",
+    "category": "Public Policy & Social Work",
+    "tier": "Private",
+    "field_of_study": "MA Public Policy, MSW",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Flame University PG Test",
+    "education_level": "PG",
+    "category": "Public Policy & Social Work",
+    "tier": "Private",
+    "field_of_study": "MA Public Policy, MSW",
+    "min_education_text": "Completed Bachelor's Degree (Any Discipline)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State University Departmental Tests",
+    "education_level": "PG",
+    "category": "Library & Information Sciences",
+    "tier": "State",
+    "field_of_study": "M.Lib.I.Sc. / M.Lib.",
+    "min_education_text": "Completed B.Lib.I.Sc. or standard Graduation",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Private University Merit Appraisals",
+    "education_level": "PG",
+    "category": "Library & Information Sciences",
+    "tier": "Private",
+    "field_of_study": "M.Lib.I.Sc. / M.Lib.",
+    "min_education_text": "Completed B.Lib.I.Sc. or standard Graduation",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CUET UG/PG specialized performance panels",
+    "education_level": "PG",
+    "category": "Performing Arts & Fine Arts",
+    "tier": "National",
+    "field_of_study": "MFA, Master of Vocal/Dance",
+    "min_education_text": "Completed BFA / BPA or Graduation with certified training",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MAH M.A. (Fine Arts) CET",
+    "education_level": "PG",
+    "category": "Performing Arts & Fine Arts",
+    "tier": "State",
+    "field_of_study": "MFA, Master of Vocal/Dance",
+    "min_education_text": "Completed BFA / BPA or Graduation with certified training",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "JNAFAU PG Test",
+    "education_level": "PG",
+    "category": "Performing Arts & Fine Arts",
+    "tier": "State",
+    "field_of_study": "MFA, Master of Vocal/Dance",
+    "min_education_text": "Completed BFA / BPA or Graduation with certified training",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Specialized Private Auditions & Portfolios",
+    "education_level": "PG",
+    "category": "Performing Arts & Fine Arts",
+    "tier": "Private",
+    "field_of_study": "MFA, Master of Vocal/Dance",
+    "min_education_text": "Completed BFA / BPA or Graduation with certified training",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CUET PG (for Central Universities)",
+    "education_level": "PG",
+    "category": "Psychology & Mental Health",
+    "tier": "National",
+    "field_of_study": "M.A. / M.Sc. Clinical Psychology",
+    "min_education_text": "Completed Bachelor's Degree (Preference to B.A./B.Sc. Psychology)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NCET (for specialized clinical institutes)",
+    "education_level": "PG",
+    "category": "Psychology & Mental Health",
+    "tier": "National",
+    "field_of_study": "M.A. / M.Sc. Clinical Psychology",
+    "min_education_text": "Completed Bachelor's Degree (Preference to B.A./B.Sc. Psychology)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State University Psychology Entrances (e.g.",
+    "education_level": "PG",
+    "category": "Psychology & Mental Health",
+    "tier": "State",
+    "field_of_study": "M.A. / M.Sc. Clinical Psychology",
+    "min_education_text": "Completed Bachelor's Degree (Preference to B.A./B.Sc. Psychology)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Mumbai University PET)",
+    "education_level": "PG",
+    "category": "Psychology & Mental Health",
+    "tier": "State",
+    "field_of_study": "M.A. / M.Sc. Clinical Psychology",
+    "min_education_text": "Completed Bachelor's Degree (Preference to B.A./B.Sc. Psychology)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NFSU In-house Exam",
+    "education_level": "PG",
+    "category": "Psychology & Mental Health",
+    "tier": "Private",
+    "field_of_study": "M.A. / M.Sc. Clinical Psychology",
+    "min_education_text": "Completed Bachelor's Degree (Preference to B.A./B.Sc. Psychology)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Amity Psych Test",
+    "education_level": "PG",
+    "category": "Psychology & Mental Health",
+    "tier": "Private",
+    "field_of_study": "M.A. / M.Sc. Clinical Psychology",
+    "min_education_text": "Completed Bachelor's Degree (Preference to B.A./B.Sc. Psychology)",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "FRI Entrance Exam (Forest Research Institute)",
+    "education_level": "PG",
+    "category": "Environmental Studies & Forestry",
+    "tier": "National",
+    "field_of_study": "M.Sc. Environmental Science, Master of Forestry",
+    "min_education_text": "Completed B.Sc. in Sciences / Agriculture / Engineering",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State Pollution Control Board & University Entrances",
+    "education_level": "PG",
+    "category": "Environmental Studies & Forestry",
+    "tier": "State",
+    "field_of_study": "M.Sc. Environmental Science, Master of Forestry",
+    "min_education_text": "Completed B.Sc. in Sciences / Agriculture / Engineering",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "TERI SAS Entrance Exam",
+    "education_level": "PG",
+    "category": "Environmental Studies & Forestry",
+    "tier": "Private",
+    "field_of_study": "M.Sc. Environmental Science, Master of Forestry",
+    "min_education_text": "Completed B.Sc. in Sciences / Agriculture / Engineering",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "LPU NEST (Environmental tracks)",
+    "education_level": "PG",
+    "category": "Environmental Studies & Forestry",
+    "tier": "Private",
+    "field_of_study": "M.Sc. Environmental Science, Master of Forestry",
+    "min_education_text": "Completed B.Sc. in Sciences / Agriculture / Engineering",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "GATE (Data Science & AI paper)",
+    "education_level": "PG",
+    "category": "Data Science & Analytics",
+    "tier": "National",
+    "field_of_study": "M.Sc. Data Science, M.Tech Data Analytics",
+    "min_education_text": "Completed BCA / B.Sc. Statistics / B.Tech / B.Sc. Maths",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MAH MCA/M.Sc. CET",
+    "education_level": "PG",
+    "category": "Data Science & Analytics",
+    "tier": "State",
+    "field_of_study": "M.Sc. Data Science, M.Tech Data Analytics",
+    "min_education_text": "Completed BCA / B.Sc. Statistics / B.Tech / B.Sc. Maths",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "NMIMS NPAT PG",
+    "education_level": "PG",
+    "category": "Data Science & Analytics",
+    "tier": "Private",
+    "field_of_study": "M.Sc. Data Science, M.Tech Data Analytics",
+    "min_education_text": "Completed BCA / B.Sc. Statistics / B.Tech / B.Sc. Maths",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "GAT-B (Graduate Aptitude Test-Biotechnology)",
+    "education_level": "PG",
+    "category": "Biotechnology & Bioinformatics",
+    "tier": "National",
+    "field_of_study": "M.Sc. Biotechnology, M.Tech Biotech",
+    "min_education_text": "Completed B.Sc. Life Sciences / B.Tech Biotech / B.Pharm",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State University Biotech CETs",
+    "education_level": "PG",
+    "category": "Biotechnology & Bioinformatics",
+    "tier": "State",
+    "field_of_study": "M.Sc. Biotechnology, M.Tech Biotech",
+    "min_education_text": "Completed B.Sc. Life Sciences / B.Tech Biotech / B.Pharm",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "LPU NEST Biotech",
+    "education_level": "PG",
+    "category": "Biotechnology & Bioinformatics",
+    "tier": "Private",
+    "field_of_study": "M.Sc. Biotechnology, M.Tech Biotech",
+    "min_education_text": "Completed B.Sc. Life Sciences / B.Tech Biotech / B.Pharm",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CUET PG (LNWPE Gwalior tracks)",
+    "education_level": "PG",
+    "category": "Sports Science & Physical Education",
+    "tier": "National",
+    "field_of_study": "M.P.Ed. (Master of Physical Ed), M.Sc. Sports Coaching",
+    "min_education_text": "Completed B.P.Ed. or Graduation with professional sports participation",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "MAH M.P.Ed. CET",
+    "education_level": "PG",
+    "category": "Sports Science & Physical Education",
+    "tier": "State",
+    "field_of_study": "M.P.Ed. (Master of Physical Ed), M.Sc. Sports Coaching",
+    "min_education_text": "Completed B.P.Ed. or Graduation with professional sports participation",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State Physical Education Board Tests",
+    "education_level": "PG",
+    "category": "Sports Science & Physical Education",
+    "tier": "State",
+    "field_of_study": "M.P.Ed. (Master of Physical Ed), M.Sc. Sports Coaching",
+    "min_education_text": "Completed B.P.Ed. or Graduation with professional sports participation",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Netaji Subhas National Institute of Sports (NSNIS) Exam",
+    "education_level": "PG",
+    "category": "Sports Science & Physical Education",
+    "tier": "Private",
+    "field_of_study": "M.P.Ed. (Master of Physical Ed), M.Sc. Sports Coaching",
+    "min_education_text": "Completed B.P.Ed. or Graduation with professional sports participation",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "IIT JAM (Mathematical Statistics)",
+    "education_level": "PG",
+    "category": "Statistics & Actuarial Science",
+    "tier": "National",
+    "field_of_study": "M.Stat, M.Sc. Actuarial Science",
+    "min_education_text": "Completed Bachelor's Degree with Mathematics/Statistics as major",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State-level Statistical Bureau Exams",
+    "education_level": "PG",
+    "category": "Statistics & Actuarial Science",
+    "tier": "State",
+    "field_of_study": "M.Stat, M.Sc. Actuarial Science",
+    "min_education_text": "Completed Bachelor's Degree with Mathematics/Statistics as major",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "Actuarial Common Entrance Test (ACET by IAI)",
+    "education_level": "PG",
+    "category": "Statistics & Actuarial Science",
+    "tier": "Private",
+    "field_of_study": "M.Stat, M.Sc. Actuarial Science",
+    "min_education_text": "Completed Bachelor's Degree with Mathematics/Statistics as major",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CUET PG (TISS / Central University tracks)",
+    "education_level": "PG",
+    "category": "Disaster & Safety Management",
+    "tier": "National",
+    "field_of_study": "MBA / M.Sc. Safety & Fire, Disaster Management",
+    "min_education_text": "Completed B.Tech / B.Sc. / Graduate in any discipline",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "State Technical Board Safety Diplomas",
+    "education_level": "PG",
+    "category": "Disaster & Safety Management",
+    "tier": "State",
+    "field_of_study": "MBA / M.Sc. Safety & Fire, Disaster Management",
+    "min_education_text": "Completed B.Tech / B.Sc. / Graduate in any discipline",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CUSAT CAT PG (Safety & Fire Engineering)",
+    "education_level": "PG",
+    "category": "Disaster & Safety Management",
+    "tier": "Private",
+    "field_of_study": "MBA / M.Sc. Safety & Fire, Disaster Management",
+    "min_education_text": "Completed B.Tech / B.Sc. / Graduate in any discipline",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "JAM",
+    "education_level": "PG",
+    "category": "Postgraduate Admission",
+    "tier": "National",
+    "field_of_study": "Master's Programs (Requires Bachelor's Degree)",
+    "min_education_text": "Completed Bachelor's Degree in a relevant track",
+    "academic_value": "PG"
+  },
+  {
+    "exam_name": "CSIR NET",
+    "education_level": "PhD",
+    "category": "Sciences",
+    "tier": "National",
+    "field_of_study": "Physics, Chemistry, Math, Life Sciences",
+    "min_education_text": "Completed Master's Degree (M.Sc. / M.Tech) or integrated 4-year Bachelor's degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "DBT JRF",
+    "education_level": "PhD",
+    "category": "Sciences",
+    "tier": "National",
+    "field_of_study": "Physics, Chemistry, Math, Life Sciences",
+    "min_education_text": "Completed Master's Degree (M.Sc. / M.Tech) or integrated 4-year Bachelor's degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "ICMR JRF",
+    "education_level": "PhD",
+    "category": "Sciences",
+    "tier": "National",
+    "field_of_study": "Physics, Chemistry, Math, Life Sciences",
+    "min_education_text": "Completed Master's Degree (M.Sc. / M.Tech) or integrated 4-year Bachelor's degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State eligibility tests (SET / SLET)",
+    "education_level": "PhD",
+    "category": "Sciences",
+    "tier": "State",
+    "field_of_study": "Physics, Chemistry, Math, Life Sciences",
+    "min_education_text": "Completed Master's Degree (M.Sc. / M.Tech) or integrated 4-year Bachelor's degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "BITS Pilani PhD Entrance",
+    "education_level": "PhD",
+    "category": "Sciences",
+    "tier": "Private",
+    "field_of_study": "Physics, Chemistry, Math, Life Sciences",
+    "min_education_text": "Completed Master's Degree (M.Sc. / M.Tech) or integrated 4-year Bachelor's degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "LPU NEST PhD",
+    "education_level": "PhD",
+    "category": "Sciences",
+    "tier": "Private",
+    "field_of_study": "Physics, Chemistry, Math, Life Sciences",
+    "min_education_text": "Completed Master's Degree (M.Sc. / M.Tech) or integrated 4-year Bachelor's degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET",
+    "education_level": "PhD",
+    "category": "Engineering & Tech",
+    "tier": "National",
+    "field_of_study": "CS, Mechanical, Electrical, Civil, AI",
+    "min_education_text": "Completed B.Tech + M.Tech, or exceptional 4-year B.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State University PET (e.g.",
+    "education_level": "PhD",
+    "category": "Engineering & Tech",
+    "tier": "State",
+    "field_of_study": "CS, Mechanical, Electrical, Civil, AI",
+    "min_education_text": "Completed B.Tech + M.Tech, or exceptional 4-year B.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "MU-PET",
+    "education_level": "PhD",
+    "category": "Engineering & Tech",
+    "tier": "State",
+    "field_of_study": "CS, Mechanical, Electrical, Civil, AI",
+    "min_education_text": "Completed B.Tech + M.Tech, or exceptional 4-year B.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Pune Univ PET)",
+    "education_level": "PhD",
+    "category": "Engineering & Tech",
+    "tier": "State",
+    "field_of_study": "CS, Mechanical, Electrical, Civil, AI",
+    "min_education_text": "Completed B.Tech + M.Tech, or exceptional 4-year B.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "VITEEE PhD (VITREE)",
+    "education_level": "PhD",
+    "category": "Engineering & Tech",
+    "tier": "Private",
+    "field_of_study": "CS, Mechanical, Electrical, Civil, AI",
+    "min_education_text": "Completed B.Tech + M.Tech, or exceptional 4-year B.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "SRMEE PhD",
+    "education_level": "PhD",
+    "category": "Engineering & Tech",
+    "tier": "Private",
+    "field_of_study": "CS, Mechanical, Electrical, Civil, AI",
+    "min_education_text": "Completed B.Tech + M.Tech, or exceptional 4-year B.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "BITS HD PhD",
+    "education_level": "PhD",
+    "category": "Engineering & Tech",
+    "tier": "Private",
+    "field_of_study": "CS, Mechanical, Electrical, Civil, AI",
+    "min_education_text": "Completed B.Tech + M.Tech, or exceptional 4-year B.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Christ University PhD ET",
+    "education_level": "PhD",
+    "category": "Humanities & Arts",
+    "tier": "Private",
+    "field_of_study": "Literature, History, Sociology, Economics",
+    "min_education_text": "Completed Master's Degree (M.A. / M.Com)",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Symbiosis PhD Test",
+    "education_level": "PhD",
+    "category": "Humanities & Arts",
+    "tier": "Private",
+    "field_of_study": "Literature, History, Sociology, Economics",
+    "min_education_text": "Completed Master's Degree (M.A. / M.Com)",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "CAT (for IIM Fellowships / FPM)",
+    "education_level": "PhD",
+    "category": "Management & Commerce",
+    "tier": "National",
+    "field_of_study": "Finance, HR, Marketing, Business Analytics",
+    "min_education_text": "Completed MBA, M.Com, or equivalent PG Degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State University Research Entrance Tests (RET)",
+    "education_level": "PhD",
+    "category": "Management & Commerce",
+    "tier": "State",
+    "field_of_study": "Finance, HR, Marketing, Business Analytics",
+    "min_education_text": "Completed MBA, M.Com, or equivalent PG Degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "NMIMS PhD Entrance",
+    "education_level": "PhD",
+    "category": "Management & Commerce",
+    "tier": "Private",
+    "field_of_study": "Finance, HR, Marketing, Business Analytics",
+    "min_education_text": "Completed MBA, M.Com, or equivalent PG Degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "XLRI Research Test",
+    "education_level": "PhD",
+    "category": "Management & Commerce",
+    "tier": "Private",
+    "field_of_study": "Finance, HR, Marketing, Business Analytics",
+    "min_education_text": "Completed MBA, M.Com, or equivalent PG Degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "GPAT",
+    "education_level": "PhD",
+    "category": "Medical & Pharmacy",
+    "tier": "National",
+    "field_of_study": "Clinical Research, Pharmacology, Biotech",
+    "min_education_text": "Completed MD, MS, MDS, M.Pharm, or M.Sc. Medical",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "AYUSH NET",
+    "education_level": "PhD",
+    "category": "Medical & Pharmacy",
+    "tier": "National",
+    "field_of_study": "Clinical Research, Pharmacology, Biotech",
+    "min_education_text": "Completed MD, MS, MDS, M.Pharm, or M.Sc. Medical",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Medical University PhD Entrance Exams",
+    "education_level": "PhD",
+    "category": "Medical & Pharmacy",
+    "tier": "State",
+    "field_of_study": "Clinical Research, Pharmacology, Biotech",
+    "min_education_text": "Completed MD, MS, MDS, M.Pharm, or M.Sc. Medical",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "NIPER PhD Entrance",
+    "education_level": "PhD",
+    "category": "Medical & Pharmacy",
+    "tier": "Private",
+    "field_of_study": "Clinical Research, Pharmacology, Biotech",
+    "min_education_text": "Completed MD, MS, MDS, M.Pharm, or M.Sc. Medical",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Manipal PhD Entrance",
+    "education_level": "PhD",
+    "category": "Medical & Pharmacy",
+    "tier": "Private",
+    "field_of_study": "Clinical Research, Pharmacology, Biotech",
+    "min_education_text": "Completed MD, MS, MDS, M.Pharm, or M.Sc. Medical",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "CLAT PhD Entrance",
+    "education_level": "PhD",
+    "category": "Law",
+    "tier": "National",
+    "field_of_study": "Legal Studies, Jurisprudence, Human Rights",
+    "min_education_text": "Completed LL.M. (Master of Laws)",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "MH CET Law PhD",
+    "education_level": "PhD",
+    "category": "Law",
+    "tier": "State",
+    "field_of_study": "Legal Studies, Jurisprudence, Human Rights",
+    "min_education_text": "Completed LL.M. (Master of Laws)",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State University Law RETs",
+    "education_level": "PhD",
+    "category": "Law",
+    "tier": "State",
+    "field_of_study": "Legal Studies, Jurisprudence, Human Rights",
+    "min_education_text": "Completed LL.M. (Master of Laws)",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "ILI Ph.D. Entrance",
+    "education_level": "PhD",
+    "category": "Law",
+    "tier": "Private",
+    "field_of_study": "Legal Studies, Jurisprudence, Human Rights",
+    "min_education_text": "Completed LL.M. (Master of Laws)",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Amity Law PhD Test",
+    "education_level": "PhD",
+    "category": "Law",
+    "tier": "Private",
+    "field_of_study": "Legal Studies, Jurisprudence, Human Rights",
+    "min_education_text": "Completed LL.M. (Master of Laws)",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "ICAR AICE-JRF/SRF",
+    "education_level": "PhD",
+    "category": "Agriculture",
+    "tier": "National",
+    "field_of_study": "Agronomy, Horticulture, Genetics, Forestry",
+    "min_education_text": "Completed M.Sc. Agriculture or Allied Fields",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "MCAER PhD CET",
+    "education_level": "PhD",
+    "category": "Agriculture",
+    "tier": "State",
+    "field_of_study": "Agronomy, Horticulture, Genetics, Forestry",
+    "min_education_text": "Completed M.Sc. Agriculture or Allied Fields",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Agriculture University RETs",
+    "education_level": "PhD",
+    "category": "Agriculture",
+    "tier": "State",
+    "field_of_study": "Agronomy, Horticulture, Genetics, Forestry",
+    "min_education_text": "Completed M.Sc. Agriculture or Allied Fields",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Specialized Corporate Lab Fellowship Panels",
+    "education_level": "PhD",
+    "category": "Agriculture",
+    "tier": "Private",
+    "field_of_study": "Agronomy, Horticulture, Genetics, Forestry",
+    "min_education_text": "Completed M.Sc. Agriculture or Allied Fields",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "NCET Ph.D.",
+    "education_level": "PhD",
+    "category": "Psychology & Mental Health",
+    "tier": "National",
+    "field_of_study": "Clinical Psychology, Cognitive Science, Neuropsychology",
+    "min_education_text": "Completed M.A. / M.Sc. Psychology or M.Phil",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "NIMHANS Ph.D. Entrance",
+    "education_level": "PhD",
+    "category": "Psychology & Mental Health",
+    "tier": "National",
+    "field_of_study": "Clinical Psychology, Cognitive Science, Neuropsychology",
+    "min_education_text": "Completed M.A. / M.Sc. Psychology or M.Phil",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Mental Health Institute RETs",
+    "education_level": "PhD",
+    "category": "Psychology & Mental Health",
+    "tier": "State",
+    "field_of_study": "Clinical Psychology, Cognitive Science, Neuropsychology",
+    "min_education_text": "Completed M.A. / M.Sc. Psychology or M.Phil",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "NFSU Ph.D. Entrance",
+    "education_level": "PhD",
+    "category": "Psychology & Mental Health",
+    "tier": "Private",
+    "field_of_study": "Clinical Psychology, Cognitive Science, Neuropsychology",
+    "min_education_text": "Completed M.A. / M.Sc. Psychology or M.Phil",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Christ University Ph.D. ET",
+    "education_level": "PhD",
+    "category": "Psychology & Mental Health",
+    "tier": "Private",
+    "field_of_study": "Clinical Psychology, Cognitive Science, Neuropsychology",
+    "min_education_text": "Completed M.A. / M.Sc. Psychology or M.Phil",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "GATE (Data Science & AI)",
+    "education_level": "PhD",
+    "category": "Data Science & AI",
+    "tier": "National",
+    "field_of_study": "Machine Learning, Big Data, Computational Statistics",
+    "min_education_text": "Completed M.Tech / M.Sc. Data Science / MCA",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Computer Science)",
+    "education_level": "PhD",
+    "category": "Data Science & AI",
+    "tier": "National",
+    "field_of_study": "Machine Learning, Big Data, Computational Statistics",
+    "min_education_text": "Completed M.Tech / M.Sc. Data Science / MCA",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Technical University PETs",
+    "education_level": "PhD",
+    "category": "Data Science & AI",
+    "tier": "State",
+    "field_of_study": "Machine Learning, Big Data, Computational Statistics",
+    "min_education_text": "Completed M.Tech / M.Sc. Data Science / MCA",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "BITS Pilani Ph.D. Entrance",
+    "education_level": "PhD",
+    "category": "Data Science & AI",
+    "tier": "Private",
+    "field_of_study": "Machine Learning, Big Data, Computational Statistics",
+    "min_education_text": "Completed M.Tech / M.Sc. Data Science / MCA",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "IIIT Research Tests",
+    "education_level": "PhD",
+    "category": "Data Science & AI",
+    "tier": "Private",
+    "field_of_study": "Machine Learning, Big Data, Computational Statistics",
+    "min_education_text": "Completed M.Tech / M.Sc. Data Science / MCA",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Mass Comm & Journalism)",
+    "education_level": "PhD",
+    "category": "Media & Journalism",
+    "tier": "National",
+    "field_of_study": "Mass Communication, Media Studies, Digital Journalism",
+    "min_education_text": "Completed MJMC / M.A. Mass Communication",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State University Media Department PETs",
+    "education_level": "PhD",
+    "category": "Media & Journalism",
+    "tier": "State",
+    "field_of_study": "Mass Communication, Media Studies, Digital Journalism",
+    "min_education_text": "Completed MJMC / M.A. Mass Communication",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Symbiosis Ph.D. (SSOD)",
+    "education_level": "PhD",
+    "category": "Media & Journalism",
+    "tier": "Private",
+    "field_of_study": "Mass Communication, Media Studies, Digital Journalism",
+    "min_education_text": "Completed MJMC / M.A. Mass Communication",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Amity Media Ph.D. Test",
+    "education_level": "PhD",
+    "category": "Media & Journalism",
+    "tier": "Private",
+    "field_of_study": "Mass Communication, Media Studies, Digital Journalism",
+    "min_education_text": "Completed MJMC / M.A. Mass Communication",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Education)",
+    "education_level": "PhD",
+    "category": "Education & Teaching",
+    "tier": "National",
+    "field_of_study": "Educational Technology, Pedagogy, Curriculum Studies",
+    "min_education_text": "Completed M.Ed. or M.A. Education",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Education University PETs",
+    "education_level": "PhD",
+    "category": "Education & Teaching",
+    "tier": "State",
+    "field_of_study": "Educational Technology, Pedagogy, Curriculum Studies",
+    "min_education_text": "Completed M.Ed. or M.A. Education",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "LPU NEST Ph.D. Education",
+    "education_level": "PhD",
+    "category": "Education & Teaching",
+    "tier": "Private",
+    "field_of_study": "Educational Technology, Pedagogy, Curriculum Studies",
+    "min_education_text": "Completed M.Ed. or M.A. Education",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Azim Premji University Research Test",
+    "education_level": "PhD",
+    "category": "Education & Teaching",
+    "tier": "Private",
+    "field_of_study": "Educational Technology, Pedagogy, Curriculum Studies",
+    "min_education_text": "Completed M.Ed. or M.A. Education",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Tourism Administration)",
+    "education_level": "PhD",
+    "category": "Hospitality & Tourism",
+    "tier": "National",
+    "field_of_study": "Tourism Administration, Hotel Operations Management",
+    "min_education_text": "Completed MHM / M.Sc. HA / MBA Tourism",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State University Management & Tourism RETs",
+    "education_level": "PhD",
+    "category": "Hospitality & Tourism",
+    "tier": "State",
+    "field_of_study": "Tourism Administration, Hotel Operations Management",
+    "min_education_text": "Completed MHM / M.Sc. HA / MBA Tourism",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "IHM Aurangabad Ph.D. Panel",
+    "education_level": "PhD",
+    "category": "Hospitality & Tourism",
+    "tier": "Private",
+    "field_of_study": "Tourism Administration, Hotel Operations Management",
+    "min_education_text": "Completed MHM / M.Sc. HA / MBA Tourism",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Welcomgroup Research Test",
+    "education_level": "PhD",
+    "category": "Hospitality & Tourism",
+    "tier": "Private",
+    "field_of_study": "Tourism Administration, Hotel Operations Management",
+    "min_education_text": "Completed MHM / M.Sc. HA / MBA Tourism",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "CEED (Ph.D. track)",
+    "education_level": "PhD",
+    "category": "Architecture & Design",
+    "tier": "National",
+    "field_of_study": "Sustainable Architecture, Urban Planning, Visual Design",
+    "min_education_text": "Completed M.Arch / M.Des / M.Plan / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "GATE (Architecture & Planning)",
+    "education_level": "PhD",
+    "category": "Architecture & Design",
+    "tier": "National",
+    "field_of_study": "Sustainable Architecture, Urban Planning, Visual Design",
+    "min_education_text": "Completed M.Arch / M.Des / M.Plan / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Technical University Architecture PETs",
+    "education_level": "PhD",
+    "category": "Architecture & Design",
+    "tier": "State",
+    "field_of_study": "Sustainable Architecture, Urban Planning, Visual Design",
+    "min_education_text": "Completed M.Arch / M.Des / M.Plan / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "NID Ph.D. Entrance",
+    "education_level": "PhD",
+    "category": "Architecture & Design",
+    "tier": "Private",
+    "field_of_study": "Sustainable Architecture, Urban Planning, Visual Design",
+    "min_education_text": "Completed M.Arch / M.Des / M.Plan / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "MIT DAT Ph.D.",
+    "education_level": "PhD",
+    "category": "Architecture & Design",
+    "tier": "Private",
+    "field_of_study": "Sustainable Architecture, Urban Planning, Visual Design",
+    "min_education_text": "Completed M.Arch / M.Des / M.Plan / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "CEPT Ph.D. Test",
+    "education_level": "PhD",
+    "category": "Architecture & Design",
+    "tier": "Private",
+    "field_of_study": "Sustainable Architecture, Urban Planning, Visual Design",
+    "min_education_text": "Completed M.Arch / M.Des / M.Plan / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "IMU Ph.D. Entrance",
+    "education_level": "PhD",
+    "category": "Maritime & Aviation",
+    "tier": "National",
+    "field_of_study": "Marine Engineering, Nautical Studies, Aviation Logistics",
+    "min_education_text": "Completed M.Tech Marine / M.Sc. Aviation / MBA Aviation",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Maritime University Panels",
+    "education_level": "PhD",
+    "category": "Maritime & Aviation",
+    "tier": "State",
+    "field_of_study": "Marine Engineering, Nautical Studies, Aviation Logistics",
+    "min_education_text": "Completed M.Tech Marine / M.Sc. Aviation / MBA Aviation",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Specialised Corporate Aerospace Labs",
+    "education_level": "PhD",
+    "category": "Maritime & Aviation",
+    "tier": "Private",
+    "field_of_study": "Marine Engineering, Nautical Studies, Aviation Logistics",
+    "min_education_text": "Completed M.Tech Marine / M.Sc. Aviation / MBA Aviation",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Environmental Sciences / Management)",
+    "education_level": "PhD",
+    "category": "Disaster & Safety Management",
+    "tier": "National",
+    "field_of_study": "Industrial Safety, Environmental Risk, Crisis Control",
+    "min_education_text": "Completed M.Tech Safety / M.Sc. Disaster Management",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Technical Board Safety Ph.D. Tracks",
+    "education_level": "PhD",
+    "category": "Disaster & Safety Management",
+    "tier": "State",
+    "field_of_study": "Industrial Safety, Environmental Risk, Crisis Control",
+    "min_education_text": "Completed M.Tech Safety / M.Sc. Disaster Management",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "CUSAT Ph.D. Entrance (Safety & Fire Engineering)",
+    "education_level": "PhD",
+    "category": "Disaster & Safety Management",
+    "tier": "Private",
+    "field_of_study": "Industrial Safety, Environmental Risk, Crisis Control",
+    "min_education_text": "Completed M.Tech Safety / M.Sc. Disaster Management",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "FRI Ph.D. Entrance (Forest Research Institute)",
+    "education_level": "PhD",
+    "category": "Environmental Science",
+    "tier": "National",
+    "field_of_study": "Climate Change, Ecology, Pollution Control",
+    "min_education_text": "Completed M.Sc. Environmental Science / Lifesciences / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Pollution Control Board & University RETs",
+    "education_level": "PhD",
+    "category": "Environmental Science",
+    "tier": "State",
+    "field_of_study": "Climate Change, Ecology, Pollution Control",
+    "min_education_text": "Completed M.Sc. Environmental Science / Lifesciences / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "TERI SAS Ph.D. Entrance",
+    "education_level": "PhD",
+    "category": "Environmental Science",
+    "tier": "Private",
+    "field_of_study": "Climate Change, Ecology, Pollution Control",
+    "min_education_text": "Completed M.Sc. Environmental Science / Lifesciences / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "LPU NEST Ph.D.",
+    "education_level": "PhD",
+    "category": "Environmental Science",
+    "tier": "Private",
+    "field_of_study": "Climate Change, Ecology, Pollution Control",
+    "min_education_text": "Completed M.Sc. Environmental Science / Lifesciences / M.Tech",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Economics / Commerce)",
+    "education_level": "PhD",
+    "category": "Corporate Finance & Actuarial",
+    "tier": "National",
+    "field_of_study": "Actuarial Science, Risk Modeling, Econometrics",
+    "min_education_text": "Completed M.Stat / M.Sc. Actuarial Science / M.Com / MBA Finance",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "ISI Ph.D. Entrance (Indian Statistical Institute)",
+    "education_level": "PhD",
+    "category": "Corporate Finance & Actuarial",
+    "tier": "National",
+    "field_of_study": "Actuarial Science, Risk Modeling, Econometrics",
+    "min_education_text": "Completed M.Stat / M.Sc. Actuarial Science / M.Com / MBA Finance",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Bureau Statistical Exams",
+    "education_level": "PhD",
+    "category": "Corporate Finance & Actuarial",
+    "tier": "State",
+    "field_of_study": "Actuarial Science, Risk Modeling, Econometrics",
+    "min_education_text": "Completed M.Stat / M.Sc. Actuarial Science / M.Com / MBA Finance",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "AET (Actuarial Research Track by IAI)",
+    "education_level": "PhD",
+    "category": "Corporate Finance & Actuarial",
+    "tier": "Private",
+    "field_of_study": "Actuarial Science, Risk Modeling, Econometrics",
+    "min_education_text": "Completed M.Stat / M.Sc. Actuarial Science / M.Com / MBA Finance",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Social Work / Public Administration)",
+    "education_level": "PhD",
+    "category": "Public Policy & Social Work",
+    "tier": "National",
+    "field_of_study": "Social Governance, Public Administration, Social Work",
+    "min_education_text": "Completed MSW / M.A. Public Policy / M.A. Development Studies",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "TISS Ph.D. Entrance",
+    "education_level": "PhD",
+    "category": "Public Policy & Social Work",
+    "tier": "National",
+    "field_of_study": "Social Governance, Public Administration, Social Work",
+    "min_education_text": "Completed MSW / M.A. Public Policy / M.A. Development Studies",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State University Social Science PETs",
+    "education_level": "PhD",
+    "category": "Public Policy & Social Work",
+    "tier": "State",
+    "field_of_study": "Social Governance, Public Administration, Social Work",
+    "min_education_text": "Completed MSW / M.A. Public Policy / M.A. Development Studies",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Azim Premji University Ph.D. Test",
+    "education_level": "PhD",
+    "category": "Public Policy & Social Work",
+    "tier": "Private",
+    "field_of_study": "Social Governance, Public Administration, Social Work",
+    "min_education_text": "Completed MSW / M.A. Public Policy / M.A. Development Studies",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Flame Ph.D. AAT",
+    "education_level": "PhD",
+    "category": "Public Policy & Social Work",
+    "tier": "Private",
+    "field_of_study": "Social Governance, Public Administration, Social Work",
+    "min_education_text": "Completed MSW / M.A. Public Policy / M.A. Development Studies",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Library & Information Science)",
+    "education_level": "PhD",
+    "category": "Library & Information Science",
+    "tier": "National",
+    "field_of_study": "Knowledge Management, Digital Archiving, Data Metrics",
+    "min_education_text": "Completed M.Lib.I.Sc. or equivalent PG Degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State University Departmental Research Tests",
+    "education_level": "PhD",
+    "category": "Library & Information Science",
+    "tier": "State",
+    "field_of_study": "Knowledge Management, Digital Archiving, Data Metrics",
+    "min_education_text": "Completed M.Lib.I.Sc. or equivalent PG Degree",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Visual Arts / Performing Arts)",
+    "education_level": "PhD",
+    "category": "Fine Arts & Performing Arts",
+    "tier": "National",
+    "field_of_study": "Art History, Musicology, Theatre Studies, Museology",
+    "min_education_text": "Completed MFA / MPA / M.A. Fine Arts",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "MAH M.A. (Fine Arts) PET",
+    "education_level": "PhD",
+    "category": "Fine Arts & Performing Arts",
+    "tier": "State",
+    "field_of_study": "Art History, Musicology, Theatre Studies, Museology",
+    "min_education_text": "Completed MFA / MPA / M.A. Fine Arts",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "JNAFAU Ph.D. Test",
+    "education_level": "PhD",
+    "category": "Fine Arts & Performing Arts",
+    "tier": "State",
+    "field_of_study": "Art History, Musicology, Theatre Studies, Museology",
+    "min_education_text": "Completed MFA / MPA / M.A. Fine Arts",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Specialized Performance Auditions & Portfolio Presentations",
+    "education_level": "PhD",
+    "category": "Fine Arts & Performing Arts",
+    "tier": "Private",
+    "field_of_study": "Art History, Musicology, Theatre Studies, Museology",
+    "min_education_text": "Completed MFA / MPA / M.A. Fine Arts",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Forensic Science / Criminology)",
+    "education_level": "PhD",
+    "category": "Forensic Science & Criminology",
+    "tier": "National",
+    "field_of_study": "Forensic Ballistics, Cyber Forensics, Criminal Psychology",
+    "min_education_text": "Completed M.Sc. Forensic Science / M.A. Criminology",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Forensic Lab Research Panels",
+    "education_level": "PhD",
+    "category": "Forensic Science & Criminology",
+    "tier": "State",
+    "field_of_study": "Forensic Ballistics, Cyber Forensics, Criminal Psychology",
+    "min_education_text": "Completed M.Sc. Forensic Science / M.A. Criminology",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "NFSU Ph.D. Entrance (National Forensic Sciences University)",
+    "education_level": "PhD",
+    "category": "Forensic Science & Criminology",
+    "tier": "Private",
+    "field_of_study": "Forensic Ballistics, Cyber Forensics, Criminal Psychology",
+    "min_education_text": "Completed M.Sc. Forensic Science / M.A. Criminology",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "UGC NET (Physical Education)",
+    "education_level": "PhD",
+    "category": "Sports Science & Physical Ed.",
+    "tier": "National",
+    "field_of_study": "Sports Biomechanics, Kinesiology, Exercise Physiology",
+    "min_education_text": "Completed M.P.Ed. or M.Sc. Sports Science",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "MAH M.P.Ed. Ph.D. CET",
+    "education_level": "PhD",
+    "category": "Sports Science & Physical Ed.",
+    "tier": "State",
+    "field_of_study": "Sports Biomechanics, Kinesiology, Exercise Physiology",
+    "min_education_text": "Completed M.P.Ed. or M.Sc. Sports Science",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "State Sports University PETs",
+    "education_level": "PhD",
+    "category": "Sports Science & Physical Ed.",
+    "tier": "State",
+    "field_of_study": "Sports Biomechanics, Kinesiology, Exercise Physiology",
+    "min_education_text": "Completed M.P.Ed. or M.Sc. Sports Science",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Netaji Subhas National Institute of Sports (NSNIS) Panel",
+    "education_level": "PhD",
+    "category": "Sports Science & Physical Ed.",
+    "tier": "Private",
+    "field_of_study": "Sports Biomechanics, Kinesiology, Exercise Physiology",
+    "min_education_text": "Completed M.P.Ed. or M.Sc. Sports Science",
+    "academic_value": "PhD / Doctorate"
+  },
+  {
+    "exam_name": "Central Centralised Allocation (for UTs)",
+    "education_level": "Diploma",
+    "category": "Engineering & Tech",
+    "tier": "National",
+    "field_of_study": "Polytechnic Diploma (Mechanical, Civil, CS, EE)",
+    "min_education_text": "10th Standard Pass (with Science and Mathematics)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MHT CET Diploma (Cap round)",
+    "education_level": "Diploma",
+    "category": "Engineering & Tech",
+    "tier": "State",
+    "field_of_study": "Polytechnic Diploma (Mechanical, Civil, CS, EE)",
+    "min_education_text": "10th Standard Pass (with Science and Mathematics)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "JEECUP (UP)",
+    "education_level": "Diploma",
+    "category": "Engineering & Tech",
+    "tier": "State",
+    "field_of_study": "Polytechnic Diploma (Mechanical, Civil, CS, EE)",
+    "min_education_text": "10th Standard Pass (with Science and Mathematics)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "DCECE (Bihar)",
+    "education_level": "Diploma",
+    "category": "Engineering & Tech",
+    "tier": "State",
+    "field_of_study": "Polytechnic Diploma (Mechanical, Civil, CS, EE)",
+    "min_education_text": "10th Standard Pass (with Science and Mathematics)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "JEXPO (WB)",
+    "education_level": "Diploma",
+    "category": "Engineering & Tech",
+    "tier": "State",
+    "field_of_study": "Polytechnic Diploma (Mechanical, Civil, CS, EE)",
+    "min_education_text": "10th Standard Pass (with Science and Mathematics)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "UBTER (UK)",
+    "education_level": "Diploma",
+    "category": "Engineering & Tech",
+    "tier": "State",
+    "field_of_study": "Polytechnic Diploma (Mechanical, Civil, CS, EE)",
+    "min_education_text": "10th Standard Pass (with Science and Mathematics)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "LPU NEST Diploma",
+    "education_level": "Diploma",
+    "category": "Engineering & Tech",
+    "tier": "Private",
+    "field_of_study": "Polytechnic Diploma (Mechanical, Civil, CS, EE)",
+    "min_education_text": "10th Standard Pass (with Science and Mathematics)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MSBTE Institutional Direct Entries",
+    "education_level": "Diploma",
+    "category": "Engineering & Tech",
+    "tier": "Private",
+    "field_of_study": "Polytechnic Diploma (Mechanical, Civil, CS, EE)",
+    "min_education_text": "10th Standard Pass (with Science and Mathematics)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "NEET UG (accepted by select central tracks)",
+    "education_level": "Diploma",
+    "category": "Medicine & Pharmacy",
+    "tier": "National",
+    "field_of_study": "Diploma in Pharmacy (D.Pharm), GNM Nursing",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology/Math)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MHT CET (PCB) (for Maharashtra D.Pharm)",
+    "education_level": "Diploma",
+    "category": "Medicine & Pharmacy",
+    "tier": "State",
+    "field_of_study": "Diploma in Pharmacy (D.Pharm), GNM Nursing",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology/Math)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "West Bengal GNM",
+    "education_level": "Diploma",
+    "category": "Medicine & Pharmacy",
+    "tier": "State",
+    "field_of_study": "Diploma in Pharmacy (D.Pharm), GNM Nursing",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology/Math)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "UPJEE Poly (E)",
+    "education_level": "Diploma",
+    "category": "Medicine & Pharmacy",
+    "tier": "State",
+    "field_of_study": "Diploma in Pharmacy (D.Pharm), GNM Nursing",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology/Math)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MET Diploma",
+    "education_level": "Diploma",
+    "category": "Medicine & Pharmacy",
+    "tier": "Private",
+    "field_of_study": "Diploma in Pharmacy (D.Pharm), GNM Nursing",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology/Math)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Manipal Health Tracks",
+    "education_level": "Diploma",
+    "category": "Medicine & Pharmacy",
+    "tier": "Private",
+    "field_of_study": "Diploma in Pharmacy (D.Pharm), GNM Nursing",
+    "min_education_text": "12th Standard Pass (Physics, Chemistry, Biology/Math)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "AIIMS Paramedical Diploma",
+    "education_level": "Diploma",
+    "category": "Paramedical & Allied",
+    "tier": "National",
+    "field_of_study": "DMLT (Lab Tech), X-Ray Tech, Ophthalmic Diploma",
+    "min_education_text": "12th Standard Pass (Science Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "State Medical Faculty Exams (e.g.",
+    "education_level": "Diploma",
+    "category": "Paramedical & Allied",
+    "tier": "State",
+    "field_of_study": "DMLT (Lab Tech), X-Ray Tech, Ophthalmic Diploma",
+    "min_education_text": "12th Standard Pass (Science Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "UPSMFAC)",
+    "education_level": "Diploma",
+    "category": "Paramedical & Allied",
+    "tier": "State",
+    "field_of_study": "DMLT (Lab Tech), X-Ray Tech, Ophthalmic Diploma",
+    "min_education_text": "12th Standard Pass (Science Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "West Bengal JENPAS Diploma",
+    "education_level": "Diploma",
+    "category": "Paramedical & Allied",
+    "tier": "State",
+    "field_of_study": "DMLT (Lab Tech), X-Ray Tech, Ophthalmic Diploma",
+    "min_education_text": "12th Standard Pass (Science Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Private Hospital Lab Entrance Interviews",
+    "education_level": "Diploma",
+    "category": "Paramedical & Allied",
+    "tier": "Private",
+    "field_of_study": "DMLT (Lab Tech), X-Ray Tech, Ophthalmic Diploma",
+    "min_education_text": "12th Standard Pass (Science Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MAT",
+    "education_level": "Diploma",
+    "category": "Management & Corporate",
+    "tier": "National",
+    "field_of_study": "Post Graduate Diploma in Management (PGDM)",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG Diploma"
+  },
+  {
+    "exam_name": "MAH MBA/PGDM CET",
+    "education_level": "Diploma",
+    "category": "Management & Corporate",
+    "tier": "State",
+    "field_of_study": "Post Graduate Diploma in Management (PGDM)",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG Diploma"
+  },
+  {
+    "exam_name": "XLRI Executive Screening",
+    "education_level": "Diploma",
+    "category": "Management & Corporate",
+    "tier": "Private",
+    "field_of_study": "Post Graduate Diploma in Management (PGDM)",
+    "min_education_text": "Completed Bachelor's Degree (Any Stream)",
+    "academic_value": "PG Diploma"
+  },
+  {
+    "exam_name": "NCHM JEE Diploma Tracks",
+    "education_level": "Diploma",
+    "category": "Hotel Mgmt. & Tourism",
+    "tier": "National",
+    "field_of_study": "Diploma in Food Production / Hospitality",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "State Board of Technical Education Exams",
+    "education_level": "Diploma",
+    "category": "Hotel Mgmt. & Tourism",
+    "tier": "State",
+    "field_of_study": "Diploma in Food Production / Hospitality",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "STEP Oberoi Program",
+    "education_level": "Diploma",
+    "category": "Hotel Mgmt. & Tourism",
+    "tier": "Private",
+    "field_of_study": "Diploma in Food Production / Hospitality",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "IHM Aurangabad Diploma",
+    "education_level": "Diploma",
+    "category": "Hotel Mgmt. & Tourism",
+    "tier": "Private",
+    "field_of_study": "Diploma in Food Production / Hospitality",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "NCERT CEE (Regional Institutes of Ed)",
+    "education_level": "Diploma",
+    "category": "Education & Teaching",
+    "tier": "National",
+    "field_of_study": "D.El.Ed (Diploma in Elementary Ed / BTC)",
+    "min_education_text": "12th Standard Pass (Minimum 50% marks)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MAH D.El.Ed CET",
+    "education_level": "Diploma",
+    "category": "Education & Teaching",
+    "tier": "State",
+    "field_of_study": "D.El.Ed (Diploma in Elementary Ed / BTC)",
+    "min_education_text": "12th Standard Pass (Minimum 50% marks)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "UP D.El.Ed (Merit-Based)",
+    "education_level": "Diploma",
+    "category": "Education & Teaching",
+    "tier": "State",
+    "field_of_study": "D.El.Ed (Diploma in Elementary Ed / BTC)",
+    "min_education_text": "12th Standard Pass (Minimum 50% marks)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Bihar D.El.Ed JEE",
+    "education_level": "Diploma",
+    "category": "Education & Teaching",
+    "tier": "State",
+    "field_of_study": "D.El.Ed (Diploma in Elementary Ed / BTC)",
+    "min_education_text": "12th Standard Pass (Minimum 50% marks)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Private Teacher Training Unit Screening",
+    "education_level": "Diploma",
+    "category": "Education & Teaching",
+    "tier": "Private",
+    "field_of_study": "D.El.Ed (Diploma in Elementary Ed / BTC)",
+    "min_education_text": "12th Standard Pass (Minimum 50% marks)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "NIFT Diploma",
+    "education_level": "Diploma",
+    "category": "Design & Fashion",
+    "tier": "National",
+    "field_of_study": "Diploma in Fashion, Textile, or Interior Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "NID Foundation Diploma",
+    "education_level": "Diploma",
+    "category": "Design & Fashion",
+    "tier": "National",
+    "field_of_study": "Diploma in Fashion, Textile, or Interior Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "State Technical Board Design Evaluations",
+    "education_level": "Diploma",
+    "category": "Design & Fashion",
+    "tier": "State",
+    "field_of_study": "Diploma in Fashion, Textile, or Interior Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Pearl Academy Diploma Test",
+    "education_level": "Diploma",
+    "category": "Design & Fashion",
+    "tier": "Private",
+    "field_of_study": "Diploma in Fashion, Textile, or Interior Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "JD Institute Exam",
+    "education_level": "Diploma",
+    "category": "Design & Fashion",
+    "tier": "Private",
+    "field_of_study": "Diploma in Fashion, Textile, or Interior Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "IMU CET (DNS Track)",
+    "education_level": "Diploma",
+    "category": "Aviation & Marine",
+    "tier": "National",
+    "field_of_study": "Diploma in Nautical Science, Cabin Crew, AME",
+    "min_education_text": "12th Standard Pass (PCM required for Marine/AME)",
+    "academic_value": "Advanced Diploma"
+  },
+  {
+    "exam_name": "IGRUA AME",
+    "education_level": "Diploma",
+    "category": "Aviation & Marine",
+    "tier": "National",
+    "field_of_study": "Diploma in Nautical Science, Cabin Crew, AME",
+    "min_education_text": "12th Standard Pass (PCM required for Marine/AME)",
+    "academic_value": "Advanced Diploma"
+  },
+  {
+    "exam_name": "State Flying Club Screenings",
+    "education_level": "Diploma",
+    "category": "Aviation & Marine",
+    "tier": "State",
+    "field_of_study": "Diploma in Nautical Science, Cabin Crew, AME",
+    "min_education_text": "12th Standard Pass (PCM required for Marine/AME)",
+    "academic_value": "Advanced Diploma"
+  },
+  {
+    "exam_name": "Tolani Maritime Diploma Panel",
+    "education_level": "Diploma",
+    "category": "Aviation & Marine",
+    "tier": "Private",
+    "field_of_study": "Diploma in Nautical Science, Cabin Crew, AME",
+    "min_education_text": "12th Standard Pass (PCM required for Marine/AME)",
+    "academic_value": "Advanced Diploma"
+  },
+  {
+    "exam_name": "Indigo Cadet Track",
+    "education_level": "Diploma",
+    "category": "Aviation & Marine",
+    "tier": "Private",
+    "field_of_study": "Diploma in Nautical Science, Cabin Crew, AME",
+    "min_education_text": "12th Standard Pass (PCM required for Marine/AME)",
+    "academic_value": "Advanced Diploma"
+  },
+  {
+    "exam_name": "Central Vocational Board Allotments",
+    "education_level": "Diploma",
+    "category": "Agriculture & Forestry",
+    "tier": "National",
+    "field_of_study": "Diploma in Agriculture / Horticulture / Organic Farming",
+    "min_education_text": "10th Standard Pass or 12th Pass (depends on the specific college)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MCAER Diploma Track",
+    "education_level": "Diploma",
+    "category": "Agriculture & Forestry",
+    "tier": "State",
+    "field_of_study": "Diploma in Agriculture / Horticulture / Organic Farming",
+    "min_education_text": "10th Standard Pass or 12th Pass (depends on the specific college)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "UBTER Agri",
+    "education_level": "Diploma",
+    "category": "Agriculture & Forestry",
+    "tier": "State",
+    "field_of_study": "Diploma in Agriculture / Horticulture / Organic Farming",
+    "min_education_text": "10th Standard Pass or 12th Pass (depends on the specific college)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Punjab Agricultural Univ (PAU) Diploma Test",
+    "education_level": "Diploma",
+    "category": "Agriculture & Forestry",
+    "tier": "State",
+    "field_of_study": "Diploma in Agriculture / Horticulture / Organic Farming",
+    "min_education_text": "10th Standard Pass or 12th Pass (depends on the specific college)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "LPU NEST Diploma (Agriculture)",
+    "education_level": "Diploma",
+    "category": "Agriculture & Forestry",
+    "tier": "Private",
+    "field_of_study": "Diploma in Agriculture / Horticulture / Organic Farming",
+    "min_education_text": "10th Standard Pass or 12th Pass (depends on the specific college)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "FTII Jet Entrance Exam",
+    "education_level": "Diploma",
+    "category": "Media, Film & Journalism",
+    "tier": "National",
+    "field_of_study": "Diploma in Photography, Editing, Journalism, Sound Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "SRFTI Entrance",
+    "education_level": "Diploma",
+    "category": "Media, Film & Journalism",
+    "tier": "National",
+    "field_of_study": "Diploma in Photography, Editing, Journalism, Sound Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "CUET UG (Vocation tracks)",
+    "education_level": "Diploma",
+    "category": "Media, Film & Journalism",
+    "tier": "National",
+    "field_of_study": "Diploma in Photography, Editing, Journalism, Sound Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "State Film & Television Institute Tests (e.g.",
+    "education_level": "Diploma",
+    "category": "Media, Film & Journalism",
+    "tier": "State",
+    "field_of_study": "Diploma in Photography, Editing, Journalism, Sound Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "KFTI)",
+    "education_level": "Diploma",
+    "category": "Media, Film & Journalism",
+    "tier": "State",
+    "field_of_study": "Diploma in Photography, Editing, Journalism, Sound Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "Whistling Woods International Test",
+    "education_level": "Diploma",
+    "category": "Media, Film & Journalism",
+    "tier": "Private",
+    "field_of_study": "Diploma in Photography, Editing, Journalism, Sound Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "AAFT Entrance Exam",
+    "education_level": "Diploma",
+    "category": "Media, Film & Journalism",
+    "tier": "Private",
+    "field_of_study": "Diploma in Photography, Editing, Journalism, Sound Design",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma / Certification"
+  },
+  {
+    "exam_name": "NIELIT National Level Certification Tests",
+    "education_level": "Diploma",
+    "category": "Computer Applications",
+    "tier": "National",
+    "field_of_study": "Advanced Diploma in Software Development, PGDCA",
+    "min_education_text": "12th Standard Pass (For standard Diploma) or Graduation (For PGDCA)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "State Board Computer Hardware/Software Diplomas",
+    "education_level": "Diploma",
+    "category": "Computer Applications",
+    "tier": "State",
+    "field_of_study": "Advanced Diploma in Software Development, PGDCA",
+    "min_education_text": "12th Standard Pass (For standard Diploma) or Graduation (For PGDCA)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "Private IT Academy Placement Screenings",
+    "education_level": "Diploma",
+    "category": "Computer Applications",
+    "tier": "Private",
+    "field_of_study": "Advanced Diploma in Software Development, PGDCA",
+    "min_education_text": "12th Standard Pass (For standard Diploma) or Graduation (For PGDCA)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "NLUs In-house Diploma Panels (e.g.",
+    "education_level": "Diploma",
+    "category": "Law & Paralegal",
+    "tier": "National",
+    "field_of_study": "Diploma in Cyber Law, Intellectual Property, Labor Laws",
+    "min_education_text": "12th Standard Pass or Completed Graduation (varies by law specialization)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "NALSAR Proximate Ed)",
+    "education_level": "Diploma",
+    "category": "Law & Paralegal",
+    "tier": "National",
+    "field_of_study": "Diploma in Cyber Law, Intellectual Property, Labor Laws",
+    "min_education_text": "12th Standard Pass or Completed Graduation (varies by law specialization)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "ILS Law College (Pune) Diploma Screenings",
+    "education_level": "Diploma",
+    "category": "Law & Paralegal",
+    "tier": "State",
+    "field_of_study": "Diploma in Cyber Law, Intellectual Property, Labor Laws",
+    "min_education_text": "12th Standard Pass or Completed Graduation (varies by law specialization)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "Symbiosis DL (SCDL) Panels",
+    "education_level": "Diploma",
+    "category": "Law & Paralegal",
+    "tier": "Private",
+    "field_of_study": "Diploma in Cyber Law, Intellectual Property, Labor Laws",
+    "min_education_text": "12th Standard Pass or Completed Graduation (varies by law specialization)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "Amity Law Diploma",
+    "education_level": "Diploma",
+    "category": "Law & Paralegal",
+    "tier": "Private",
+    "field_of_study": "Diploma in Cyber Law, Intellectual Property, Labor Laws",
+    "min_education_text": "12th Standard Pass or Completed Graduation (varies by law specialization)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "National Dairy Research Institute (NDRI) Diploma Test",
+    "education_level": "Diploma",
+    "category": "Veterinary & Livestock",
+    "tier": "National",
+    "field_of_study": "Diploma in Veterinary Pharmacy / Livestock Extension (AHDF)",
+    "min_education_text": "12th Standard Pass (Science Stream - PCB preferred)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MAHAFU Livestock Supervisor Test",
+    "education_level": "Diploma",
+    "category": "Veterinary & Livestock",
+    "tier": "State",
+    "field_of_study": "Diploma in Veterinary Pharmacy / Livestock Extension (AHDF)",
+    "min_education_text": "12th Standard Pass (Science Stream - PCB preferred)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Rajasthan AHDP Entrance",
+    "education_level": "Diploma",
+    "category": "Veterinary & Livestock",
+    "tier": "State",
+    "field_of_study": "Diploma in Veterinary Pharmacy / Livestock Extension (AHDF)",
+    "min_education_text": "12th Standard Pass (Science Stream - PCB preferred)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Private Animal Husbandry Training Center Units",
+    "education_level": "Diploma",
+    "category": "Veterinary & Livestock",
+    "tier": "Private",
+    "field_of_study": "Diploma in Veterinary Pharmacy / Livestock Extension (AHDF)",
+    "min_education_text": "12th Standard Pass (Science Stream - PCB preferred)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "College of Art (Delhi) Foundation Screening",
+    "education_level": "Diploma",
+    "category": "Fine Arts & Crafts",
+    "tier": "National",
+    "field_of_study": "Diploma in Painting, Sculpture, Commercial Applied Arts",
+    "min_education_text": "10th Standard Pass or 12th Standard Pass",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MAH AAC CET (Diploma tracks)",
+    "education_level": "Diploma",
+    "category": "Fine Arts & Crafts",
+    "tier": "State",
+    "field_of_study": "Diploma in Painting, Sculpture, Commercial Applied Arts",
+    "min_education_text": "10th Standard Pass or 12th Standard Pass",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "JNAFAU Fine Arts Diploma",
+    "education_level": "Diploma",
+    "category": "Fine Arts & Crafts",
+    "tier": "State",
+    "field_of_study": "Diploma in Painting, Sculpture, Commercial Applied Arts",
+    "min_education_text": "10th Standard Pass or 12th Standard Pass",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Shantiniketan Fine Arts Panel",
+    "education_level": "Diploma",
+    "category": "Fine Arts & Crafts",
+    "tier": "Private",
+    "field_of_study": "Diploma in Painting, Sculpture, Commercial Applied Arts",
+    "min_education_text": "10th Standard Pass or 12th Standard Pass",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Amity Fine Arts",
+    "education_level": "Diploma",
+    "category": "Fine Arts & Crafts",
+    "tier": "Private",
+    "field_of_study": "Diploma in Painting, Sculpture, Commercial Applied Arts",
+    "min_education_text": "10th Standard Pass or 12th Standard Pass",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Netaji Subhas National Institute of Sports (NSNIS) Entrance",
+    "education_level": "Diploma",
+    "category": "Sports & Fitness Coaching",
+    "tier": "National",
+    "field_of_study": "Diploma in Sports Coaching, Fitness Management",
+    "min_education_text": "Completed Graduation (with recognized sports merit certificates)",
+    "academic_value": "PG Diploma"
+  },
+  {
+    "exam_name": "State Physical Education Board Appraisals",
+    "education_level": "Diploma",
+    "category": "Sports & Fitness Coaching",
+    "tier": "State",
+    "field_of_study": "Diploma in Sports Coaching, Fitness Management",
+    "min_education_text": "Completed Graduation (with recognized sports merit certificates)",
+    "academic_value": "PG Diploma"
+  },
+  {
+    "exam_name": "Private Fitness Academy Certification Screenings",
+    "education_level": "Diploma",
+    "category": "Sports & Fitness Coaching",
+    "tier": "Private",
+    "field_of_study": "Diploma in Sports Coaching, Fitness Management",
+    "min_education_text": "Completed Graduation (with recognized sports merit certificates)",
+    "academic_value": "PG Diploma"
+  },
+  {
+    "exam_name": "NIELIT Advanced Diploma Tests",
+    "education_level": "Diploma",
+    "category": "Cyber Security & Networking",
+    "tier": "National",
+    "field_of_study": "Diploma in Ethical Hacking, Cyber Security, Network Admin",
+    "min_education_text": "12th Standard Pass or Graduation (depends on the track)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "NFSU Diploma Test",
+    "education_level": "Diploma",
+    "category": "Cyber Security & Networking",
+    "tier": "National",
+    "field_of_study": "Diploma in Ethical Hacking, Cyber Security, Network Admin",
+    "min_education_text": "12th Standard Pass or Graduation (depends on the track)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "State Technical Board IT Diplomas",
+    "education_level": "Diploma",
+    "category": "Cyber Security & Networking",
+    "tier": "State",
+    "field_of_study": "Diploma in Ethical Hacking, Cyber Security, Network Admin",
+    "min_education_text": "12th Standard Pass or Graduation (depends on the track)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "CDAC Diploma Course Exams",
+    "education_level": "Diploma",
+    "category": "Cyber Security & Networking",
+    "tier": "Private",
+    "field_of_study": "Diploma in Ethical Hacking, Cyber Security, Network Admin",
+    "min_education_text": "12th Standard Pass or Graduation (depends on the track)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "Jetking / Koenig Certifications",
+    "education_level": "Diploma",
+    "category": "Cyber Security & Networking",
+    "tier": "Private",
+    "field_of_study": "Diploma in Ethical Hacking, Cyber Security, Network Admin",
+    "min_education_text": "12th Standard Pass or Graduation (depends on the track)",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "Central University Entrance Panels (e.g.",
+    "education_level": "Diploma",
+    "category": "Foreign Languages",
+    "tier": "National",
+    "field_of_study": "Diploma in French, German, Japanese, Spanish, etc.",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "EFLU",
+    "education_level": "Diploma",
+    "category": "Foreign Languages",
+    "tier": "National",
+    "field_of_study": "Diploma in French, German, Japanese, Spanish, etc.",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "DU Diplomas)",
+    "education_level": "Diploma",
+    "category": "Foreign Languages",
+    "tier": "National",
+    "field_of_study": "Diploma in French, German, Japanese, Spanish, etc.",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "State University Language Department Tests",
+    "education_level": "Diploma",
+    "category": "Foreign Languages",
+    "tier": "State",
+    "field_of_study": "Diploma in French, German, Japanese, Spanish, etc.",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Max Mueller Bhavan (German)",
+    "education_level": "Diploma",
+    "category": "Foreign Languages",
+    "tier": "Private",
+    "field_of_study": "Diploma in French, German, Japanese, Spanish, etc.",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Alliance Française (French) Tests",
+    "education_level": "Diploma",
+    "category": "Foreign Languages",
+    "tier": "Private",
+    "field_of_study": "Diploma in French, German, Japanese, Spanish, etc.",
+    "min_education_text": "12th Standard Pass (Any Stream)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "National Fire Service College (NFSC) Entrance",
+    "education_level": "Diploma",
+    "category": "Industrial Fire & Safety",
+    "tier": "National",
+    "field_of_study": "Diploma in Fire & Safety Engineering, Industrial Safety",
+    "min_education_text": "10th Standard Pass or 12th Pass (Science)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "MSBTE Fire Safety Tracks",
+    "education_level": "Diploma",
+    "category": "Industrial Fire & Safety",
+    "tier": "State",
+    "field_of_study": "Diploma in Fire & Safety Engineering, Industrial Safety",
+    "min_education_text": "10th Standard Pass or 12th Pass (Science)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "NIFS Entrance Exam",
+    "education_level": "Diploma",
+    "category": "Industrial Fire & Safety",
+    "tier": "Private",
+    "field_of_study": "Diploma in Fire & Safety Engineering, Industrial Safety",
+    "min_education_text": "10th Standard Pass or 12th Pass (Science)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "private safety institute screenings",
+    "education_level": "Diploma",
+    "category": "Industrial Fire & Safety",
+    "tier": "Private",
+    "field_of_study": "Diploma in Fire & Safety Engineering, Industrial Safety",
+    "min_education_text": "10th Standard Pass or 12th Pass (Science)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "NFSU Diploma Entrance Exam (National Forensic Sciences University)",
+    "education_level": "Diploma",
+    "category": "Forensic Science Support",
+    "tier": "National",
+    "field_of_study": "Diploma in Fingerprint Science, Digital Forensics, Document Examination",
+    "min_education_text": "12th Standard Pass (Science) or B.Sc. Graduate",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "State Forensic Lab Assistant Training Screening",
+    "education_level": "Diploma",
+    "category": "Forensic Science Support",
+    "tier": "State",
+    "field_of_study": "Diploma in Fingerprint Science, Digital Forensics, Document Examination",
+    "min_education_text": "12th Standard Pass (Science) or B.Sc. Graduate",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "Private Forensic Academy Evaluations",
+    "education_level": "Diploma",
+    "category": "Forensic Science Support",
+    "tier": "Private",
+    "field_of_study": "Diploma in Fingerprint Science, Digital Forensics, Document Examination",
+    "min_education_text": "12th Standard Pass (Science) or B.Sc. Graduate",
+    "academic_value": "Diploma / PG Diploma"
+  },
+  {
+    "exam_name": "Indian Institute of Gems & Jewellery (IIGJ) Test",
+    "education_level": "Diploma",
+    "category": "Gemology & Jewellery",
+    "tier": "National",
+    "field_of_study": "Diploma in Jewellery Design, Gem Identification",
+    "min_education_text": "10th Standard Pass or 12th Standard Pass",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "State Vocational Board Craft Appraisals",
+    "education_level": "Diploma",
+    "category": "Gemology & Jewellery",
+    "tier": "State",
+    "field_of_study": "Diploma in Jewellery Design, Gem Identification",
+    "min_education_text": "10th Standard Pass or 12th Standard Pass",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Gemological Institute of America (GIA) Entry Test",
+    "education_level": "Diploma",
+    "category": "Gemology & Jewellery",
+    "tier": "Private",
+    "field_of_study": "Diploma in Jewellery Design, Gem Identification",
+    "min_education_text": "10th Standard Pass or 12th Standard Pass",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Rehabilitation Council of India (RCI) All-India Online Aptitude Test (AIOAT)",
+    "education_level": "Diploma",
+    "category": "Special Education & Rehab",
+    "tier": "National",
+    "field_of_study": "D.Ed. Special Education (Visual/Hearing/Autism Impairment)",
+    "min_education_text": "12th Standard Pass (Any Stream with minimum 50% marks)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "State Teacher Training Departmental Panels",
+    "education_level": "Diploma",
+    "category": "Special Education & Rehab",
+    "tier": "State",
+    "field_of_study": "D.Ed. Special Education (Visual/Hearing/Autism Impairment)",
+    "min_education_text": "12th Standard Pass (Any Stream with minimum 50% marks)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "Private Rehabilitation Center Screening",
+    "education_level": "Diploma",
+    "category": "Special Education & Rehab",
+    "tier": "Private",
+    "field_of_study": "D.Ed. Special Education (Visual/Hearing/Autism Impairment)",
+    "min_education_text": "12th Standard Pass (Any Stream with minimum 50% marks)",
+    "academic_value": "Diploma"
+  },
+  {
+    "exam_name": "NEET SS (Super Speciality)",
+    "education_level": "Fellowship",
+    "category": "Medical Super-Specialty",
+    "tier": "National",
+    "field_of_study": "DM / M.Ch / DNB Super-Specialty (Cardiology, Neurology, etc.)",
+    "min_education_text": "Postgraduate Medical Degree (MD / MS / DNB)",
+    "academic_value": "Clinical Fellowship"
+  },
+  {
+    "exam_name": "INI SS (AIIMS/JIPMER/PGIMER)",
+    "education_level": "Fellowship",
+    "category": "Medical Super-Specialty",
+    "tier": "National",
+    "field_of_study": "DM / M.Ch / DNB Super-Specialty (Cardiology, Neurology, etc.)",
+    "min_education_text": "Postgraduate Medical Degree (MD / MS / DNB)",
+    "academic_value": "Clinical Fellowship"
+  },
+  {
+    "exam_name": "State Medical Board Fellowship Panels",
+    "education_level": "Fellowship",
+    "category": "Medical Super-Specialty",
+    "tier": "State",
+    "field_of_study": "DM / M.Ch / DNB Super-Specialty (Cardiology, Neurology, etc.)",
+    "min_education_text": "Postgraduate Medical Degree (MD / MS / DNB)",
+    "academic_value": "Clinical Fellowship"
+  },
+  {
+    "exam_name": "Private Hospital Super-Specialty Boards",
+    "education_level": "Fellowship",
+    "category": "Medical Super-Specialty",
+    "tier": "Private",
+    "field_of_study": "DM / M.Ch / DNB Super-Specialty (Cardiology, Neurology, etc.)",
+    "min_education_text": "Postgraduate Medical Degree (MD / MS / DNB)",
+    "academic_value": "Clinical Fellowship"
+  },
+  {
+    "exam_name": "SERB National Post-Doctoral Fellowship (N-PDF)",
+    "education_level": "Fellowship",
+    "category": "Scientific Research",
+    "tier": "National",
+    "field_of_study": "Post-Doctoral Research in Physics, Chemistry, Biology",
+    "min_education_text": "Completed Ph.D. in a relevant Science discipline",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "CSIR-RA (Research Associateship)",
+    "education_level": "Fellowship",
+    "category": "Scientific Research",
+    "tier": "National",
+    "field_of_study": "Post-Doctoral Research in Physics, Chemistry, Biology",
+    "min_education_text": "Completed Ph.D. in a relevant Science discipline",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State S&T Council Fellowships",
+    "education_level": "Fellowship",
+    "category": "Scientific Research",
+    "tier": "State",
+    "field_of_study": "Post-Doctoral Research in Physics, Chemistry, Biology",
+    "min_education_text": "Completed Ph.D. in a relevant Science discipline",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "IISc Research Associate Selection Panels",
+    "education_level": "Fellowship",
+    "category": "Scientific Research",
+    "tier": "Private",
+    "field_of_study": "Post-Doctoral Research in Physics, Chemistry, Biology",
+    "min_education_text": "Completed Ph.D. in a relevant Science discipline",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "ICSSR Post-Doctoral Fellowship",
+    "education_level": "Fellowship",
+    "category": "Social Sciences & Humanities",
+    "tier": "National",
+    "field_of_study": "Post-Doctoral Policy, Economics, and Historical Research",
+    "min_education_text": "Completed Ph.D. in a Humanities/Social Science track",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "ICHR PDF (Historical Research)",
+    "education_level": "Fellowship",
+    "category": "Social Sciences & Humanities",
+    "tier": "National",
+    "field_of_study": "Post-Doctoral Policy, Economics, and Historical Research",
+    "min_education_text": "Completed Ph.D. in a Humanities/Social Science track",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State Institute of Public Administration Panels",
+    "education_level": "Fellowship",
+    "category": "Social Sciences & Humanities",
+    "tier": "State",
+    "field_of_study": "Post-Doctoral Policy, Economics, and Historical Research",
+    "min_education_text": "Completed Ph.D. in a Humanities/Social Science track",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Tata Institute of Social Sciences (TISS) Fellowships",
+    "education_level": "Fellowship",
+    "category": "Social Sciences & Humanities",
+    "tier": "Private",
+    "field_of_study": "Post-Doctoral Policy, Economics, and Historical Research",
+    "min_education_text": "Completed Ph.D. in a Humanities/Social Science track",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Prime Minister's Research Fellowship (PMRF - Direct/Lateral)",
+    "education_level": "Fellowship",
+    "category": "Engineering & Tech",
+    "tier": "National",
+    "field_of_study": "Advanced Tech Innovation, AI Research, Robotics",
+    "min_education_text": "Completed Ph.D. in Engineering / Technology",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "DST-RA",
+    "education_level": "Fellowship",
+    "category": "Engineering & Tech",
+    "tier": "National",
+    "field_of_study": "Advanced Tech Innovation, AI Research, Robotics",
+    "min_education_text": "Completed Ph.D. in Engineering / Technology",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State Technical University Post-Doc Panels",
+    "education_level": "Fellowship",
+    "category": "Engineering & Tech",
+    "tier": "State",
+    "field_of_study": "Advanced Tech Innovation, AI Research, Robotics",
+    "min_education_text": "Completed Ph.D. in Engineering / Technology",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "IIT Research Associate Selection Panels",
+    "education_level": "Fellowship",
+    "category": "Engineering & Tech",
+    "tier": "Private",
+    "field_of_study": "Advanced Tech Innovation, AI Research, Robotics",
+    "min_education_text": "Completed Ph.D. in Engineering / Technology",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "ICMR Centenary Post-Doctoral Fellowship",
+    "education_level": "Fellowship",
+    "category": "Biomedical Sciences",
+    "tier": "National",
+    "field_of_study": "Clinical Trials, Cancer Biology, Public Health Virology",
+    "min_education_text": "Completed Ph.D. or MD/MS in Biomedical fields",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "DBT-RA (Biotech)",
+    "education_level": "Fellowship",
+    "category": "Biomedical Sciences",
+    "tier": "National",
+    "field_of_study": "Clinical Trials, Cancer Biology, Public Health Virology",
+    "min_education_text": "Completed Ph.D. or MD/MS in Biomedical fields",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State Health Department Fellowships",
+    "education_level": "Fellowship",
+    "category": "Biomedical Sciences",
+    "tier": "State",
+    "field_of_study": "Clinical Trials, Cancer Biology, Public Health Virology",
+    "min_education_text": "Completed Ph.D. or MD/MS in Biomedical fields",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Specialized Private Onco-Research Lab Panels",
+    "education_level": "Fellowship",
+    "category": "Biomedical Sciences",
+    "tier": "Private",
+    "field_of_study": "Clinical Trials, Cancer Biology, Public Health Virology",
+    "min_education_text": "Completed Ph.D. or MD/MS in Biomedical fields",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "ICAR Post-Doctoral Fellowship",
+    "education_level": "Fellowship",
+    "category": "Agricultural Research",
+    "tier": "National",
+    "field_of_study": "Crop Genetics, Livestock Biotechnology, Climate Resilience",
+    "min_education_text": "Completed Ph.D. in Agriculture or Allied Sciences",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "National Professor Fellowship",
+    "education_level": "Fellowship",
+    "category": "Agricultural Research",
+    "tier": "National",
+    "field_of_study": "Crop Genetics, Livestock Biotechnology, Climate Resilience",
+    "min_education_text": "Completed Ph.D. in Agriculture or Allied Sciences",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State Agricultural University Research Panels",
+    "education_level": "Fellowship",
+    "category": "Agricultural Research",
+    "tier": "State",
+    "field_of_study": "Crop Genetics, Livestock Biotechnology, Climate Resilience",
+    "min_education_text": "Completed Ph.D. in Agriculture or Allied Sciences",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Private Corporate Agro-Chemical Lab Panels",
+    "education_level": "Fellowship",
+    "category": "Agricultural Research",
+    "tier": "Private",
+    "field_of_study": "Crop Genetics, Livestock Biotechnology, Climate Resilience",
+    "min_education_text": "Completed Ph.D. in Agriculture or Allied Sciences",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "INI SS (Psychiatry tracks)",
+    "education_level": "Fellowship",
+    "category": "Mental Health & Psychiatry",
+    "tier": "National",
+    "field_of_study": "Child Psychiatry, Neuro-Rehabilitation, Psycho-Oncology",
+    "min_education_text": "MD Psychiatry, DNB Psychiatry, or Ph.D. Clinical Psychology",
+    "academic_value": "Clinical / Post-Doc Fellowship"
+  },
+  {
+    "exam_name": "NIMHANS Post-Doctoral Fellowship Panels",
+    "education_level": "Fellowship",
+    "category": "Mental Health & Psychiatry",
+    "tier": "National",
+    "field_of_study": "Child Psychiatry, Neuro-Rehabilitation, Psycho-Oncology",
+    "min_education_text": "MD Psychiatry, DNB Psychiatry, or Ph.D. Clinical Psychology",
+    "academic_value": "Clinical / Post-Doc Fellowship"
+  },
+  {
+    "exam_name": "State Mental Health Institute Fellowships",
+    "education_level": "Fellowship",
+    "category": "Mental Health & Psychiatry",
+    "tier": "State",
+    "field_of_study": "Child Psychiatry, Neuro-Rehabilitation, Psycho-Oncology",
+    "min_education_text": "MD Psychiatry, DNB Psychiatry, or Ph.D. Clinical Psychology",
+    "academic_value": "Clinical / Post-Doc Fellowship"
+  },
+  {
+    "exam_name": "Private Neuro-Psychiatric Centre Fellowships",
+    "education_level": "Fellowship",
+    "category": "Mental Health & Psychiatry",
+    "tier": "Private",
+    "field_of_study": "Child Psychiatry, Neuro-Rehabilitation, Psycho-Oncology",
+    "min_education_text": "MD Psychiatry, DNB Psychiatry, or Ph.D. Clinical Psychology",
+    "academic_value": "Clinical / Post-Doc Fellowship"
+  },
+  {
+    "exam_name": "Indian Law Institute (ILI) Fellowship Panels",
+    "education_level": "Fellowship",
+    "category": "Legal Policy & Jurisprudence",
+    "tier": "National",
+    "field_of_study": "Constitutional Law, Cyber Law Policy, International Relations",
+    "min_education_text": "Completed Ph.D. in Law (LL.D. / Ph.D.)",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State Law University Research Fellowships",
+    "education_level": "Fellowship",
+    "category": "Legal Policy & Jurisprudence",
+    "tier": "State",
+    "field_of_study": "Constitutional Law, Cyber Law Policy, International Relations",
+    "min_education_text": "Completed Ph.D. in Law (LL.D. / Ph.D.)",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Premium Private Law School Post-Doc Panels",
+    "education_level": "Fellowship",
+    "category": "Legal Policy & Jurisprudence",
+    "tier": "Private",
+    "field_of_study": "Constitutional Law, Cyber Law Policy, International Relations",
+    "min_education_text": "Completed Ph.D. in Law (LL.D. / Ph.D.)",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "IIM Fellowships (Post-Doc Tracks)",
+    "education_level": "Fellowship",
+    "category": "Business Policy & Management",
+    "tier": "National",
+    "field_of_study": "Corporate Governance, Econometrics, Strategic Management",
+    "min_education_text": "Completed Ph.D. in Management, Economics, or Commerce",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "UGC Post-Doctoral Fellowship for Women",
+    "education_level": "Fellowship",
+    "category": "Business Policy & Management",
+    "tier": "National",
+    "field_of_study": "Corporate Governance, Econometrics, Strategic Management",
+    "min_education_text": "Completed Ph.D. in Management, Economics, or Commerce",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State University Management Research Fellowships",
+    "education_level": "Fellowship",
+    "category": "Business Policy & Management",
+    "tier": "State",
+    "field_of_study": "Corporate Governance, Econometrics, Strategic Management",
+    "min_education_text": "Completed Ph.D. in Management, Economics, or Commerce",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "ISB (Indian School of Business) Post-Doc Fellowships",
+    "education_level": "Fellowship",
+    "category": "Business Policy & Management",
+    "tier": "Private",
+    "field_of_study": "Corporate Governance, Econometrics, Strategic Management",
+    "min_education_text": "Completed Ph.D. in Management, Economics, or Commerce",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "ISRO Post-Doctoral Fellowship (J揩/IIST)",
+    "education_level": "Fellowship",
+    "category": "Space & Defense Sciences",
+    "tier": "National",
+    "field_of_study": "Aerospace Systems, Quantum Computing, Rocket Propulsion",
+    "min_education_text": "Completed Ph.D. in Physics, Aerospace, or Engineering",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "DRDO Research Associateship (DRDO-RA)",
+    "education_level": "Fellowship",
+    "category": "Space & Defense Sciences",
+    "tier": "National",
+    "field_of_study": "Aerospace Systems, Quantum Computing, Rocket Propulsion",
+    "min_education_text": "Completed Ph.D. in Physics, Aerospace, or Engineering",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State Aerospace/Tech Club Research Grants",
+    "education_level": "Fellowship",
+    "category": "Space & Defense Sciences",
+    "tier": "State",
+    "field_of_study": "Aerospace Systems, Quantum Computing, Rocket Propulsion",
+    "min_education_text": "Completed Ph.D. in Physics, Aerospace, or Engineering",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Specialized Private Defense Lab Fellowships",
+    "education_level": "Fellowship",
+    "category": "Space & Defense Sciences",
+    "tier": "Private",
+    "field_of_study": "Aerospace Systems, Quantum Computing, Rocket Propulsion",
+    "min_education_text": "Completed Ph.D. in Physics, Aerospace, or Engineering",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "NFSU Post-Doctoral Fellowship",
+    "education_level": "Fellowship",
+    "category": "Forensic Science & Criminology",
+    "tier": "National",
+    "field_of_study": "DNA Profiling, Ballistics Analytics, Digital Forensic Auditing",
+    "min_education_text": "Completed Ph.D. in Forensic Science or Criminology",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Bureau of Police Research & Dev (BPR&D) Fellowships",
+    "education_level": "Fellowship",
+    "category": "Forensic Science & Criminology",
+    "tier": "National",
+    "field_of_study": "DNA Profiling, Ballistics Analytics, Digital Forensic Auditing",
+    "min_education_text": "Completed Ph.D. in Forensic Science or Criminology",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State Forensic Science Laboratory Panels",
+    "education_level": "Fellowship",
+    "category": "Forensic Science & Criminology",
+    "tier": "State",
+    "field_of_study": "DNA Profiling, Ballistics Analytics, Digital Forensic Auditing",
+    "min_education_text": "Completed Ph.D. in Forensic Science or Criminology",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Corporate Cyber Security Lab Research Fellowships",
+    "education_level": "Fellowship",
+    "category": "Forensic Science & Criminology",
+    "tier": "Private",
+    "field_of_study": "DNA Profiling, Ballistics Analytics, Digital Forensic Auditing",
+    "min_education_text": "Completed Ph.D. in Forensic Science or Criminology",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Indian Council of World Affairs (ICWA) Fellowships",
+    "education_level": "Fellowship",
+    "category": "Foreign Policy & Strategic Studies",
+    "tier": "National",
+    "field_of_study": "Geopolitics, International Security, Diplomatic History",
+    "min_education_text": "Completed Ph.D. in Political Science or International Relations",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "IDSA Fellowship Panels",
+    "education_level": "Fellowship",
+    "category": "Foreign Policy & Strategic Studies",
+    "tier": "National",
+    "field_of_study": "Geopolitics, International Security, Diplomatic History",
+    "min_education_text": "Completed Ph.D. in Political Science or International Relations",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "State Public Administration Institute Fellowships",
+    "education_level": "Fellowship",
+    "category": "Foreign Policy & Strategic Studies",
+    "tier": "State",
+    "field_of_study": "Geopolitics, International Security, Diplomatic History",
+    "min_education_text": "Completed Ph.D. in Political Science or International Relations",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "Private Think-Tank Fellowships (e.g.",
+    "education_level": "Fellowship",
+    "category": "Foreign Policy & Strategic Studies",
+    "tier": "Private",
+    "field_of_study": "Geopolitics, International Security, Diplomatic History",
+    "min_education_text": "Completed Ph.D. in Political Science or International Relations",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "ORF",
+    "education_level": "Fellowship",
+    "category": "Foreign Policy & Strategic Studies",
+    "tier": "Private",
+    "field_of_study": "Geopolitics, International Security, Diplomatic History",
+    "min_education_text": "Completed Ph.D. in Political Science or International Relations",
+    "academic_value": "Post-Doctoral Fellowship"
+  },
+  {
+    "exam_name": "CPR)",
+    "education_level": "Fellowship",
+    "category": "Foreign Policy & Strategic Studies",
+    "tier": "Private",
+    "field_of_study": "Geopolitics, International Security, Diplomatic History",
+    "min_education_text": "Completed Ph.D. in Political Science or International Relations",
+    "academic_value": "Post-Doctoral Fellowship"
+  }
+]

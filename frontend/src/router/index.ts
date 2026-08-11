@@ -5,6 +5,7 @@ import CommunityLayout from '@/layouts/CommunityLayout.vue'
 import MessagingLayout from '@/layouts/MessagingLayout.vue'
 import ProfileLayout from '@/layouts/ProfileLayout.vue'
 import ExploreLayout from '@/layouts/ExploreLayout.vue'
+import ExamLayout from '@/layouts/ExamLayout.vue'
 
 import CheckEmailView from '../views/auth/CheckEmailView.vue'
 import ForgotPasswordView from '../views/auth/ForgotPasswordView.vue'
@@ -116,6 +117,98 @@ const router = createRouter({
         },
       ],
     },
+    // --- ROUTE GROUP: Uses the dedicated Exam Layout (no community sidebars) ---
+        {
+      path: '/exams',
+      component: ExamLayout,
+      children: [
+        { path: '', name: 'exams', component: () => import('@/views/ExamView.vue'), meta: { requiresAuth: false } },
+
+        // Practice flow landing page (Quick Actions: Practice / Custom / Mock)
+        {
+          path: 'practice',
+          name: 'practice-start',
+          component: () => import('@/views/practice/PracticeStartView.vue'),
+        },
+
+        // After the existing 'exams' route entry, add these:
+        {
+          path: 'practice/exam-type',
+          name: 'practice-exam-type',
+          component: () => import('@/views/practice/SelectExamTypeView.vue'),
+        },
+        {
+          path: 'practice/test-type',
+          name: 'practice-test-type',
+          component: () => import('@/views/practice/SelectTestTypeView.vue'),
+        },
+        {
+          path: 'practice/subject',
+          name: 'practice-subject',
+          component: () => import('@/views/practice/SelectSubjectView.vue'),
+        },
+        {
+          path: 'practice/scope',
+          name: 'practice-scope',
+          component: () => import('@/views/practice/SelectScopeView.vue'),
+        },
+        {
+          path: 'practice/chapter',
+          name: 'practice-chapter',
+          component: () => import('@/views/practice/SelectChapterView.vue'),
+        },
+        {
+          path: 'practice/mode',
+          name: 'practice-mode',
+          component: () => import('@/views/practice/SelectModeView.vue'),
+        },
+        {
+          path: 'practice/review',
+          name: 'practice-review',
+          component: () => import('@/views/practice/ReadyToStartView.vue'),
+        },
+        {
+          path: 'practice/full-syllabus',
+          name: 'practice-full-syllabus',
+          component: () => import('@/views/practice/Completesyllabusview.vue'),
+        },
+        {
+          path: 'practice/custom-result',
+          name: 'practice-custom-result',
+          component: () => import('@/views/practice/Customtestresultview.vue'),
+        },
+        {
+          path: 'practice/test',
+          name: 'practice-test',
+          component: () => import('@/views/practice/TestAttemptView.vue'),
+        },
+        {
+          path: 'practice/custom',
+          name: 'practice-custom',
+          component: () => import('@/views/practice/Createcustomtestview.vue'),
+        },
+        { path: 'practice/mock/select',
+          name: 'mock-select',       
+          component: () => import('@/views/practice/Selectmocktestview.vue'),
+        },
+        { path: 'practice/mock/instructions',
+          name: 'mock-instructions', 
+          component: () => import('@/views/practice/MockInstructionsView.vue'),
+        },
+        { path: 'practice/mock/attempt',
+          name: 'mock-attempt',      
+          component: () => import('@/views/practice/Mocktestattemptview.vue'),
+        },
+      ],
+    },
+        // --- ROUTE GROUP: Exam attempt (standalone, no shared layout) ---
+    // {
+    //   path: '/exams/:id',
+    //   name: 'exam-attempt',
+    //   component: () => import('@/views/TestAttemptView.vue'),
+    //   props: true,
+    //   meta: { requiresAuth: false }, // adjust to true if attempts require login
+    // },
     // --- ROUTE GROUP 4: Non-Layout Routes (Login/Register) ---
     {
       path: '/login',

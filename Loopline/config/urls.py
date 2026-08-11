@@ -17,6 +17,8 @@ from community.views import (
     GoogleLogin,
 )
 
+app_name = "mockups"
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/logout/", ForcefulLogoutView.as_view(), name="forceful_rest_logout"),
@@ -37,8 +39,13 @@ urlpatterns = [
     # --- IMPORTANT: Specific patterns must come BEFORE generic patterns ---
     # Messaging routes are matched first so they don't get caught by the generic /api/ pattern
     path("api/messaging/", include("messaging.urls")),
+    # Practice/mock-test question endpoints — matched before the generic /api/
+    # pattern below for the same reason as messaging above.
+    path("api/", include("MockAdmin.urls")),
     # Generic API routes (community, profiles, posts, groups, etc.)
     path("api/", include("community.urls", namespace="community")),
+    path("mockups/teacher/", include("MockAdmin.urls")),
+    path("mockups/student/", include("MockStudent.urls")),
 ]
 
 # The rest of your file remains unchanged

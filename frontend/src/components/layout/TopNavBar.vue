@@ -872,22 +872,25 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                   <a class="menu-item hover:bg-blue-50" href="#"
                     ><font-awesome-icon :icon="['fas', 'landmark']" class="menu-ico" /><span
                       >Government Enterprises</span
-                    ></a
-                  >
+                    ></a>
                 </li>
                 <li>
-                  <a class="menu-item hover:bg-blue-50" href="#"
+                  <RouterLink
+                    class="menu-item hover:bg-blue-50"
+                    :to="{ name: 'exams' }"
+                    @click="isExploreMenuOpen = false"
                     ><font-awesome-icon :icon="['fas', 'pen-to-square']" class="menu-ico" /><span
                       >Exams</span
-                    ></a
+                    ></RouterLink
                   >
                 </li>
                 <li class="pl-10 pr-4 py-2 flex gap-2">
-                  <a
+                  <RouterLink
                     class="text-[13px] px-2 py-1 rounded hover:bg-green-100 text-green-600"
-                    href="#"
+                    :to="{ name: 'exams' }"
+                    @click="isExploreMenuOpen = false"
                     ><font-awesome-icon :icon="['fas', 'clipboard-check']" class="mr-1" />Mock
-                    Test</a
+                    Test</RouterLink
                   >
                   <a
                     class="text-[13px] px-2 py-1 rounded hover:bg-green-100 text-green-600"
@@ -1716,6 +1719,16 @@ const currentUsername = computed(() => currentUser.value?.username || '')
                 </span>
               </RouterLink>
 
+              <!-- EXAMS -->
+              <RouterLink
+                :to="{ name: 'exams' }"
+                @click="isMobileMenuOpen = false"
+                class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-exams-hover transition-colors text-left"
+              >
+                <font-awesome-icon :icon="['fas', 'clipboard-check']" class="icon-exams text-lg" />
+                <span class="font-medium text-gray-900">Exams</span>
+              </RouterLink>
+
               <!-- NOTIFICATIONS -->
               <RouterLink
                 :to="{ name: 'notifications' }"
@@ -2270,5 +2283,39 @@ button:focus {
 
 .active-messages .nav-label-messages {
   color: #1aac15 !important;
+}
+
+/* --- EXAMS nav item --- */
+.icon-exams {
+  color: #0ea5e9;
+}
+
+.nav-btn:hover .icon-exams {
+  color: #0284c7;
+}
+
+.nav-label-exams {
+  color: black;
+}
+
+.nav-btn:hover .nav-label-exams {
+  color: #0284c7;
+}
+
+.hover\:bg-exams-hover:hover {
+  background: rgba(14, 165, 233, 0.1);
+}
+
+/* --- ACTIVE STATE FOR EXAMS --- */
+.active-exams {
+  background: rgba(14, 165, 233, 0.1) !important;
+}
+
+.active-exams .icon-exams {
+  color: #0284c7 !important;
+}
+
+.active-exams .nav-label-exams {
+  color: #0284c7 !important;
 }
 </style>

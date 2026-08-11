@@ -1,0 +1,529 @@
+{
+  "source_url": "https://www.affinityeducation.in/neet-syllabus",
+  "subjects": {
+    "Physics": [
+      {
+        "chapter": "Laws of Motion",
+        "topics": "Circular Motion, Newton's laws and friction",
+        "topics_list": [
+          "Circular Motion",
+          "Newton's laws",
+          "friction"
+        ]
+      },
+      {
+        "chapter": "Kinematics",
+        "topics": "Motion, Projectile Motion, Vectors and Circular Motion",
+        "topics_list": [
+          "Motion",
+          "Projectile Motion",
+          "Vectors",
+          "Circular Motion"
+        ]
+      },
+      {
+        "chapter": "Rotational Motion",
+        "topics": "Angular Momentum, Torque and Moment of Inertia",
+        "topics_list": [
+          "Angular Momentum",
+          "Torque",
+          "Moment of Inertia"
+        ]
+      },
+      {
+        "chapter": "Properties of Solids and Liquids",
+        "topics": "Surface Tension, Viscosity, Elasticity and Fluid Mechanics",
+        "topics_list": [
+          "Surface Tension",
+          "Viscosity",
+          "Elasticity",
+          "Fluid Mechanics"
+        ]
+      },
+      {
+        "chapter": "Work, Energy and Power",
+        "topics": "Collisions, Work-energy Theorem and Power",
+        "topics_list": [
+          "Collisions",
+          "Work-energy Theorem",
+          "Power"
+        ]
+      },
+      {
+        "chapter": "Physics and Measurement",
+        "topics": "Dimensions, Units, SI system, Significant figures and Errors",
+        "topics_list": [
+          "Dimensions",
+          "Units",
+          "SI system",
+          "Significant figures",
+          "Errors"
+        ]
+      },
+      {
+        "chapter": "Gravitation",
+        "topics": "Satellites, Kepler's Laws and Escape Velocity",
+        "topics_list": [
+          "Satellites",
+          "Kepler's Laws",
+          "Escape Velocity"
+        ]
+      },
+      {
+        "chapter": "Oscillations and Waves",
+        "topics": "Sound Simple Harmonic Motion, Beats and Waves",
+        "topics_list": [
+          "Sound Simple Harmonic Motion",
+          "Beats",
+          "Waves"
+        ]
+      },
+      {
+        "chapter": "Electrostatics",
+        "topics": "Electric Fields, Charges and Capacitors",
+        "topics_list": [
+          "Electric Fields",
+          "Charges",
+          "Capacitors"
+        ]
+      },
+      {
+        "chapter": "Thermodynamics",
+        "topics": "Thermodynamic Processes and Laws of Thermodynamics",
+        "topics_list": [
+          "Thermodynamic Processes",
+          "Laws of Thermodynamics"
+        ]
+      },
+      {
+        "chapter": "Kinetic Theory of Gases",
+        "topics": "RMS speed and Gas laws",
+        "topics_list": [
+          "RMS speed",
+          "Gas laws"
+        ]
+      },
+      {
+        "chapter": "Magnetic Effects & Magnetism",
+        "topics": "Biot-Savart law and Ampere's law",
+        "topics_list": [
+          "Biot-Savart law",
+          "Ampere's law"
+        ]
+      },
+      {
+        "chapter": "Experimental Skills",
+        "topics": "Vernier Callipers, Pendulum, Prism and Diode experiments",
+        "topics_list": [
+          "Vernier Callipers",
+          "Pendulum",
+          "Prism",
+          "Diode experiments"
+        ]
+      },
+      {
+        "chapter": "Current Electricity",
+        "topics": "Kirchhoff's Laws, Ohm's Law and Circuits",
+        "topics_list": [
+          "Kirchhoff's Laws",
+          "Ohm's Law",
+          "Circuits"
+        ]
+      },
+      {
+        "chapter": "Electromagnetic Waves",
+        "topics": "Electromagnetic Spectrum and Applications",
+        "topics_list": [
+          "Electromagnetic Spectrum",
+          "Applications"
+        ]
+      },
+      {
+        "chapter": "Electromagnetic Induction & AC",
+        "topics": "Electromagnetic Induction, AC Circuits and Transformers",
+        "topics_list": [
+          "Electromagnetic Induction",
+          "AC Circuits",
+          "Transformers"
+        ]
+      },
+      {
+        "chapter": "Atoms and Nuclei",
+        "topics": "Atomic Models and Nuclear Physics",
+        "topics_list": [
+          "Atomic Models",
+          "Nuclear Physics"
+        ]
+      },
+      {
+        "chapter": "Optics",
+        "topics": "Ray Optics and Wave Optics",
+        "topics_list": [
+          "Ray Optics",
+          "Wave Optics"
+        ]
+      },
+      {
+        "chapter": "Dual Nature of Matter",
+        "topics": "De Broglie Waves and Photoelectric Effect",
+        "topics_list": [
+          "De Broglie Waves",
+          "Photoelectric Effect"
+        ]
+      },
+      {
+        "chapter": "Electronic Devices",
+        "topics": "Logic Gates, Semiconductors and Diodes",
+        "topics_list": [
+          "Logic Gates",
+          "Semiconductors",
+          "Diodes"
+        ]
+      }
+    ],
+    "Biology": [
+      {
+        "chapter": "Structural Organisation in Animals & Plants",
+        "topics": "Anatomy of Root, Stem & Leaf, Morphology of Flowering Plants, Important Plant Families (Malvaceae, Leguminosae, Gramineae), Animal Tissues and Frog Organ Systems",
+        "topics_list": [
+          "Anatomy of Root",
+          "Stem & Leaf",
+          "Morphology of Flowering Plants",
+          "Important Plant Families (Malvaceae, Leguminosae, Gramineae)",
+          "Animal Tissues",
+          "Frog Organ Systems"
+        ]
+      },
+      {
+        "chapter": "Human Physiology",
+        "topics": "Neural Control, Endocrine System, Breathing & Respiration, Circulation & Heart, Excretory System and Locomotion & Disorders",
+        "topics_list": [
+          "Neural Control",
+          "Endocrine System",
+          "Breathing & Respiration",
+          "Circulation & Heart",
+          "Excretory System",
+          "Locomotion & Disorders"
+        ]
+      },
+      {
+        "chapter": "Cell Structure & Function",
+        "topics": "Cell Organelles, Enzymes, Prokaryotic vs Eukaryotic Cell, Biomolecules, Cell Cycle and Mitosis & Meiosis",
+        "topics_list": [
+          "Cell Organelles",
+          "Enzymes",
+          "Prokaryotic vs Eukaryotic Cell",
+          "Biomolecules",
+          "Cell Cycle",
+          "Mitosis & Meiosis"
+        ]
+      },
+      {
+        "chapter": "Genetics & Evolution",
+        "topics": "Mendel's Laws, DNA Structure & Replication, Transcription & Translation, Chromosomal Disorders, Evolution Theories and Hardy-Weinberg Principle",
+        "topics_list": [
+          "Mendel's Laws",
+          "DNA Structure & Replication",
+          "Transcription & Translation",
+          "Chromosomal Disorders",
+          "Evolution Theories",
+          "Hardy-Weinberg Principle"
+        ]
+      },
+      {
+        "chapter": "Plant Physiology",
+        "topics": "Plant Growth Regulators, Photosynthesis (Light & Dark Reactions, C3 & C4 Pathway), Respiration (Glycolysis, TCA, ETS)",
+        "topics_list": [
+          "Plant Growth Regulators",
+          "Photosynthesis (Light & Dark Reactions, C3 & C4 Pathway)",
+          "Respiration (Glycolysis, TCA, ETS)"
+        ]
+      },
+      {
+        "chapter": "Diversity in Living World",
+        "topics": "Five Kingdom Classification, Protista, Taxonomy & Binomial Nomenclature, Fungi, Viruses & Viroids, Plant Kingdom (Algae to Gymnosperms), Salient Features of Monera and Animal Kingdom (Non-chordates & Chordates)",
+        "topics_list": [
+          "Five Kingdom Classification",
+          "Protista",
+          "Taxonomy & Binomial Nomenclature",
+          "Fungi",
+          "Viruses & Viroids",
+          "Plant Kingdom (Algae to Gymnosperms)",
+          "Salient Features of Monera",
+          "Animal Kingdom (Non-chordates & Chordates)"
+        ]
+      },
+      {
+        "chapter": "Reproduction",
+        "topics": "Gametogenesis, Human Reproductive System, Sexual Reproduction in Flowering Plants, Menstrual Cycle and Contraception & ART",
+        "topics_list": [
+          "Gametogenesis",
+          "Human Reproductive System",
+          "Sexual Reproduction in Flowering Plants",
+          "Menstrual Cycle",
+          "Contraception & ART"
+        ]
+      },
+      {
+        "chapter": "Biotechnology",
+        "topics": "Gene Therapy, Insulin & Vaccine Production, Recombinant DNA Technology, GM Crops (Bt) and Biosafety Issues",
+        "topics_list": [
+          "Gene Therapy",
+          "Insulin & Vaccine Production",
+          "Recombinant DNA Technology",
+          "GM Crops (Bt)",
+          "Biosafety Issues"
+        ]
+      },
+      {
+        "chapter": "Ecology & Environment",
+        "topics": "Ecosystem & Energy Flow, Biodiversity & Conservation, Population Interactions and Environmental Issues",
+        "topics_list": [
+          "Ecosystem & Energy Flow",
+          "Biodiversity & Conservation",
+          "Population Interactions",
+          "Environmental Issues"
+        ]
+      },
+      {
+        "chapter": "Biology & Human Welfare",
+        "topics": "Human Diseases & Pathogens, Immunity & Vaccines, Microbes in Human Welfare and Drug & Alcohol Abuse",
+        "topics_list": [
+          "Human Diseases & Pathogens",
+          "Immunity & Vaccines",
+          "Microbes in Human Welfare",
+          "Drug & Alcohol Abuse"
+        ]
+      }
+    ],
+    "Chemistry": [
+      {
+        "chapter": "Chemical Thermodynamics",
+        "topics": "Enthalpy, First & Second Law of Thermodynamics, Spontaneity, Heat Capacity, Hess's Law and Gibbs Energy",
+        "topics_list": [
+          "Enthalpy",
+          "First & Second Law of Thermodynamics",
+          "Spontaneity",
+          "Heat Capacity",
+          "Hess's Law",
+          "Gibbs Energy"
+        ]
+      },
+      {
+        "chapter": "Chemical Bonding & Molecular Structure",
+        "topics": "Hybridization, Lonic & Covalent Bonding, VSEPR, Hydrogen Bonding, Resonance, Bond Order and Molecular Orbital Theory",
+        "topics_list": [
+          "Hybridization",
+          "Lonic & Covalent Bonding",
+          "VSEPR",
+          "Hydrogen Bonding",
+          "Resonance",
+          "Bond Order",
+          "Molecular Orbital Theory"
+        ]
+      },
+      {
+        "chapter": "Atomic Structure",
+        "topics": "Quantum Numbers, Bohr Model, Hydrogen Spectrum, Electronic Configuration, Heisenberg Uncertainty Principle and De Broglie Relation",
+        "topics_list": [
+          "Quantum Numbers",
+          "Bohr Model",
+          "Hydrogen Spectrum",
+          "Electronic Configuration",
+          "Heisenberg Uncertainty Principle",
+          "De Broglie Relation"
+        ]
+      },
+      {
+        "chapter": "Some Basic Concepts",
+        "topics": "Empirical & Molecular Formula, Mole Concept, Chemical Equations, Stoichiometry and Atomic & Molecular Masses",
+        "topics_list": [
+          "Empirical & Molecular Formula",
+          "Mole Concept",
+          "Chemical Equations",
+          "Stoichiometry",
+          "Atomic & Molecular Masses"
+        ]
+      },
+      {
+        "chapter": "Solutions",
+        "topics": "Raoult's Law, Van't Hoff factor, Concentration Terms and Colligative Properties",
+        "topics_list": [
+          "Raoult's Law",
+          "Van't Hoff factor",
+          "Concentration Terms",
+          "Colligative Properties"
+        ]
+      },
+      {
+        "chapter": "Redox & Electrochemistry",
+        "topics": "Electrochemical Cells, Balancing Redox Reactions, Nernst Equation, Fuel Cells and Oxidation Number",
+        "topics_list": [
+          "Electrochemical Cells",
+          "Balancing Redox Reactions",
+          "Nernst Equation",
+          "Fuel Cells",
+          "Oxidation Number"
+        ]
+      },
+      {
+        "chapter": "Equilibrium",
+        "topics": "Le Chatelier Principle, Chemical & Ionic Equilibrium, Solubility Product and Buffer Solutions",
+        "topics_list": [
+          "Le Chatelier Principle",
+          "Chemical & Ionic Equilibrium",
+          "Solubility Product",
+          "Buffer Solutions"
+        ]
+      },
+      {
+        "chapter": "Classification & Periodicity",
+        "topics": "Modern Periodic Table, s/p/d/f block, Periodic Trends (atomic/ionic radii, ionization energy, electron affinity, valence)",
+        "topics_list": [
+          "Modern Periodic Table",
+          "s/p/d/f block",
+          "Periodic Trends (atomic/ionic radii, ionization energy, electron affinity, valence)"
+        ]
+      },
+      {
+        "chapter": "Chemical Kinetics",
+        "topics": "Arrhenius Equation, Rate Law, Order & Molecularity, Collision Theory and Activation Energy",
+        "topics_list": [
+          "Arrhenius Equation",
+          "Rate Law",
+          "Order & Molecularity",
+          "Collision Theory",
+          "Activation Energy"
+        ]
+      },
+      {
+        "chapter": "d- & f-Block Elements",
+        "topics": "Actinoids, Transition Elements, Properties, Lanthanoids, Lanthanoid Contraction and K₂Cr₂O₇ & KMnO₄",
+        "topics_list": [
+          "Actinoids",
+          "Transition Elements",
+          "Properties",
+          "Lanthanoids",
+          "Lanthanoid Contraction",
+          "K₂Cr₂O₇ & KMnO₄"
+        ]
+      },
+      {
+        "chapter": "Coordination Compounds",
+        "topics": "Coordination Number, Werner's Theory, Ligands, Bonding (VBT & CFT), Chelation, Nomenclature, Color & Magnetic Properties and Isomerism",
+        "topics_list": [
+          "Coordination Number",
+          "Werner's Theory",
+          "Ligands",
+          "Bonding (VBT & CFT)",
+          "Chelation",
+          "Nomenclature",
+          "Color & Magnetic Properties",
+          "Isomerism"
+        ]
+      },
+      {
+        "chapter": "P-Block Elements",
+        "topics": "Properties, Group 13-18 Elements, Reactivity, First Element Special Behavior and Trends",
+        "topics_list": [
+          "Properties",
+          "Group 13-18 Elements",
+          "Reactivity",
+          "First Element Special Behavior",
+          "Trends"
+        ]
+      },
+      {
+        "chapter": "Purification & Characterisation",
+        "topics": "Distillation, Crystallization, Chromatography, Sublimation and Qualitative & Quantitative Analysis",
+        "topics_list": [
+          "Distillation",
+          "Crystallization",
+          "Chromatography",
+          "Sublimation",
+          "Qualitative & Quantitative Analysis"
+        ]
+      },
+      {
+        "chapter": "Basic Principles",
+        "topics": "Functional Groups, Tetravalency, Homologous Series, Isomerism, Hybridization, Electronic Effects, Types of Reactions and Nomenclature",
+        "topics_list": [
+          "Functional Groups",
+          "Tetravalency",
+          "Homologous Series",
+          "Isomerism",
+          "Hybridization",
+          "Electronic Effects",
+          "Types of Reactions",
+          "Nomenclature"
+        ]
+      },
+      {
+        "chapter": "Hydrocarbons",
+        "topics": "Alkynes (acidic nature, addition), Alkanes (halogenation), Alkenes (addition reactions), Aromatic compounds (electrophilic substitution, Friedel-Crafts)",
+        "topics_list": [
+          "Alkynes (acidic nature, addition)",
+          "Alkanes (halogenation)",
+          "Alkenes (addition reactions)",
+          "Aromatic compounds (electrophilic substitution, Friedel-Crafts)"
+        ]
+      },
+      {
+        "chapter": "Compounds with Halogens",
+        "topics": "Environmental Effects of Chloroform, C-X bond, Freons, DDT and Substitution Reactions",
+        "topics_list": [
+          "Environmental Effects of Chloroform",
+          "C-X bond",
+          "Freons",
+          "DDT",
+          "Substitution Reactions"
+        ]
+      },
+      {
+        "chapter": "Compounds with Oxygen",
+        "topics": "Grignard, oxidation/reduction), Aldehydes & Ketones (nucleophilic addition, Alcohols (types & dehydration), Phenols (reactions), Carboxylic Acids and Ethers",
+        "topics_list": [
+          "Grignard",
+          "oxidation/reduction)",
+          "Aldehydes & Ketones (nucleophilic addition, Alcohols (types & dehydration)",
+          "Phenols (reactions)",
+          "Carboxylic Acids",
+          "Ethers"
+        ]
+      },
+      {
+        "chapter": "Compounds with Nitrogen",
+        "topics": "Reactions, Uses, Diazonium Salts and Amines (types, properties)",
+        "topics_list": [
+          "Reactions",
+          "Uses",
+          "Diazonium Salts",
+          "Amines (types, properties)"
+        ]
+      },
+      {
+        "chapter": "Biomolecules",
+        "topics": "Enzymes, Carbohydrates, Vitamins, Nucleic Acids, Hormones and Proteins (structure & denaturation)",
+        "topics_list": [
+          "Enzymes",
+          "Carbohydrates",
+          "Vitamins",
+          "Nucleic Acids",
+          "Hormones",
+          "Proteins (structure & denaturation)"
+        ]
+      },
+      {
+        "chapter": "Practical Chemistry Principles",
+        "topics": "Titrimetric Exercises, Salt Analysis, Enthalpy of Solution & Neutralization, Kinetics of Iodide-H₂O₂ and Detection of Elements & Functional Groups",
+        "topics_list": [
+          "Titrimetric Exercises",
+          "Salt Analysis",
+          "Enthalpy of Solution & Neutralization",
+          "Kinetics of Iodide-H₂O₂",
+          "Detection of Elements & Functional Groups"
+        ]
+      }
+    ]
+  }
+}
