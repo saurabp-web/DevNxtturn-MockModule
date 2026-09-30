@@ -132,7 +132,7 @@ from .models import (
     State, Board, Stream, Field, SubField, EducationLevel,
     ExamType, SchoolExamCategory, EntranceExamCategory,
     JobCategory, JobExamCategory, ExamLevel, Exam,
-    Subject, Chapter, Question, QuestionOption, CorrectAnswer, Solution,MockExam
+    Subject, Chapter, Question, QuestionOption, CorrectAnswer, Solution,MockExam,TestDefinition,
 )
 
 
@@ -388,21 +388,63 @@ class ChapterSerializer(serializers.ModelSerializer):
 
 class QuestionOptionSerializer(serializers.ModelSerializer):
     """
-    CHANGED: the real QuestionOption model stores plain text options
-    (option_a..option_e, lowercase) with no per-option image storage —
-    the option_X_images fields from the previous version don't map to
-    anything in this schema and have been dropped. Question.image_url
-    covers one image for the whole question, not per-option.
+    UPDATED: QuestionOption now has an `option_images` JSONField —
+    {"A": "<url>", "B": "<url>", ...}, only for letters that are actually
+    graph-style options (plain-text options simply don't appear in the
+    dict). Added to `fields` below so it's no longer silently stripped
+    from the API response — it existed in the DB but was never being
+    sent to the frontend.
+
+    NEW: option_{a..d}_latex columns (see Import_Mock.py's to_latex() /
+    Mathpix OCR fallback) were being written to the DB but never
+    serialized, so the frontend had no way to ever receive them — every
+    option fell back to raw plain text (including the badly-scrambled
+    ones the OCR fallback exists specifically to fix). Adding them here
+    is what actually turns that pipeline on end-to-end.
+
+    These columns may not exist on every deployment yet (they're an
+    opt-in migration per Import_Mock.py's own docstring), so each is
+    declared with a SerializerMethodField that degrades to '' via
+    getattr(..., default='') instead of a plain ModelSerializer field —
+    a bare model field reference would raise ImproperlyConfigured at
+    import time on any DB that hasn't run that migration.
     """
+    option_a_latex = serializers.SerializerMethodField()
+    option_b_latex = serializers.SerializerMethodField()
+    option_c_latex = serializers.SerializerMethodField()
+    option_d_latex = serializers.SerializerMethodField()
+
     class Meta:
         model = QuestionOption
-        fields = ['option_id', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e']
+        fields = [
+            'option_id', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'option_images',
+            'option_a_latex', 'option_b_latex', 'option_c_latex', 'option_d_latex',
+        ]
+
+    def _latex(self, obj, letter):
+        return getattr(obj, f'option_{letter}_latex', '') or ''
+
+    def get_option_a_latex(self, obj): return self._latex(obj, 'a')
+    def get_option_b_latex(self, obj): return self._latex(obj, 'b')
+    def get_option_c_latex(self, obj): return self._latex(obj, 'c')
+    def get_option_d_latex(self, obj): return self._latex(obj, 'd')
 
 
 class SolutionSerializer(serializers.ModelSerializer):
+    """
+    NEW: explaination_text_latex (see Import_Mock.py — written only when
+    the column exists on the model) is exposed the same defensive way as
+    the option latex fields above, so it degrades to '' rather than
+    breaking on a DB that hasn't added the column yet.
+    """
+    explaination_text_latex = serializers.SerializerMethodField()
+
     class Meta:
         model = Solution
-        fields = ['solution_id', 'explaination_text', 'hints']
+        fields = ['solution_id', 'explaination_text', 'explaination_text_latex', 'hints', 'image_url']
+
+    def get_explaination_text_latex(self, obj):
+        return getattr(obj, 'explaination_text_latex', '') or ''
 
 
 class CorrectAnswerSerializer(serializers.ModelSerializer):
@@ -431,6 +473,13 @@ class QuestionSerializer(serializers.ModelSerializer):
     subject_name = serializers.CharField(source='chapter.subject.subject_name', read_only=True, default=None)
     chapter_name = serializers.CharField(source='chapter.chapter_name', read_only=True, default=None)
     language = serializers.SerializerMethodField()
+    # NEW: question_text_latex (see Import_Mock.py's to_latex() pass over
+    # the stem) — same defensive getattr pattern as the option/solution
+    # latex fields, since this column is an opt-in migration.
+    question_text_latex = serializers.SerializerMethodField()
+    # PYQ (Previous Year Question) source metadata.
+    is_pyq = serializers.BooleanField(source='is_previousyear', read_only=True)
+    pyq_exam_name = serializers.CharField(source='pyq_exam.exam_name', read_only=True, default=None)
 
     class Meta:
         model = Question
@@ -439,10 +488,19 @@ class QuestionSerializer(serializers.ModelSerializer):
             'language', 'question_type',
             'subject_name', 'chapter_name',
             'options', 'solution', 'correct_answer', 'hint',
+            # NEW: {"images": ["<url>", ...]} — was missing from `fields`
+            # entirely, so it existed on the model/DB but never reached
+            # the API response.
+            'image_url',
+            'question_text_latex',
+            'is_pyq', 'pyq_exam', 'pyq_exam_name', 'pyq_year', 'pyq_session',
         ]
 
     def get_language(self, obj):
         return 'English'
+
+    def get_question_text_latex(self, obj):
+        return getattr(obj, 'question_text_latex', '') or ''
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -453,32 +511,149 @@ class QuestionSerializer(serializers.ModelSerializer):
             data['correct_answer'] = []
             data['solution'] = []
         return data
-    
+
 
 class MockExamSerializer(serializers.ModelSerializer):
     """
     Serializes MockExam rows for the Select Mock Test screen.
  
-    NOTE: MockExam currently has no `difficulty`, `language`, or
-    `question_count` fields in the schema (only exam_name, year,
-    description, total_marks, duration_minutes). The frontend defaults
-    these to "Medium" / "English" / 0 respectively, matching what the
-    UI already showed before. If you want real per-test difficulty and
-    a real question count, either:
-      (a) add `difficulty` / `language` CharFields to MockExam, and a
-          `mockexam` FK on Question so a per-test question_count can be
-          annotated here the same way ExamListView annotates it, or
-      (b) derive marks/questions from TestDefinition rows of
-          test_type='Mock' linked via the same mockexam_id, if that's
-          where your question sets actually live.
+    NOTE: `question_count` is annotated on the queryset in
+    MockExamListView (Count over Question.mock_exam, is_active=True
+    only) and surfaced here as a plain read-only IntegerField.
+    `difficulty` / `language` still don't exist on MockExam -- the
+    frontend defaults those to "Medium" / "English".
     """
     exam_id = serializers.IntegerField(source='exam.exam_id', read_only=True)
     exam_code = serializers.CharField(source='exam.exam_code', read_only=True)
+    question_count = serializers.IntegerField(read_only=True, default=0)
+
+    # NEW — populates the "Exam Type" column on the admin table.
+    # Assumes Exam has a FK `exam_type` -> ExamType with `type_name`.
+    exam_type_name = serializers.CharField(source='exam.exam_type.type_name', read_only=True, default=None)
  
+    # NEW — populates the "Category" column.
+    # CHANGED: Exam has no real `category` relation to source from —
+    # `Exam.category_id` is a plain IntegerField, a manual polymorphic
+    # pointer into one of SchoolExamCategory / EntranceExamCategory /
+    # JobExamCategory depending on exam_type (see ExamCategoryListView's
+    # dispatch logic, which this mirrors). The previous
+    # `source='exam.category.category_name'` CharField always silently
+    # returned its `default=None` — 'category' doesn't exist as an
+    # attribute on Exam, and worse, the equivalent select_related() path
+    # used to eagerly load it in MockExamDetailView raised a hard
+    # FieldError (that was the actual cause of the 500 on
+    # GET /mockexams/<id>/, now fixed in _annotated_mockexam()).
+    category_name = serializers.SerializerMethodField()
+
+    def get_category_name(self, obj):
+        exam = getattr(obj, 'exam', None)
+        if not exam or not exam.category_id:
+            return None
+        exam_type = getattr(exam, 'exam_type', None)
+        type_name = (exam_type.type_name or '').strip().lower() if exam_type else ''
+
+        category_model = {
+            'school': SchoolExamCategory,
+            'entrance': EntranceExamCategory,
+            'job': JobExamCategory,
+        }.get(type_name)
+        if category_model is None:
+            return None
+
+        try:
+            return category_model.objects.get(pk=exam.category_id).category_name
+        except category_model.DoesNotExist:
+            return None
+ 
+    # NEW — populates the "Subjects" column. This assumes the pattern
+    # (totalQuestions/marksPerQuestion/subjects/...) captured in
+    # SetPatternStep is persisted on MockExam as a JSONField called
+    # `pattern`, matching what MockExamCreateUpdateSerializer accepts on
+    # POST. If it's stored as a related model instead (e.g.
+    # MockExamSubjectPattern rows via a FK), swap this for:
+    #   subjects_count = serializers.IntegerField(
+    #       source='subject_patterns.count', read_only=True
+    #   )
+    subjects_count = serializers.SerializerMethodField()
+
+    def get_subjects_count(self, obj):
+        pattern = getattr(obj, 'pattern', None) or {}
+        subjects = pattern.get('subjects') if isinstance(pattern, dict) else None
+        return len(subjects) if subjects else 0
+
     class Meta:
         model = MockExam
         fields = (
             'mockexam_id', 'exam_id', 'exam_code', 'mockexam_name', 'year',
-            'description', 'total_marks', 'duration_minutes',
-            'is_active', 'created_at', 'updated_at',
+            'description', 'total_marks', 'duration_minutes', 'question_count',
+            'is_active', 'created_at', 'updated_at','exam_type_name','category_name',
+            'subjects_count',
         )
+
+class MockExamCreateUpdateSerializer(serializers.ModelSerializer):
+    """
+    NEW: backs POST /api/mockexams/ (create) and PUT/PATCH
+    /api/mockexams/<id>/ (edit), used by the Create Mock Test wizard
+    (BasicDetailsStep + SelectExamStep + SetPatternStep -> Review &
+    Confirm's "Confirm & Create" button).
+
+    `exam` is write-only here (input is the parent Exam's PK, chosen in
+    SelectExamStep) — the read side of a mock exam already goes through
+    MockExamSerializer above, which exposes exam_id/exam_code instead.
+
+    `pattern` is accepted and stored as-is (see the JSONField comment
+    on the model) — this is intentionally schema-flexible so the
+    frontend's exact subject-row shape doesn't need a matching
+    serializer field for every key.
+    """
+    class Meta:
+        model = MockExam
+        fields = (
+            'mockexam_id', 'exam', 'mockexam_name', 'year', 'description',
+            'total_marks', 'duration_minutes', 'pattern', 'is_active',
+        )
+        extra_kwargs = {
+            'exam': {'write_only': True},
+        }
+
+    def validate_mockexam_name(self, value):
+        value = (value or '').strip()
+        if not value:
+            raise serializers.ValidationError('Mock test name is required.')
+        return value
+
+# ─────────────────────────────────────────────
+# DASHBOARD — Recent Test Activity ("adminDummyData.recentTestActivity")
+# ─────────────────────────────────────────────
+ 
+class TestDefinitionSerializer(serializers.ModelSerializer):
+    """
+    NEW: shapes a TestDefinition row to exactly match the frontend's
+    dummy `recentTestActivity` objects: { name, exam, type, questions,
+    duration, status, updatedOn }. `questions` is annotated on the
+    queryset (Count of related questions) in the dashboard view rather
+    than computed here, since TestDefinition has no direct question
+    count field.
+    """
+    name = serializers.CharField(source='test_name', read_only=True)
+    exam = serializers.CharField(source='exam.exam_name', read_only=True)
+    type = serializers.CharField(source='test_type', read_only=True)
+    questions = serializers.IntegerField(read_only=True, default=0)
+    duration = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    updatedOn = serializers.SerializerMethodField()
+ 
+    class Meta:
+        model = TestDefinition
+        fields = ['name', 'exam', 'type', 'questions', 'duration', 'status', 'updatedOn']
+ 
+    def get_duration(self, obj):
+        return f"{obj.duration_minutes} Min" if obj.duration_minutes else ''
+ 
+    def get_status(self, obj):
+        return 'Published' if obj.is_active else 'Draft'
+
+    def get_updatedOn(self, obj):
+        return obj.created_at.strftime('%d %b %Y') if obj.created_at else ''
+
+

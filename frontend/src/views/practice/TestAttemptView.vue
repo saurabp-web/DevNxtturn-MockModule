@@ -138,9 +138,10 @@
 
             <p class="q-text">{{ currentQ?.question_text }}</p>
 
-            <div v-if="currentQ?.image_url" class="q-diagram">
+            <div v-if="firstImagePath(currentQ?.image_url)" class="q-diagram">
               <img
-                :src="mediaUrl(currentQ.image_url)"
+                :key="currentQ?.question_id"
+                :src="mediaUrl(firstImagePath(currentQ.image_url))"
                 alt="Question diagram"
                 class="q-diagram-img"
                 @error="onImgError($event)"
@@ -152,11 +153,20 @@
                 v-for="opt in currentOptions"
                 :key="opt.key"
                 class="ct-option-btn"
-                :class="{ 'ct-option-selected': currentQ && answers[currentQ.question_id] === opt.key }"
+                :class="{ 'ct-option-selected': currentQ && answers[currentQ.question_id] === opt.key, 'ct-option-btn--image': opt.image }"
                 @click="selectAnswer(opt.key)"
               >
                 <span class="ct-opt-avatar">{{ opt.key }}</span>
-                <span class="ct-opt-text">{{ opt.text }}</span>
+                <span v-if="opt.image" class="ct-opt-image-wrap">
+                  <img
+                    :src="mediaUrl(opt.image)"
+                    class="ct-opt-image"
+                    alt="Option image"
+                    @error="onImgError($event)"
+                  />
+                </span>
+                <span v-else-if="opt.latex" class="ct-opt-text ct-opt-latex">{{ opt.latex }}</span>
+                <span v-else class="ct-opt-text">{{ opt.text }}</span>
                 <span class="ct-opt-radio" :class="{ on: currentQ && answers[currentQ.question_id] === opt.key }"></span>
               </button>
             </div>
@@ -170,10 +180,10 @@
             </button>
             <button
               v-if="currentIndex < questions.length - 1"
-              class="ct-btn-skip-next"
+              :class="isAnswered ? 'ct-btn-submit-next' : 'ct-btn-skip-next'"
               @click="skipAndNext"
             >
-              Skip &amp; Next &rarr;
+              {{ isAnswered ? 'Submit & Next' : 'Skip & Next' }} &rarr;
             </button>
             <button v-else class="btn-submit-footer" @click="confirmSubmit">Submit Test ✓</button>
           </div>
@@ -289,70 +299,51 @@
       <!-- 3-column body -->
       <div class="test-body">
 
-        <!-- Left: Question list, filterable by status -->
-        <aside class="panel palette-panel">
-          <div class="tabs-row">
-            <button
-              class="tab-btn"
-              :class="{ active: activeFilter === 'answered' }"
-              @click="toggleFilter('answered')"
-            >
-              Answered <span class="tab-count">({{ answeredCount }})</span>
-            </button>
-            <button
-              class="tab-btn"
-              :class="{ active: activeFilter === 'unanswered' }"
-              @click="toggleFilter('unanswered')"
-            >
-              Unanswered <span class="tab-count">({{ unansweredCount }})</span>
-            </button>
-            <button
-              class="tab-btn"
-              :class="{ active: activeFilter === 'marked' }"
-              @click="toggleFilter('marked')"
-            >
-              Marked <span class="tab-count">({{ markedCount }})</span>
-            </button>
+        <!-- Left: Test details summary -->
+        <aside class="panel details-panel">
+          <h3 class="panel-title">Test Details</h3>
+
+          <div class="td-row">
+            <span class="td-label"><span class="td-icon td-icon-type">&#128196;</span> Type</span>
+            <strong class="td-value">{{ store.mode === 'test' ? 'Test' : 'Practice' }}</strong>
+          </div>
+          <div class="td-row">
+            <span class="td-label"><span class="td-icon td-icon-subject">&#128218;</span> Subject</span>
+            <strong class="td-value">{{ store.customConfig ? (store.customConfig.subjectLabel ?? 'Custom Test') : (currentQ?.subject_name ?? store.subject?.label) }}</strong>
+          </div>
+          <div class="td-row">
+            <span class="td-label"><span class="td-icon td-icon-answered">&#10003;</span> Answered</span>
+            <strong class="td-value c-green">{{ answeredCount }}</strong>
+          </div>
+          <div class="td-row">
+            <span class="td-label"><span class="td-icon td-icon-marked">&#9873;</span> Marked for Review</span>
+            <strong class="td-value c-orange">{{ markedCount }}</strong>
+          </div>
+          <div class="td-row">
+            <span class="td-label"><span class="td-icon td-icon-notvisited">&#9675;</span> Not Visited</span>
+            <strong class="td-value">{{ notVisitedCount }}</strong>
           </div>
 
-          <div class="q-list">
-            <button
-              v-for="item in filteredQuestionList"
-              :key="item.q.question_id"
-              class="q-list-card"
-              :class="{ 'q-list-current': item.index === currentIndex }"
-              @click="jumpTo(item.index)"
-            >
-              <span class="q-list-num" :class="cellClass(item.index)">{{ item.index + 1 }}</span>
-              <span class="q-list-body">
-                <span class="q-list-title">{{ item.q.question_text }}</span>
-                <span v-if="item.q.hint" class="q-list-sub">{{ item.q.hint }}</span>
-              </span>
-              <span class="q-list-status">
-                <span v-if="marked[item.q.question_id]" class="status-icon status-marked">&#128278;</span>
-                <span v-else-if="answers[item.q.question_id]" class="status-icon status-answered">&#10003;</span>
-                <span v-else class="status-icon status-unanswered"></span>
-              </span>
-            </button>
-            <p v-if="filteredQuestionList.length === 0" class="q-list-empty">No questions match this filter.</p>
+          <div class="exam-pattern-box">
+            <div class="epb-title"><span class="epb-icon">&#128203;</span> Exam Pattern</div>
+            <div class="epb-row"><span><span class="epb-row-icon">&#128218;</span> Questions</span><strong>{{ questions.length }}</strong></div>
+            <div class="epb-row"><span><span class="epb-row-icon">&#10003;</span> Total Marks</span><strong>{{ totalMarksDisplay }}</strong></div>
+            <div class="epb-row"><span><span class="epb-row-icon">&#9675;</span> Negative Marking</span><strong>{{ store.mode === 'test' ? `-${negativeMarkDisplay}` : 'No' }}</strong></div>
           </div>
 
-          <button class="clear-filters-btn" :disabled="!activeFilter" @click="clearFilters">
-            Clear Filters
-            <svg class="filter-icon" viewBox="0 0 16 16" width="13" height="13" fill="none">
-              <path d="M2 3h12l-4.5 5.5V13l-3 1.5V8.5L2 3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-            </svg>
-          </button>
+          <div class="quick-tip-box">
+            <span class="qtb-icon">&#128161;</span>
+            <div>
+              <strong>Quick Tip</strong>
+              <p>Read each question carefully before selecting an answer.</p>
+            </div>
+          </div>
         </aside>
 
         <!-- Center: Question card -->
         <section class="panel question-panel">
           <div class="q-top">
             <span class="q-count">Question {{ currentIndex + 1 }} of {{ questions.length }}</span>
-            <button class="mark-link" @click="toggleMark()">
-              <span class="bm-icon">&#128278;</span>
-              {{ isMarked(currentQ?.question_id) ? 'Marked for Review' : 'Mark for Review' }}
-            </button>
           </div>
 
           <div class="q-meta" v-if="currentQ?.difficulty_level">
@@ -364,9 +355,10 @@
           <p class="q-text">{{ currentQ?.question_text }}</p>
 
           <!-- Diagram image (only shown if question has an image) -->
-          <div v-if="currentQ?.image_url" class="q-diagram">
+          <div v-if="firstImagePath(currentQ?.image_url)" class="q-diagram">
             <img
-              :src="mediaUrl(currentQ.image_url)"
+              :key="currentQ?.question_id"
+              :src="mediaUrl(firstImagePath(currentQ.image_url))"
               alt="Question diagram"
               class="q-diagram-img"
               @error="onImgError($event)"
@@ -378,13 +370,22 @@
               v-for="opt in currentOptions"
               :key="opt.key"
               class="option-btn"
-              :class="optionClass(opt.key)"
+              :class="[optionClass(opt.key), { 'option-btn--image': opt.image }]"
               :disabled="isChapterPracticeMode && isChecked"
               @click="selectAnswer(opt.key)"
             >
               <span class="opt-radio" :class="{ on: currentQ && answers[currentQ.question_id] === opt.key }"></span>
               <span class="opt-key">{{ opt.key }}.</span>
-              <span class="opt-text">{{ opt.text }}</span>
+              <span v-if="opt.image" class="opt-image-wrap">
+                <img
+                  :src="mediaUrl(opt.image)"
+                  class="opt-image"
+                  alt="Option image"
+                  @error="onImgError($event)"
+                />
+              </span>
+              <span v-else-if="opt.latex" class="opt-text opt-latex">{{ opt.latex }}</span>
+              <span v-else class="opt-text">{{ opt.text }}</span>
             </button>
           </div>
 
@@ -436,16 +437,22 @@
 
           <div class="q-footer">
             <button class="btn-secondary" :disabled="currentIndex === 0" @click="prevQ">&larr; Previous</button>
+            <button class="btn-clear" :disabled="!isAnswered" @click="clearSelection">
+              <span class="bc-icon">&times;</span> Clear Selection
+            </button>
             <!-- Custom-test Practice Mode falls into this branch too (isChapterPracticeMode
                  is false for it), so it always gets Next / Submit rather than waiting on
                  Check Answer. -->
             <template v-if="!isChapterPracticeMode || isChecked">
+              <button class="btn-mark-footer" @click="markAndNext">
+                <span class="bm-icon">&#128278;</span> Mark for Review &amp; Next
+              </button>
               <button
                 v-if="currentIndex < questions.length - 1"
-                class="btn-primary"
+                class="btn-submit-next"
                 @click="nextQ"
               >
-                Next &rarr;
+                Submit &amp; Next &rarr;
               </button>
               <button v-else class="btn-submit-footer" @click="confirmSubmit">
                 Submit Test ✓
@@ -481,26 +488,14 @@
             </span>
           </div>
 
-          <div class="ov-actions">
-            <button class="ov-action-btn ov-action-paper" @click="showQuestionPaper = true">
-              Question Paper <span class="ov-action-icon">&#128203;</span>
+          <div class="ov-actions ov-actions-stacked">
+            <button v-if="showTimer" class="ov-action-btn ov-action-pause-outline" @click="togglePause">
+              <span class="ov-action-icon">{{ isPaused ? '&#9654;' : '&#10074;&#10074;' }}</span> {{ isPaused ? 'Resume Test' : 'Pause Test' }}
             </button>
-            <button class="ov-action-btn ov-action-pause" @click="togglePause">
-              {{ isPaused ? 'Resume' : 'Pause' }} <span class="ov-action-icon">{{ isPaused ? '▶' : '⏸' }}</span>
-            </button>
-            <button class="ov-action-btn ov-action-submit" @click="confirmSubmit">
-              Submit <span class="ov-action-icon">&#10003;</span>
+            <button class="ov-action-btn ov-action-submit-solid" @click="confirmSubmit">
+              <span class="ov-action-icon">&#10003;</span> Submit Test
             </button>
           </div>
-
-          <hr class="ov-divider" />
-          <div class="ov-row"><span>Questions</span><strong>{{ questions.length }}</strong></div>
-          <div class="ov-row"><span>Answered</span><strong class="c-green">{{ answeredCount }}</strong></div>
-          <div class="ov-row"><span>Marked</span><strong class="c-orange">{{ markedCount }}</strong></div>
-          <div class="ov-row"><span>Unanswered</span><strong class="c-gray">{{ unansweredCount }}</strong></div>
-          <hr class="ov-divider" />
-          <div class="ov-row"><span>Total Marks</span><strong class="c-green">+{{ totalMarksDisplay }}</strong></div>
-          <div v-if="store.mode === 'test'" class="ov-row"><span>Negative Marks</span><strong class="c-red">-{{ negativeMarkDisplay }}</strong></div>
         </aside>
 
         <!-- Pause overlay — blocks the question area until Resume is pressed -->
@@ -655,9 +650,9 @@
             <div class="paper-item-body">
               <p class="paper-q">{{ q.question_text }}</p>
 
-              <div v-if="q.image_url" class="paper-q-diagram">
+              <div v-if="firstImagePath(q.image_url)" class="paper-q-diagram">
                 <img
-                  :src="mediaUrl(q.image_url)"
+                  :src="mediaUrl(firstImagePath(q.image_url))"
                   alt="Question diagram"
                   class="paper-q-diagram-img"
                   @error="onImgError($event)"
@@ -665,10 +660,10 @@
               </div>
 
               <ul v-if="q.options?.[0]" class="paper-opts">
-                <li>(A) {{ q.options[0].option_A }}</li>
-                <li>(B) {{ q.options[0].option_B }}</li>
-                <li>(C) {{ q.options[0].option_C }}</li>
-                <li>(D) {{ q.options[0].option_D }}</li>
+                <li>(A) {{ q.options[0].option_a }}</li>
+                <li>(B) {{ q.options[0].option_b }}</li>
+                <li>(C) {{ q.options[0].option_c }}</li>
+                <li>(D) {{ q.options[0].option_d }}</li>
               </ul>
             </div>
           </div>
@@ -695,10 +690,19 @@ const store  = usePracticeTestStore()
 // ── Types ──────────────────────────────────────────────────────────
 interface QuestionOption {
   option_id: number
-  option_A: string
-  option_B: string
-  option_C: string
-  option_D: string
+  option_a: string
+  option_b: string
+  option_c: string
+  option_d: string
+  // "{A}" -> "<img url>" for diagram-style options — only present for
+  // letters that are actually images (see QuestionOptionSerializer).
+  option_images?: Record<string, string>
+  // Cleaned-up LaTeX for math-heavy text options (Import_Mock.py's
+  // to_latex()/Mathpix OCR fallback). Empty string when not applicable.
+  option_a_latex?: string
+  option_b_latex?: string
+  option_c_latex?: string
+  option_d_latex?: string
 }
 
 interface Solution {
@@ -707,8 +711,7 @@ interface Solution {
 }
 
 interface CorrectAnswer {
-  answer_value: string
-  answer_type: string
+  option_id: string   // e.g. 'A', 'B', or 'A,C' for MSQ — set by CorrectAnswerSerializer
 }
 
 interface Question {
@@ -737,6 +740,48 @@ interface SubmitResult {
     explanation:    string
     hints:          string
   }[]
+}
+
+// NEW: per-question breakdown shown on the custom-test result page. Built
+// client-side in submitCustomTest() by merging the backend's correctness
+// verdict (SubmitResult['results']) with the full option text/images we
+// already have locally, so the result page can render what each option
+// actually said instead of a bare letter.
+interface PerQuestionResult {
+  question_id:     number
+  question_number: number
+  question_text:   string
+  status:          'correct' | 'wrong' | 'unattempted'
+  marksDelta:      number
+  yourAnswer:      { key: string; text?: string; image?: string; latex?: string } | null
+  correctAnswer:   { key: string; text?: string; image?: string; latex?: string }
+  explanation:     string
+}
+
+// NEW: fields added to the store's CustomTestResult for the redesigned
+// result page. If stores/practiceTest.ts declares CustomTestResult with a
+// narrower shape, add these fields there too (examName, marksPerQuestion,
+// totalMarks, marksObtained, negativeMarks, perQuestion) — this file can't
+// widen a type defined elsewhere.
+interface CustomTestResult {
+  testName:         string
+  subjectName:      string
+  examName:         string
+  score:            number
+  total:            number
+  percentage:       number
+  correct:          number
+  wrong:            number
+  skipped:          number
+  attempted:        number
+  marksPerQuestion: number
+  totalMarks:       number
+  marksObtained:    number
+  negativeMarks:    number
+  timeTakenSeconds: number
+  totalTimeSeconds: number
+  submittedAt:      string
+  perQuestion:      PerQuestionResult[]
 }
 
 // ── State ──────────────────────────────────────────────────────────
@@ -822,27 +867,78 @@ const timeTakenSeconds = ref(0)
 // ── Computed ───────────────────────────────────────────────────────
 const currentQ = computed<Question | undefined>(() => questions.value[currentIndex.value])
 
-const currentOptions = computed(() => {
-  const opts = currentQ.value?.options[0]
+function optionsForQuestion(q: Question | null | undefined) {
+  const opts = q?.options?.[0]
   if (!opts) return null
+  const images = (opts.option_images ?? {}) as Record<string, string>
   return [
-    { key: 'A', text: opts.option_A },
-    { key: 'B', text: opts.option_B },
-    { key: 'C', text: opts.option_C },
-    { key: 'D', text: opts.option_D },
+    { key: 'A', text: opts.option_a, latex: opts.option_a_latex, image: images.A || images.a },
+    { key: 'B', text: opts.option_b, latex: opts.option_b_latex, image: images.B || images.b },
+    { key: 'C', text: opts.option_c, latex: opts.option_c_latex, image: images.C || images.c },
+    { key: 'D', text: opts.option_d, latex: opts.option_d_latex, image: images.D || images.d },
   ]
-})
+}
+
+const currentOptions = computed(() => optionsForQuestion(currentQ.value))
 
 const isAnswered = computed(() =>
   currentQ.value ? !!answers[currentQ.value.question_id] : false
 )
 
 const practiceCorrectAnswer = computed(() =>
-  currentQ.value?.correct_answer[0]?.answer_value ?? null
+  resolveCorrectKey(currentQ.value) ?? null
 )
 const practiceExplanation = computed(() =>
   currentQ.value?.solution[0]?.explaination_text ?? null
 )
+
+// The backend's CorrectAnswerSerializer sends the correct option as
+// `option_id` — a plain letter like "A"/"B" (or "A,C" for MSQ, not
+// handled here since this UI is single-select). Older backend code used
+// to send answer_value/answer_type, which no longer exist — this also
+// keeps a couple of defensive fallbacks in case of stray formatting.
+function resolveCorrectKey(q: Question | null | undefined): string | null {
+  if (!q) return null
+  const raw = q.correct_answer?.[0]?.option_id
+  if (raw == null) return null
+  const val = String(raw).trim()
+  if (!val) return null
+
+  // Already a plain letter: "A" / "a" (take only the first for MSQ "A,C")
+  const first = val.split(',')[0].trim()
+  if (/^[A-D]$/i.test(first)) return first.toUpperCase()
+
+  // Prefixed forms: "option_c", "Option C", "opt-c"
+  const prefixed = val.match(/^option[\s_-]*([A-D])$/i)
+  if (prefixed) return prefixed[1].toUpperCase()
+
+  // 1-based numeric index: "1" -> A, "3" -> C
+  if (/^[1-4]$/.test(val)) return ['A', 'B', 'C', 'D'][Number(val) - 1]
+  // 0-based numeric index: "0" -> A, "2" -> C
+  if (/^[0-3]$/.test(val)) return ['A', 'B', 'C', 'D'][Number(val)]
+
+  // Fall back to matching the value against the option text itself
+  // (trim + lowercase + strip trailing punctuation so minor formatting
+  // differences like a trailing period don't break the match)
+  const opts = q.options?.[0]
+  if (opts) {
+    const norm = (s: unknown) => String(s ?? '').trim().toLowerCase().replace(/[.\s]+$/, '')
+    const target = norm(val)
+    const byKey: Record<string, string> = { a: 'A', b: 'B', c: 'C', d: 'D' }
+    for (const k of ['a', 'b', 'c', 'd'] as const) {
+      if (norm((opts as any)[`option_${k}`]) === target) return byKey[k]
+    }
+  }
+
+  // Nothing matched — log once so this is diagnosable instead of silently
+  // always showing "Incorrect" if a future format change breaks this.
+  console.warn('[practice] could not resolve correct answer key', {
+    question_id: q.question_id,
+    option_id: raw,
+    options: q.options?.[0],
+  })
+  return null
+}
 
 const isChecked = computed(() =>
   currentQ.value ? !!checked[currentQ.value.question_id] : false
@@ -862,8 +958,7 @@ const showTimer = computed(() => !!store.customConfig)
 const isCurrentCorrect = computed(() => {
   const qId = currentQ.value?.question_id
   if (!qId) return false
-  const correct = practiceCorrectAnswer.value?.toUpperCase()
-  return answers[qId] === correct
+  return answers[qId] === practiceCorrectAnswer.value
 })
 
 const answeredCount = computed(() =>
@@ -1012,6 +1107,33 @@ const initials = computed(() => 'T') // placeholder — wire to auth store if av
 // ── Media helpers ──────────────────────────────────────────────────────────
 const MEDIA_BASE = import.meta.env.VITE_MEDIA_URL ?? (import.meta.env.VITE_API_BASE ?? '').replace('/api', '')
 
+// CHANGED: Question.image_url is now a JSONField on the backend
+// ( {"images": ["<url1>", "<url2>", ...]} ) instead of a single string,
+// so a question can carry several diagrams. The UI here still only
+// renders one <img>, so we pull out the first image path and hand
+// that (a plain string) to mediaUrl() as before.
+// CHANGED: bad/blank entries (e.g. {"images": [""]} from older imports,
+// or a truncated path with no extension) used to pass this check because
+// only null/undefined were rejected. An empty or whitespace-only string
+// is truthy-ish enough to slip through `?? null`, so the diagram box
+// rendered with a src that could never load — showing the browser's
+// broken-image icon instead of just showing nothing. Now every candidate
+// path is trimmed and validated before being accepted.
+function firstImagePath(imageUrl: unknown): string | null {
+  const clean = (v: unknown): string | null => {
+    if (typeof v !== 'string') return null
+    const trimmed = v.trim()
+    return trimmed.length > 0 ? trimmed : null
+  }
+  if (!imageUrl) return null
+  if (typeof imageUrl === 'string') return clean(imageUrl)
+  if (Array.isArray(imageUrl)) return clean(imageUrl[0])
+  if (typeof imageUrl === 'object' && Array.isArray((imageUrl as any).images)) {
+    return clean((imageUrl as any).images[0])
+  }
+  return null
+}
+
 function mediaUrl(path: string | null | undefined): string {
   if (!path) return ''
   // Already an absolute URL
@@ -1021,9 +1143,14 @@ function mediaUrl(path: string | null | undefined): string {
 }
 
 function onImgError(event: Event): void {
-  // Hide broken image gracefully
+  // Hide broken image gracefully, including its wrapper so no empty
+  // bordered box is left behind in the question card or option row.
   const img = event.target as HTMLImageElement
-  if (img) img.style.display = 'none'
+  if (img) {
+    img.style.display = 'none'
+    const wrapper = img.closest('.q-diagram, .paper-q-diagram, .ct-opt-image-wrap, .opt-image-wrap') as HTMLElement | null
+    if (wrapper) wrapper.style.display = 'none'
+  }
 }
 
 const totalMarksDisplay = computed(() => {
@@ -1076,7 +1203,7 @@ function optionClassPractice(key: string): string {
       // Not checked yet — just highlight the current selection, no right/wrong reveal.
       return key === selected ? 'opt-selected' : ''
     }
-    const correct = practiceCorrectAnswer.value?.toUpperCase()
+    const correct = practiceCorrectAnswer.value
     if (key === correct)  return 'opt-correct'
     if (key === selected) return 'opt-wrong'
   } else {
@@ -1221,10 +1348,39 @@ async function submitCustomTest(): Promise<void> {
     const attempted = data.results.filter(r => !!r.your_answer).length
     const wrong     = data.results.filter(r => !r.is_correct && !!r.your_answer).length
     const skipped   = data.results.filter(r => !r.your_answer).length
+    const marksPerQuestion = config?.marksPerQuestion ?? 1
+    // NOTE: no negative-marking field exists on customConfig today (see the
+    // "Negative Marking: No" shown elsewhere in this UI) — left at 0 so the
+    // result page has a real number to show rather than inventing one. Wire
+    // this up to a real per-question penalty once custom tests support it.
+    const negativeMarks = 0
+
+    // Per-question breakdown for the result page: merge the backend's
+    // correctness verdict with the full option text/images we already have
+    // locally in `questions.value`, so the result page can show what the
+    // options actually said — not just bare letters.
+    const perQuestion: PerQuestionResult[] = data.results.map((r, idx) => {
+      const q = questions.value.find(qq => qq.question_id === r.question_id)
+      const opts = optionsForQuestion(q)
+      const findOpt = (key: string) => opts?.find(o => o.key === key) ?? null
+      const status: PerQuestionResult['status'] =
+        !r.your_answer ? 'unattempted' : r.is_correct ? 'correct' : 'wrong'
+      return {
+        question_id: r.question_id,
+        question_number: idx + 1,
+        question_text: r.question_text,
+        status,
+        marksDelta: status === 'correct' ? marksPerQuestion : status === 'wrong' ? -negativeMarks : 0,
+        yourAnswer: r.your_answer ? { key: r.your_answer, ...findOpt(r.your_answer) } : null,
+        correctAnswer: { key: r.correct_answer, ...findOpt(r.correct_answer) },
+        explanation: r.explanation || r.hints || '',
+      }
+    })
 
     const customResult: CustomTestResult = {
       testName:         config ? `${config.subjectLabel} — Custom Test` : 'Custom Test',
       subjectName:       config?.subjectLabel ?? 'Custom Test',
+      examName:          store.exam?.label ?? config?.subjectLabel ?? 'Custom Test',
       score:             data.score,
       total:             data.total,
       percentage:        data.percentage,
@@ -1232,9 +1388,14 @@ async function submitCustomTest(): Promise<void> {
       wrong,
       skipped,
       attempted,
+      marksPerQuestion,
+      totalMarks:        data.total * marksPerQuestion,
+      marksObtained:     data.score * marksPerQuestion,
+      negativeMarks,
       timeTakenSeconds:  timeTakenSeconds.value,
       totalTimeSeconds:  totalAllottedSeconds,
       submittedAt:       new Date().toISOString(),
+      perQuestion,
     }
     store.setCustomTestResult(customResult)
     router.push({ name: 'practice-custom-result' })
@@ -1363,9 +1524,10 @@ async function downloadQuestionPaperPdf(): Promise<void> {
         y += qLines.length * 14 + 4
 
         // Diagram, if the question has one
-        if (q.image_url) {
+        const qImagePath = firstImagePath(q.image_url)
+        if (qImagePath) {
           try {
-            const dataUrl = await imageUrlToDataUrl(mediaUrl(q.image_url))
+            const dataUrl = await imageUrlToDataUrl(mediaUrl(qImagePath))
             const dims = await getImageDimensions(dataUrl)
             const maxImgWidth = contentWidth * 0.6
             const scale = Math.min(1, maxImgWidth / dims.width)
@@ -1384,10 +1546,10 @@ async function downloadQuestionPaperPdf(): Promise<void> {
         doc.setTextColor(50, 50, 50)
         if (q.options?.[0]) {
           const opts = [
-            `(A) ${q.options[0].option_A}`,
-            `(B) ${q.options[0].option_B}`,
-            `(C) ${q.options[0].option_C}`,
-            `(D) ${q.options[0].option_D}`,
+            `(A) ${q.options[0].option_a}`,
+            `(B) ${q.options[0].option_b}`,
+            `(C) ${q.options[0].option_c}`,
+            `(D) ${q.options[0].option_d}`,
           ]
           for (const opt of opts) {
             const optLines = doc.splitTextToSize(opt, contentWidth - 14)
@@ -1755,7 +1917,8 @@ watch(
 }
 .panel-title { font-size: 14px; font-weight: 800; color: #1e2536; margin: 0 0 12px; }
 
-.palette-panel {
+.palette-panel,
+.overview-panel {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -1836,13 +1999,25 @@ watch(
   font-weight: 700; font-size: inherit; color: #374151; cursor: pointer;
   user-select: none;
 }
-/* Current question: outline only, doesn't override the underlying answered/marked color */
-.cell-current        { background: #fff; border: 2px solid #7c3aed; color: #7c3aed; }
-.cell-answered        { background: #10b981; border-color: #10b981; color: #fff; }
-.cell-not-answered    { background: #f59e0b; border-color: #f59e0b; color: #fff; }
-.cell-not-visited     { background: #fff; color: #374151; }
-.cell-marked          { background: #7c3aed; border-color: #7c3aed; color: #fff; }
-.cell-marked-answered { background: #7c3aed; border: 2px solid #10b981; color: #fff; }
+.ct-qn-title { font-size: 12.5px; font-weight: 700; color: #374151; margin-bottom: 10px; }
+.ct-qn-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 8px; margin-bottom: 18px;
+}
+.ct-qn-cell {
+  aspect-ratio: 1; border-radius: 8px; border: 1.5px solid #e5e7eb;
+  background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; user-select: none;
+}
+/* Current question: outline only, doesn't override the underlying answered/marked color.
+   !important here is intentional and load-bearing: these state modifiers must always
+   win over the plain .ct-qn-cell / .qcell base rule no matter where either rule ends
+   up in the stylesheet (source-order alone proved too fragile - see prior fix notes). */
+.cell-current        { background: #fff !important; border: 2px solid #7c3aed !important; color: #7c3aed !important; }
+.cell-answered        { background: #10b981 !important; border-color: #10b981 !important; color: #fff !important; }
+.cell-not-answered    { background: #f59e0b !important; border-color: #f59e0b !important; color: #fff !important; }
+.cell-not-visited     { background: #fff !important; color: #374151 !important; }
+.cell-marked          { background: #7c3aed !important; border-color: #7c3aed !important; color: #fff !important; }
+.cell-marked-answered { background: #ef4444 !important; border-color: #ef4444 !important; color: #fff !important; }
 
 .legend-title { font-size: 12.5px; font-weight: 700; color: #374151; margin-bottom: 8px; }
 .legend-grid {
@@ -1856,7 +2031,7 @@ watch(
 .dot-not-answered    { background: #f59e0b; }
 .dot-not-visited     { background: #fff; border: 1.5px solid #d1d5db; }
 .dot-marked          { background: #7c3aed; }
-.dot-marked-answered { background: #7c3aed; border: 2px solid #10b981; }
+.dot-marked-answered { background: #ef4444; }
 
 /* Quick action buttons: Question Paper / Pause / Submit */
 .ov-actions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
@@ -1873,6 +2048,48 @@ watch(
 .ov-action-pause:hover  { background: #dc2626; }
 .ov-action-submit { background: #7c3aed; }
 .ov-action-submit:hover { background: #6d28d9; }
+
+/* New stacked pause/submit buttons (bottom of right panel) */
+.ov-actions-stacked { margin-top: auto; padding-top: 16px; }
+.ov-action-pause-outline {
+  background: #fff; color: #ef4444; border: 1.5px solid #ef4444;
+}
+.ov-action-pause-outline:hover { background: #fef2f2; }
+.ov-action-submit-solid { background: #10b981; }
+.ov-action-submit-solid:hover { background: #0ea472; }
+
+/* Left: Test Details summary panel */
+.details-panel { display: flex; flex-direction: column; }
+.td-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px; color: #374151; padding: 9px 0; border-bottom: 1px solid #f5f5f5;
+}
+.td-row:last-of-type { border-bottom: none; }
+.td-label { display: flex; align-items: center; gap: 8px; }
+.td-icon { font-size: 13px; }
+.td-value { color: #1e2536; }
+.td-value.c-green { color: #10b981; }
+.td-value.c-orange { color: #f59e0b; }
+
+.exam-pattern-box {
+  background: #f9fafb; border-radius: 12px; padding: 14px; margin-top: 16px;
+}
+.epb-title { font-size: 13px; font-weight: 800; color: #1e2536; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.epb-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12.5px; color: #4b5563; padding: 5px 0;
+}
+.epb-row-icon { margin-right: 6px; }
+.epb-row strong { color: #1e2536; }
+
+.quick-tip-box {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px;
+  padding: 14px; margin-top: 16px; font-size: 12.5px; color: #1e3a8a;
+}
+.quick-tip-box strong { display: block; margin-bottom: 4px; font-size: 13px; }
+.quick-tip-box p { margin: 0; line-height: 1.4; color: #1e40af; }
+.qtb-icon { font-size: 16px; flex-shrink: 0; }
 
 /* Pause overlay */
 .pause-overlay {
@@ -2036,6 +2253,10 @@ watch(
 .opt-radio.on { border-color: #7c3aed; background: radial-gradient(circle, #7c3aed 0 40%, transparent 41%); }
 .opt-key { font-weight: 700; }
 .opt-text { flex: 1; }
+.opt-latex { font-family: 'Cambria Math', Cambria, 'Times New Roman', serif; font-style: italic; letter-spacing: 0.01em; }
+.option-btn--image { align-items: center; }
+.opt-image-wrap { flex: 1; display: flex; }
+.opt-image { max-width: 100%; max-height: 140px; object-fit: contain; border-radius: 6px; }
 .opt-selected { border-color: #7c3aed; background: #f5f3ff; }
 .opt-correct  { border-color: #10b981; background: #ecfdf5; }
 .opt-wrong    { border-color: #ef4444; background: #fef2f2; }
@@ -2081,7 +2302,28 @@ watch(
   font-size: 13px; color: #374151; line-height: 1.5;
 }
 
-.q-footer { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+.q-footer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding-top: 14px; margin-top: 8px; border-top: 1px solid #f0f0f0; }
+.btn-clear {
+  background: #fff; color: #ef4444; border: 1.5px solid #ef4444; font-weight: 700;
+  font-size: 13px; padding: 10px 18px; border-radius: 9px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+}
+.btn-clear:hover:not(:disabled) { background: #fef2f2; }
+.btn-clear:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-mark-footer {
+  background: #ede9fe; color: #6d28d9; border: none; font-weight: 700;
+  font-size: 13px; padding: 10px 18px; border-radius: 9px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; margin-left: auto;
+}
+.btn-mark-footer:hover { background: #e0d7fc; }
+.btn-submit-next {
+  background: #10b981; color: #fff; border: none; font-weight: 700;
+  font-size: 13px; padding: 10px 18px; border-radius: 9px; cursor: pointer;
+}
+.btn-submit-next:hover { background: #0ea472; }
+@media (max-width: 640px) {
+  .q-footer { justify-content: flex-start; }
+  .btn-mark-footer { margin-left: 0; }
+}
 .btn-primary, .btn-secondary {
   padding: 10px 22px; border-radius: 9px; font-weight: 700; font-size: 13px; cursor: pointer;
   user-select: none; border: none;
@@ -2321,21 +2563,33 @@ watch(
 .ct-opt-text { flex: 1; }
 .ct-opt-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #d1d5db; flex-shrink: 0; }
 .ct-opt-radio.on { border-color: #7c3aed; background: radial-gradient(circle, #7c3aed 0 40%, transparent 41%); }
+.ct-opt-latex { font-family: 'Cambria Math', Cambria, 'Times New Roman', serif; font-style: italic; letter-spacing: 0.01em; }
+.ct-option-btn--image { align-items: center; }
+.ct-opt-image-wrap { flex: 1; display: flex; }
+.ct-opt-image { max-width: 100%; max-height: 140px; object-fit: contain; border-radius: 6px; }
 
+/* CHANGED: this footer sits inside the narrow center column of the
+   3-column exam layout, not the full viewport - so the old @media
+   (max-width: 640px) compaction never fired on desktop (viewport is
+   wide even though the column itself is only ~600-650px), and the
+   buttons wrapped onto a second line. The compact sizing is now the
+   default at every width; the media query below only tightens it
+   further for genuinely narrow phone screens. */
 .ct-footer {
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
   padding-top: 12px; margin-top: 12px; border-top: 1px solid #f0f0f0;
   flex-shrink: 0;
 }
 .ct-footer .btn-secondary,
 .ct-footer .ct-btn-mark,
 .ct-footer .ct-btn-skip-next,
+.ct-footer .ct-btn-submit-next,
 .ct-footer .btn-submit-footer {
   flex: 0 0 auto;
   min-width: 0;
   white-space: nowrap;
-  padding: 8px 14px;
-  font-size: 12.5px;
+  padding: 7px 10px;
+  font-size: 11.5px;
   overflow: visible;
   text-overflow: unset;
   justify-content: center;
@@ -2352,11 +2606,18 @@ watch(
   font-size: 12.5px; padding: 8px 16px; border-radius: 8px; cursor: pointer;
   user-select: none;
 }
+/* Shown instead of "Skip & Next" once the current question has an answer selected */
+.ct-btn-submit-next {
+  background: #10b981; color: #fff; border: none; font-weight: 700;
+  font-size: 12.5px; padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  user-select: none;
+}
 @media (max-width: 640px) {
   .ct-footer { gap: 6px; justify-content: flex-end; }
   .ct-footer .btn-secondary,
   .ct-footer .ct-btn-mark,
   .ct-footer .ct-btn-skip-next,
+  .ct-footer .ct-btn-submit-next,
   .ct-footer .btn-submit-footer {
     font-size: 11px;
     padding: 7px 10px;
@@ -2386,13 +2647,5 @@ watch(
 }
 .ct-subj-filter-btn.active { background: #1e2536; border-color: #1e2536; color: #fff; }
 
-.ct-qn-title { font-size: 12.5px; font-weight: 700; color: #374151; margin-bottom: 10px; }
-.ct-qn-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
-  gap: 8px; margin-bottom: 18px;
-}
-.ct-qn-cell {
-  aspect-ratio: 1; border-radius: 8px; border: 1.5px solid #e5e7eb;
-  background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; user-select: none;
-}
+
 </style>

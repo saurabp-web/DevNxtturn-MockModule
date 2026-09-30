@@ -1,0 +1,29 @@
+Collecting pdfplumber
+  Downloading pdfplumber-0.11.10-py3-none-any.whl.metadata (43 kB)
+Collecting pdfminer.six==20260107 (from pdfplumber)
+  Downloading pdfminer_six-20260107-py3-none-any.whl.metadata (4.3 kB)
+Collecting Pillow>=12.2.0 (from pdfplumber)
+  Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+Collecting pypdfium2>=5.9.0 (from pdfplumber)
+  Downloading pypdfium2-5.13.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (66 kB)
+Requirement already satisfied: charset-normalizer>=2.0.0 in /usr/local/lib/python3.12/site-packages (from pdfminer.six==20260107->pdfplumber) (3.4.1)
+Requirement already satisfied: cryptography>=36.0.0 in /usr/local/lib/python3.12/site-packages (from pdfminer.six==20260107->pdfplumber) (45.0.6)
+Requirement already satisfied: cffi>=1.14 in /usr/local/lib/python3.12/site-packages (from cryptography>=36.0.0->pdfminer.six==20260107->pdfplumber) (1.17.1)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.12/site-packages (from cffi>=1.14->cryptography>=36.0.0->pdfminer.six==20260107->pdfplumber) (2.22)
+Downloading pdfplumber-0.11.10-py3-none-any.whl (60 kB)
+Downloading pdfminer_six-20260107-py3-none-any.whl (6.6 MB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/6.6 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.6/6.6 MB[0m [31m9.5 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━[0m [32m3.4/6.6 MB[0m [31m9.2 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━[0m [32m4.5/6.6 MB[0m [31m7.7 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━[0m [32m6.3/6.6 MB[0m [31m8.1 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m6.6/6.6 MB[0m [31m7.8 MB/s[0m eta [36m0:00:00[0m
+[?25hDownloading pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.9 MB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/6.9 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.8/6.9 MB[0m [31m9.1 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━[0m [32m3.4/6.9 MB[0m [31m8.9 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━[0m [32m5.2/6.9 MB[0m [31m8.6 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m6.9/6.9 MB[0m [31m8.9 MB/s[0m eta [36m0:00:00[0m
+[?25hDownloading pypdfium2-5.13.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.7 MB)
+[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/3.7 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━[0m [32m1.8/3.7 MB[0m [31m9.7 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m [32m3.7/3.7 MB[0m [31m9.8 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m3.7/3.7 MB[0m [31m9.0 MB/s[0m eta [36m0:00:00[0m
+[?25hInstalling collected packages: pypdfium2, Pillow, pdfminer.six, pdfplumber
+  Attempting uninstall: Pillow
+    Found existing installation: pillow 11.2.1
+    Uninstalling pillow-11.2.1:
+      Successfully uninstalled pillow-11.2.1
+Successfully installed Pillow-12.3.0 pdfminer.six-20260107 pdfplumber-0.11.10 pypdfium2-5.13.0
+[33mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.[0m[33m
+[0m
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m A new release of pip is available: [0m[31;49m25.0.1[0m[39;49m -> [0m[32;49m26.2.1[0m
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m To update, run: [0m[32;49mpip install --upgrade pip[0m

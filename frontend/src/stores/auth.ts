@@ -21,6 +21,8 @@ export interface User {
   date_joined: string
   picture: string | null
   display_name: string | null
+  is_staff: boolean
+  is_superuser: boolean
 }
 
 // Interface for registration data

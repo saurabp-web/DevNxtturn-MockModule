@@ -138,6 +138,9 @@ class UserSerializer(serializers.ModelSerializer):
             "display_name",
             "email",
             "picture",
+            "is_staff", 
+            "is_superuser", 
+            "date_joined",
         ]
 
     # 3. This method reaches into the Profile to get the 'Superior' name
@@ -159,6 +162,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CustomRegisterSerializer(RegisterSerializer):
+
     email = serializers.EmailField(required=True)
 
     def validate(self, attrs):

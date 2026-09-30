@@ -188,7 +188,7 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication"
+        "rest_framework.authentication.TokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly"
@@ -319,3 +319,21 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
+
+
+# --- OPENROUTER AI (PYQ chapter auto-mapping fallback) ---
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+# NOTE: "qwen/qwen3.8-27b:free" is not a real OpenRouter model id - it would
+# 400 on every call if OPENROUTER_MODEL is ever unset. "openrouter/free" is
+# OpenRouter's actual free-tier auto-router, so use that as the safe fallback.
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
+OPENROUTER_SITE_URL = os.getenv("OPENROUTER_SITE_URL", FRONTEND_URL)
+OPENROUTER_SITE_NAME = os.getenv("OPENROUTER_SITE_NAME", "NxtTurn Exam Admin")
+
+# --- Startup diagnostic: confirms whether the key actually reached Django ---
+# Check `docker compose logs backend | grep OPENROUTER` after a restart.
+if OPENROUTER_API_KEY:
+    print(f"[OPENROUTER] key loaded (len={len(OPENROUTER_API_KEY)}, prefix={OPENROUTER_API_KEY[:10]}...)...")
+else:
+    print("[OPENROUTER] OPENROUTER_API_KEY is EMPTY ...")

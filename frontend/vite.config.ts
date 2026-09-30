@@ -56,6 +56,10 @@ export default defineConfig(({ command, mode }) => {
           secure: false,
         },
 
+        // Django's built-in admin site lives at the normal "/admin/"
+        // path again. The Vue admin dashboard was moved to "/exam-admin"
+        // (see router/index.ts), so there's no longer any collision —
+        // this proxy rule only needs to cover Django's actual admin.
         '/admin': {
           target: 'https://backend:8000',
           changeOrigin: true,

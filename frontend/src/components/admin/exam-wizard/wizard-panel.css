@@ -1,0 +1,98 @@
+.wizard-panel {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 20px;
+}
+.panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.panel-grid.three-col { grid-template-columns: 1fr 1fr; }
+.col { display: flex; flex-direction: column; gap: 16px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.field label { font-size: 13px; font-weight: 600; color: #374151; }
+.req { color: #DC2626; }
+
+.field input,
+.field select,
+.field textarea {
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: #111827;
+  font-family: inherit;
+  background: #fff;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+.field textarea { resize: vertical; }
+.char-count {
+  align-self: flex-end;
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #F3F4F6;
+}
+.panel-actions.spread { justify-content: space-between; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.btn-primary { background: #7C3AED; color: #fff; }
+.btn-primary:hover { background: #6D28D9; }
+.btn-ghost { background: #fff; color: #374151; border-color: #E5E7EB; }
+.btn-ghost:hover { background: #F9FAFB; }
+.btn-success { background: #059669; color: #fff; }
+.btn-success:hover { background: #047857; }
+
+.summary-card {
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 16px;
+}
+.summary-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 14px;
+}
+.summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 12px; }
+.summary-row:last-child { margin-bottom: 0; }
+.summary-label { color: #9CA3AF; }
+.summary-value { color: #111827; font-weight: 600; }

@@ -153,9 +153,22 @@
             <span class="q-num-label">Question {{ currentQIndex + 1 }} <span class="q-of">of {{ currentSectionQs.length }}</span></span>
           </div>
           <div class="q-divider"></div>
-          <p class="q-text">{{ currentQ?.question_text }}</p>
+          <p class="q-text" v-html="currentQ ? renderQuestionText(currentQ) : ''"></p>
 
-          <div class="options-list">
+          <!-- NEW: question-stem diagrams (Question.image_url -> {"images": [...]}) -->
+          <div v-if="visibleImages(currentQ?.images).length" class="q-images">
+            <img
+              v-for="(src, i) in visibleImages(currentQ?.images)"
+              :key="src"
+              :src="src"
+              class="q-diagram-img"
+              alt="Question diagram"
+              loading="lazy"
+              @error="markImageFailed(src)"
+            />
+          </div>
+
+          <div v-if="!isNumericalQuestion" class="options-list">
             <div
               v-for="opt in currentOptions"
               :key="opt.key"
@@ -164,11 +177,39 @@
               @click="selectAnswer(opt.key)"
             >
               <span class="opt-label">{{ opt.key }}</span>
-              <span class="opt-text">{{ opt.text }}</span>
+              <!-- Graph/formula-style option: render each image fragment
+                   separately so multiple graphs are never merged into one.
+                   Falls back to plain text for non-image options. -->
+              <div v-if="visibleImages(opt.images).length" class="opt-images-wrap">
+                <img
+                  v-for="(src, i) in visibleImages(opt.images)"
+                  :key="src"
+                  :src="src"
+                  class="opt-diagram-img"
+                  :alt="`Option ${opt.key} diagram ${i + 1}`"
+                  loading="lazy"
+                  @error="markImageFailed(src)"
+                />
+              </div>
+              <span v-else class="opt-text" v-html="renderOption(opt)"></span>
               <span class="opt-radio-wrap">
                 <span class="opt-radio" :class="{ on: answers[currentQId] === opt.key }"></span>
               </span>
             </div>
+          </div>
+          <div v-else class="numerical-answer-row">
+            <label class="numerical-answer-label" :for="`numeric-answer-${currentQId}`">
+              Enter your numerical answer:
+            </label>
+            <input
+              :id="`numeric-answer-${currentQId}`"
+              type="text"
+              inputmode="decimal"
+              class="numerical-answer-input"
+              placeholder="e.g. 12.5"
+              :value="answers[currentQId] ?? ''"
+              @input="setNumericAnswer(($event.target as HTMLInputElement).value)"
+            />
           </div>
         </div>
 
@@ -322,13 +363,25 @@
 
             <div v-for="(q, qi) in sec.questions" :key="q.question_id" class="pdf-question">
               <div class="pdf-question-head">
-                <p class="pdf-question-text"><b>Q{{ qi + 1 }}.</b> {{ questionBody(q.question_text) }}</p>
+                <p class="pdf-question-text"><b>Q{{ qi + 1 }}.</b> <span v-html="q.question_text_latex ? renderMixedContent(q.question_text_latex) : renderPlainWithMath(questionBody(q.question_text))"></span></p>
                 <span class="pdf-marks">+4 / -1</span>
+              </div>
+              <div v-if="q.images?.length" class="pdf-q-images">
+                <img v-for="(src, i) in q.images" :key="i" :src="src" class="pdf-q-diagram-img" alt="Question diagram" />
               </div>
               <div class="pdf-options-grid">
                 <div v-for="opt in q.options" :key="opt.key" class="pdf-option">
                   <span class="pdf-opt-key">{{ opt.key }}</span>
-                  <span>{{ opt.text }}</span>
+                  <span v-if="opt.images.length" class="pdf-opt-images-wrap">
+                    <img
+                      v-for="(src, i) in opt.images"
+                      :key="i"
+                      :src="src"
+                      class="pdf-opt-diagram-img"
+                      :alt="`Option ${opt.key} diagram ${i + 1}`"
+                    />
+                  </span>
+                  <span v-else v-html="renderOption(opt)"></span>
                 </div>
               </div>
             </div>
@@ -345,6 +398,7 @@
           You have {{ totalAnswered }} answered, {{ skippedCount }} skipped, and {{ markedCount }} marked for review.
           Are you sure you want to submit?
         </p>
+        <p v-if="submitError" class="modal-error">⚠ {{ submitError }}</p>
         <div class="modal-actions">
           <button class="btn-modal-cancel" @click="confirmingSubmit = false">Cancel</button>
           <button class="btn-modal-submit" @click="submitTest">Submit</button>
@@ -353,46 +407,251 @@
     </div>
   </div>
 
-  <!-- ══════ RESULT SCREEN ══════ -->
-  <div v-else class="result-page">
-    <div class="trophy-wrap">🏆</div>
-    <h2 class="result-title">Test Submitted Successfully!</h2>
-    <p class="result-sub">Your test has been submitted.</p>
+  <!-- ══════ RESULT / DETAILED ANALYSIS SCREEN ══════ -->
+  <div v-else class="analysis-shell">
 
-    <div class="result-stats-row">
-      <div class="rs-box">
-        <span class="rs-num c-purple">{{ result.score }}<span class="rs-denom">/{{ store.mockTest?.marks ?? 300 }}</span></span>
-        <span class="rs-lbl">Score</span>
-      </div>
-      <div class="rs-box">
-        <span class="rs-num c-green">{{ result.percentile }}</span>
-        <span class="rs-lbl">Percentile</span>
-      </div>
-      <div class="rs-box">
-        <span class="rs-num c-orange">{{ result.accuracy }}%</span>
-        <span class="rs-lbl">Accuracy</span>
-      </div>
-      <div class="rs-box">
-        <span class="rs-num c-blue">{{ result.rank }}<span class="rs-denom">/{{ result.totalStudents }}</span></span>
-        <span class="rs-lbl">Rank</span>
-      </div>
-    </div>
-
-    <div class="sectional-card">
-      <h4 class="sectional-title">Sectional Summary</h4>
-      <div class="sectional-row">
-        <div v-for="sec in sections" :key="sec.name" class="sec-result">
-          <span class="sec-result-name">{{ sec.name }}</span>
-          <span class="sec-result-score c-green">{{ sectionScore(sec) }}<span class="sec-denom">/{{ sec.questions.length * 4 }}</span></span>
-          <span class="sec-result-pct">{{ sectionAccuracy(sec) }}%</span>
+    <!-- ── Left sidebar: user info + exam meta ── -->
+    <aside class="analysis-left">
+      <div class="al-user-card">
+        <div class="al-avatar">{{ (store.exam?.name ?? 'U')[0].toUpperCase() }}</div>
+        <div class="al-user-info">
+          <div class="al-user-name">{{ store.exam?.name ?? 'Student' }}</div>
+          <div class="al-user-email">student@nxtturn.com</div>
         </div>
       </div>
-    </div>
 
-    <div class="result-actions">
-      <button class="btn-analysis" @click="router.push({ name: 'exams' })">⊙ View Detailed Analysis</button>
-      <button class="btn-dashboard" @click="router.push({ name: 'exams' })">Back to Dashboard</button>
-    </div>
+      <div class="al-meta-list">
+        <div class="al-meta-row">
+          <span class="al-meta-icon">📄</span>
+          <div>
+            <div class="al-meta-label">Exam Name</div>
+            <div class="al-meta-val">{{ store.exam?.name ?? '—' }}</div>
+          </div>
+        </div>
+        <div class="al-meta-row">
+          <span class="al-meta-icon">📋</span>
+          <div>
+            <div class="al-meta-label">Test Name</div>
+            <div class="al-meta-val">{{ store.mockTest?.name ?? '—' }}</div>
+          </div>
+        </div>
+        <div class="al-meta-row">
+          <span class="al-meta-icon">📅</span>
+          <div>
+            <div class="al-meta-label">Test Completed On</div>
+            <div class="al-meta-val">{{ new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) }}</div>
+          </div>
+        </div>
+        <div class="al-meta-row">
+          <span class="al-meta-icon">🏆</span>
+          <div>
+            <div class="al-meta-label">Your Score</div>
+            <div class="al-meta-val">{{ result.score }} / {{ store.mockTest?.marks ?? totalQuestions * 4 }}</div>
+          </div>
+        </div>
+        <div class="al-meta-row">
+          <span class="al-meta-icon">✅</span>
+          <div>
+            <div class="al-meta-label">Result</div>
+            <div class="al-meta-val al-completed">Completed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="al-great-box">
+        <span class="al-great-icon">✅</span>
+        <div>
+          <div class="al-great-title">Great job!</div>
+          <div class="al-great-sub">You have completed this assessment.</div>
+        </div>
+      </div>
+
+      <button class="btn-al-dashboard" @click="router.push({ name: 'exams' })">
+        📊 Exam Dashboard
+      </button>
+      <button class="btn-al-reattempt" @click="router.push({ name: 'mock-select' })">
+        ↺ Reattempt Test
+      </button>
+    </aside>
+
+    <!-- ── Center: question-by-question review ── -->
+    <section class="analysis-center">
+      <!-- Filter tabs -->
+      <div class="analysis-filter-tabs">
+        <button
+          v-for="f in [
+            { key: 'all',         label: 'All Questions' },
+            { key: 'correct',     label: 'Correct' },
+            { key: 'wrong',       label: 'Wrong' },
+            { key: 'unattempted', label: 'Unattempted' },
+          ]"
+          :key="f.key"
+          class="af-tab"
+          :class="{ active: analysisFilter === f.key }"
+          @click="analysisFilter = (f.key as any)"
+        >{{ f.label }}</button>
+      </div>
+
+      <div class="analysis-q-list">
+        <div
+          v-for="({ q, dr }, idx) in filteredResults"
+          :key="q.question_id"
+          class="aq-card"
+        >
+          <!-- Question header -->
+          <div class="aq-header">
+            <span class="aq-num">{{ idx + 1 }}</span>
+            <span
+              class="aq-status-badge"
+              :class="dr?.is_correct ? 'badge-correct' : dr?.your_answer ? 'badge-wrong' : 'badge-unattempted'"
+            >
+              {{ dr?.is_correct ? 'CORRECT' : dr?.your_answer ? 'WRONG' : 'UNATTEMPTED' }}
+            </span>
+            <span
+              class="aq-marks"
+              :class="dr?.is_correct ? 'marks-pos' : dr?.your_answer ? 'marks-neg' : ''"
+            >
+              {{ dr?.is_correct ? '+4 Mark' : dr?.your_answer ? '-1 Mark' : '' }}
+            </span>
+          </div>
+
+          <!-- Question text -->
+          <p class="aq-text" v-html="renderQuestionText(q)"></p>
+
+          <!-- Question images -->
+          <div v-if="visibleImages(q.images).length" class="aq-images">
+            <img
+              v-for="src in visibleImages(q.images)"
+              :key="src" :src="src"
+              class="aq-diagram-img" alt="diagram"
+              @error="markImageFailed(src)"
+            />
+          </div>
+
+          <!-- Options -->
+          <div v-if="q.question_type !== 'Numerical'" class="aq-options">
+            <div
+              v-for="opt in q.options"
+              :key="opt.key"
+              class="aq-option"
+              :class="{
+                'aq-opt-correct': opt.key === dr?.correct_answer,
+                'aq-opt-wrong':   opt.key === dr?.your_answer && !dr?.is_correct,
+              }"
+            >
+              <span class="aq-opt-bubble"
+                :class="{
+                  'bubble-correct': opt.key === dr?.correct_answer,
+                  'bubble-wrong':   opt.key === dr?.your_answer && !dr?.is_correct,
+                }"
+              >{{ opt.key }}</span>
+              <div v-if="visibleImages(opt.images).length" class="opt-images-wrap">
+                <img v-for="src in visibleImages(opt.images)" :key="src" :src="src"
+                  class="aq-opt-img" @error="markImageFailed(src)" />
+              </div>
+              <span v-else class="aq-opt-text" v-html="renderOption(opt)"></span>
+              <!-- tick / cross icons -->
+              <span v-if="opt.key === dr?.correct_answer" class="aq-opt-icon icon-correct">✓</span>
+              <span v-else-if="opt.key === dr?.your_answer && !dr?.is_correct" class="aq-opt-icon icon-wrong">✗</span>
+            </div>
+          </div>
+
+          <!-- Numerical answer row -->
+          <div v-else class="aq-numerical">
+            <span class="aq-num-label">Your Answer:</span>
+            <span class="aq-num-val" :class="dr?.is_correct ? 'c-green' : 'c-red'">
+              {{ dr?.your_answer || '—' }}
+            </span>
+            <span class="aq-num-sep">|</span>
+            <span class="aq-num-label">Correct Answer:</span>
+            <span class="aq-num-val c-green">{{ dr?.correct_answer || '—' }}</span>
+          </div>
+
+          <!-- Solution section -->
+          <div class="aq-solution-wrap">
+            <div class="aq-solution-header">
+              <div class="aq-solution-label">SOLUTION</div>
+              <button
+                v-if="dr?.explanation || dr?.hints"
+                class="btn-toggle-explanation"
+                @click="toggleExplanation(q.question_id)"
+              >
+                {{ expandedExplanations.has(q.question_id) ? '▲ Hide' : '▼ View Detailed Explanation' }}
+              </button>
+            </div>
+            <!-- Always show a brief fallback line -->
+            <p class="aq-solution-text">
+              {{ dr?.explanation
+                  ? (expandedExplanations.has(q.question_id) ? dr.explanation : dr.explanation.slice(0, 160) + (dr.explanation.length > 160 ? '…' : ''))
+                  : 'Review the key concept related to this question to understand the correct answer.' }}
+            </p>
+            <div v-if="expandedExplanations.has(q.question_id) && dr?.hints" class="aq-hints">
+              <div class="aq-hints-label">💡 Hints</div>
+              <p class="aq-hints-text">{{ dr.hints }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="filteredResults.length === 0" class="aq-empty">
+          No questions to show for this filter.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Right sidebar: performance stats ── -->
+    <aside class="analysis-right">
+      <div class="ar-perf-card">
+        <div class="ar-perf-title">Test Performance</div>
+
+        <!-- Donut -->
+        <div class="ar-donut-wrap">
+          <svg viewBox="0 0 120 120" class="ar-donut-svg">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="14"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#7c3aed" stroke-width="14"
+              :stroke-dasharray="(resultCounts.correct / Math.max(resultCounts.total,1)) * 314 + ' 314'"
+              stroke-dashoffset="78.5" stroke-linecap="round"/>
+            <text x="60" y="55" text-anchor="middle" font-size="18" font-weight="800" fill="#1e2536">
+              {{ Math.round((resultCounts.correct / Math.max(resultCounts.total,1)) * 100) }}%
+            </text>
+            <text x="60" y="70" text-anchor="middle" font-size="9" fill="#9ca3af">Score</text>
+          </svg>
+        </div>
+        <div class="ar-marks-line">{{ result.score }} / {{ store.mockTest?.marks ?? totalQuestions * 4 }} Marks</div>
+
+        <div class="ar-stats-grid">
+          <div class="ar-stat-box ar-stat-correct">
+            <span class="ar-stat-icon">✓</span>
+            <span class="ar-stat-num">{{ resultCounts.correct }}</span>
+            <span class="ar-stat-lbl">Correct</span>
+          </div>
+          <div class="ar-stat-box ar-stat-wrong">
+            <span class="ar-stat-icon">✗</span>
+            <span class="ar-stat-num">{{ resultCounts.wrong }}</span>
+            <span class="ar-stat-lbl">Wrong</span>
+          </div>
+          <div class="ar-stat-box ar-stat-skip">
+            <span class="ar-stat-num">{{ resultCounts.unattempted }}</span>
+            <span class="ar-stat-lbl">Skipped</span>
+          </div>
+          <div class="ar-stat-box ar-stat-attempted">
+            <span class="ar-stat-num">{{ resultCounts.correct + resultCounts.wrong }}</span>
+            <span class="ar-stat-lbl">Attempted</span>
+          </div>
+        </div>
+
+        <div class="ar-detail-rows">
+          <div class="ar-detail-row"><span>Total Questions</span><span>{{ resultCounts.total }}</span></div>
+          <div class="ar-detail-row"><span>Total Marks</span><span>{{ store.mockTest?.marks ?? totalQuestions * 4 }}</span></div>
+          <div class="ar-detail-row"><span>Marks Obtained</span><span>{{ result.score }}</span></div>
+          <div class="ar-detail-row"><span>Negative Marks</span><span>{{ resultCounts.wrong }}</span></div>
+          <div class="ar-detail-row"><span>Time Taken</span><span>{{ formattedTimeTaken }}</span></div>
+        </div>
+
+        <button class="btn-download-report" @click="downloadPdf">
+          ⬇ Download Full Report
+        </button>
+      </div>
+    </aside>
   </div>
 </template>
 
@@ -400,6 +659,158 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePracticeTestStore } from '../../stores/practiceTest'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
+
+// Renders a stored *_latex field (e.g. option_a_latex, question_text_latex)
+// with KaTeX. These fields already hold a complete LaTeX fragment — either
+// from to_latex()'s regex pass on clean text, or from the Mathpix OCR
+// fallback for options whose 2D equation-editor layout (stacked fractions/
+// roots) couldn't be reconstructed as linear text at all (see
+// Import_Mock.py: looks_scrambled() / ocr_region_to_latex()). Either way,
+// by the time it reaches here it's ready to render as-is — do NOT re-run
+// it through any text-transform.
+// Falls back to returning the raw string (HTML-escaped) if latex is empty
+// or KaTeX fails to parse it, so a bad/partial LaTeX string never blanks
+// out an option — the caller decides what to pass as that fallback (see
+// renderOption below, which prefers plain text over raw latex on failure).
+function renderMath(latex: string): string {
+  if (!latex) return ''
+  try {
+    return katex.renderToString(latex, { throwOnError: false, output: 'html' })
+  } catch {
+    return escapeHtml(latex)
+  }
+}
+
+// CHANGED: renderMath() above was previously called on the WHOLE
+// question_text_latex / option_x_latex field, including any plain English
+// prose mixed in with the math. KaTeX math mode collapses whitespace the
+// same way plain TeX does, so any sentence caught inside it lost all its
+// word-spacing — e.g. "A point mass oscillates..." rendered as
+// "Apointmassoscillatesalong...". This showed up in the question preview
+// modal (see Q16, 2004 paper screenshot).
+//
+// Fix: only the actual delimited math spans — \( ... \), \[ ... \], or
+// $ ... $ — are sent to KaTeX here. Everything outside those delimiters
+// renders as plain escaped text, so prose keeps its spacing no matter what
+// the backend's LaTeX field looks like. If the field has NO delimiters at
+// all (i.e. it's an old/corrupted whole-string-as-math value), it now falls
+// back to plain text instead of being guessed at as pure math — readable
+// text beats a scrambled formula.
+const MATH_DELIMITER_RE = /\\\((.+?)\\\)|\\\[(.+?)\\\]|\$(.+?)\$/gs
+
+function renderMixedContent(text: string): string {
+  if (!text) return ''
+  if (!MATH_DELIMITER_RE.test(text)) {
+    return escapeHtml(text)
+  }
+  MATH_DELIMITER_RE.lastIndex = 0
+  let result = ''
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+  while ((match = MATH_DELIMITER_RE.exec(text)) !== null) {
+    result += escapeHtml(text.slice(lastIndex, match.index))
+    const mathContent = match[1] ?? match[2] ?? match[3] ?? ''
+    try {
+      result += katex.renderToString(mathContent, { throwOnError: false, output: 'html' })
+    } catch {
+      result += escapeHtml(mathContent)
+    }
+    lastIndex = match.index + match[0].length
+  }
+  result += escapeHtml(text.slice(lastIndex))
+  return result
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+// ── Fallback math rendering for bare (undelimited) LaTeX ──────────────────
+// The *_latex columns (question_text_latex / option_x_latex) are populated
+// by a separate importer (Import_Mock.py's to_latex()) and hold math already
+// wrapped in \( \) / \[ \] / $ $ delimiters — renderMixedContent() above
+// handles that case correctly.
+//
+// The PYQ PDF-import pipeline (MockAdmin/views.py's _preserve_physics_math)
+// never populates those _latex columns — it writes LaTeX commands directly
+// into question_text / option_a..d themselves, with NO delimiters at all
+// (e.g. "\alpha^{2009} +\beta^{2009} =", not "\(\alpha^{2009} + ...\)").
+// Previously, when the _latex field was empty, renderOption()/
+// renderQuestionText() fell straight to escapeHtml(text) — which never
+// touches KaTeX — so every PYQ-imported question showed raw backslash
+// commands verbatim instead of rendered math (see Q2/Q6/Q7, JEE Main 2010
+// screenshots).
+//
+// Fix: reuse the same tokenizer approach already proven out in
+// MathRenderer.vue for exactly this "bare LaTeX mixed into plain prose, no
+// delimiters" shape — split into real-LaTeX-token runs (left untouched, so
+// \alpha / \hat{i} / x^2 / H_{2} still render as math) and plain-text runs
+// in between (wrapped in \text{...} so KaTeX renders them upright with
+// normal word spacing instead of collapsing into one run-on math blob).
+function hasLatex(text: string): boolean {
+  return /\\\(|\\\[|\\\\|\\frac|\\sqrt|\\sum|\\int|\\alpha|\\beta|\\gamma|\\delta|\\theta|\\lambda|\\mu|\\pi|\\sigma|\\phi|\\omega|\\Delta|\\Sigma|\\Omega|_|\^/.test(text)
+}
+
+// Matches an actual LaTeX token: a backslash command optionally followed by
+// up to two brace groups (\Delta, \sqrt{x}, \frac{a}{b}, \vec{F}, \hat{i}),
+// or a bare subscript/superscript (H_{2}, x^2, k^{-1}).
+const LATEX_TOKEN_RE = /\\[a-zA-Z]+(?:\{[^{}]*\}){0,2}|[_^](?:\{[^{}]*\}|[a-zA-Z0-9])/g
+
+// Escape characters that are special to TeX so plain English text renders
+// literally instead of being (mis)interpreted as math syntax.
+function escapeForKatexText(segment: string): string {
+  return segment.replace(/[{}$%#&~]/g, '\\$&')
+}
+
+function buildKatexSource(text: string): string {
+  // Multi-line stems: \text{} doesn't handle literal newlines, so collapse
+  // them to a single space for this inline rendering.
+  const flat = text.replace(/\s*\n+\s*/g, ' ')
+
+  let result = ''
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+  LATEX_TOKEN_RE.lastIndex = 0
+  while ((match = LATEX_TOKEN_RE.exec(flat)) !== null) {
+    const plain = flat.slice(lastIndex, match.index)
+    if (plain) result += `\\text{${escapeForKatexText(plain)}}`
+    result += match[0]
+    lastIndex = match.index + match[0].length
+  }
+  const rest = flat.slice(lastIndex)
+  if (rest) result += `\\text{${escapeForKatexText(rest)}}`
+  return result
+}
+
+// Renders bare/undelimited text that may contain inline LaTeX commands.
+// Falls back to plain escaped text if there's no LaTeX to render, or if
+// KaTeX fails to parse the built source (never blank out a question/option
+// over a bad math fragment).
+function renderPlainWithMath(text: string): string {
+  if (!text) return ''
+  if (!hasLatex(text)) return escapeHtml(text)
+  try {
+    return katex.renderToString(buildKatexSource(text), { throwOnError: false, output: 'html' })
+  } catch {
+    return escapeHtml(text)
+  }
+}
+
+// Convenience for template use: prefer the LaTeX-column rendering when
+// present (delimited math from Import_Mock.py), otherwise render the plain
+// text field through the bare-LaTeX-aware fallback above (covers PYQ
+// PDF-imported questions, which only ever populate text/option_a..d).
+function renderOption(opt: { text: string; latex: string }): string {
+  return opt.latex ? renderMixedContent(opt.latex) : renderPlainWithMath(opt.text)
+}
+function renderQuestionText(q: { question_text: string; question_text_latex?: string }): string {
+  return q.question_text_latex ? renderMixedContent(q.question_text_latex) : renderPlainWithMath(q.question_text)
+}
 
 const router = useRouter()
 const store  = usePracticeTestStore()
@@ -451,10 +862,53 @@ const formattedTime = computed(() => {
 interface Question {
   question_id:  string           // kept as string so all downstream code works unchanged
   question_text: string
-  options:      { key: string; text: string }[]
+  // NEW: server-side LaTeX rendering of question_text, when the
+  // `question_text_latex` column exists and was populated by the importer
+  // (see to_latex() in Import_Mock.py). Empty string if not available —
+  // renderQuestionText() falls back to plain question_text in that case.
+  question_text_latex: string
+  question_type: string          // 'MCQ' | 'Numerical' — controls which input the template shows
+  // NEW: `latex` is the option_{a..d}_latex column (KaTeX-renderable),
+  // filled in by Import_Mock.py either via its own to_latex() regex pass
+  // (clean linear text like "4/3 t0") or via Mathpix OCR for options whose
+  // fraction/root layout was scrambled beyond linear reconstruction. Empty
+  // string when neither path produced anything — renderOption() then falls
+  // back to plain `text`.
+  options:      { key: string; text: string; latex: string; images: string[] }[]
   correct_key:  string           // empty during test; filled after submitTest()
+  // NEW: Question.image_url is stored server-side as {"images": ["<url>", ...]}
+  // (see models.py / Import_Mock.py) — one or more diagram URLs for the stem.
+  images:       string[]
 }
 interface Section { name: string; questions: Question[] }
+
+// Accepts a raw array entry from image_url.images / option_images[letter]
+// and returns a usable URL string, or null if it's not one (wrong type,
+// empty/whitespace, or a stringified-empty-object placeholder like "{}" /
+// "[object Object]" that some import rows ended up with).
+function cleanImagePath(v: unknown): string | null {
+  if (typeof v !== 'string') return null
+  const trimmed = v.trim()
+  if (!trimmed || trimmed === '{}' || trimmed === '[object Object]') return null
+  return trimmed
+}
+
+// CHANGED: URLs that pass cleanImagePath() are well-formed strings, but the
+// file behind one can still 404 (deleted/renamed on the media server). That
+// used to leave a blank/broken image sitting in the bordered box with no
+// recovery. Track failed URLs in reactive state (not direct DOM mutation)
+// so the failing <img> — and only that one fragment, not the whole
+// question — disappears cleanly once it errors, and stays gone on re-render.
+const failedImageUrls = ref<Set<string>>(new Set())
+function visibleImages(urls: string[] | undefined): string[] {
+  if (!urls?.length) return []
+  return urls.filter(u => !failedImageUrls.value.has(u))
+}
+function markImageFailed(url: string): void {
+  const next = new Set(failedImageUrls.value)
+  next.add(url)
+  failedImageUrls.value = next
+}
 
 const sections          = ref<Section[]>([])
 const loadingQuestions  = ref(false)
@@ -468,15 +922,21 @@ async function loadQuestions() {
   loadError.value        = ''
   sections.value         = []
   try {
-    const examId = (store.mockTest as any)?.id
-    if (!examId) throw new Error('No mock test selected.')
+    // store.mockTest.id is the MockExam PK (e.g. the specific "JEE Main
+    // 2025 Mock Test - 1" paper), NOT the parent Exam's PK. Previously
+    // this was sent as exam_id, which either matched nothing or (worse)
+    // would silently pull in EVERY mock test's questions under the same
+    // exam if more than one existed. mock_exam_id filters to exactly
+    // this paper's own questions (Question.mock_exam_id).
+    const mockExamId = (store.mockTest as any)?.id
+    if (!mockExamId) throw new Error('No mock test selected.')
 
     // CustomQuestionListView — always serializes with context={'mode':'test'}
     // server-side, so correct_answer/solution are hidden already.
     // count is capped server-side to whatever exists, but must be passed
     // explicitly (default is only 50) — set high enough to fetch every
-    // active question for the exam.
-    const res = await fetch(`/api/questions/custom/?subject_ids=all&exam_id=${examId}&count=1000`)
+    // active question for this mock test.
+    const res = await fetch(`/api/questions/custom/?mock_exam_id=${mockExamId}&count=1000`)
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
       throw new Error(body.error ?? `Server error ${res.status}`)
@@ -491,15 +951,62 @@ async function loadQuestions() {
     const bySubject = new Map<string, Question[]>()
     flatQuestions.forEach((q: any) => {
       const subjectName = q.subject_name ?? 'General'
+      const questionType = String(q.question_type ?? 'MCQ')
       const opt = (q.options ?? [])[0] ?? {}
+      // Numerical questions never get a QuestionOption row on import (see
+      // Import_Mock.py) — building 4 empty A/B/C/D slots for them anyway
+      // is what rendered as blank radio circles instead of an answer box.
+      // Question.image_url / QuestionOption.option_images are stored
+      // server-side as JSONFields:
+      //   stem:    {"images": ["<url>", ...]}
+      //   options: {"A": ["url1.png", "url2.png"], "B": ["url3.png"], ...}
+      //            (CHANGED: each value is now a list of URLs, one per raster
+      //            fragment, so multiple graph fragments are never merged into
+      //            a single stacked composite image)
+      // They come through the API as plain nested objects already (no
+      // JSON.parse needed), so this just reads them defensively.
+      // CHANGED: raw entries were pushed straight into the Question without
+      // validating they're actually usable URL strings. A bad entry (e.g.
+      // `{}`/empty-object placeholders some import rows ended up with, or an
+      // empty/whitespace string) got bound directly to <img :src>, which
+      // rendered as a broken image with no way to detect/hide it — showing
+      // an empty bordered diagram box on questions that have no real
+      // diagram. cleanImagePath() filters every stem/option image list down
+      // to genuinely non-empty string URLs before they ever reach the DOM.
+      const stemImagesRaw: unknown[] = Array.isArray(q.image_url?.images) ? q.image_url.images : []
+      const stemImages: string[] = stemImagesRaw.map(cleanImagePath).filter((v): v is string => v !== null)
+      // option_images value is now string[] per letter (was string)
+      const optImagesRaw: Record<string, unknown[]> = opt.option_images ?? {}
+
       const question: Question = {
         question_id:   String(q.question_id),
         question_text: q.question_text ?? '',
+        // NEW: optional server-side LaTeX for the stem. Defensive default
+        // to '' since this column may not exist yet on every deployment
+        // (see Import_Mock.py's field-existence check for
+        // explaination_text_latex — question_text_latex follows the same
+        // "only if the column exists" pattern).
+        question_text_latex: String(q.question_text_latex ?? ''),
+        question_type: questionType,
         correct_key:   '',   // hidden in test mode
-        options: (['A', 'B', 'C', 'D'] as const).map(letter => ({
-          key:  letter,
-          text: String(opt[`option_${letter}`] ?? ''),
-        })),
+        images:        stemImages,
+        options: questionType === 'Numerical'
+          ? []
+          : (['A', 'B', 'C', 'D'] as const).map(letter => ({
+              key:  letter,
+              // API/QuestionOptionSerializer returns lowercase keys
+              // (option_a/b/c/d, matching the real DB columns).
+              text:  String(opt[`option_${letter.toLowerCase()}`] ?? ''),
+              // NEW: option_{a..d}_latex, same lowercase-key convention.
+              // '' when the column/value doesn't exist — renderOption()
+              // then falls back to plain `text` above.
+              latex: String(opt[`option_${letter.toLowerCase()}_latex`] ?? ''),
+              // Graph/formula-style options: array of image URLs for this
+              // option letter, or empty array for plain-text options.
+              images: (Array.isArray(optImagesRaw[letter]) ? optImagesRaw[letter] : [])
+                        .map(cleanImagePath)
+                        .filter((v): v is string => v !== null),
+            })),
       }
       if (!bySubject.has(subjectName)) bySubject.set(subjectName, [])
       bySubject.get(subjectName)!.push(question)
@@ -532,6 +1039,7 @@ const currentSectionQs = computed(() => sections.value[currentSection.value]?.qu
 const currentQ         = computed(() => currentSectionQs.value[currentQIndex.value])
 const currentQId       = computed(() => currentQ.value?.question_id ?? '')
 const currentOptions   = computed(() => currentQ.value?.options ?? [])
+const isNumericalQuestion = computed(() => currentQ.value?.question_type === 'Numerical')
 
 // Global question index across all sections
 const globalQIndex = computed(() => {
@@ -597,6 +1105,20 @@ function selectAnswer(key: string) {
   visited.value.add(currentQId.value)
   skipped.value.delete(currentQId.value)
   answers.value[currentQId.value] = key
+}
+
+// Numerical questions have no A/B/C/D to click — the typed value itself
+// IS the answer, stored in the same `answers` map so submit/scoring,
+// question-status dots, and progress tracking all keep working unchanged.
+function setNumericAnswer(value: string) {
+  visited.value.add(currentQId.value)
+  if (value.trim() === '') {
+    skipped.value.add(currentQId.value)
+    delete answers.value[currentQId.value]
+  } else {
+    skipped.value.delete(currentQId.value)
+    answers.value[currentQId.value] = value.trim()
+  }
 }
 
 function clearAnswer() {
@@ -773,16 +1295,92 @@ function downloadPdf() {
 
 // ── Submit ────────────────────────────────────────────────────
 const confirmingSubmit = ref(false)
+const submitError = ref('')
 const result = ref({ score: 0, percentile: 0, accuracy: '0', rank: 0, totalStudents: 15230 })
+
+// Detailed per-question results returned by the submit API
+interface QuestionResult {
+  question_id:    string
+  question_text:  string
+  subject_name:   string   // returned by fixed backend for subject grouping
+  your_answer:    string   // '' = unattempted
+  correct_answer: string
+  is_correct:     boolean
+  explanation:    string
+  hints:          string
+}
+const detailedResults = ref<QuestionResult[]>([])
+
+// Analysis view state
+type AnalysisFilter = 'all' | 'correct' | 'wrong' | 'unattempted'
+const analysisFilter = ref<AnalysisFilter>('all')
+const expandedExplanations = ref<Set<string>>(new Set())
+
+function toggleExplanation(qid: string) {
+  const next = new Set(expandedExplanations.value)
+  if (next.has(qid)) next.delete(qid)
+  else next.add(qid)
+  expandedExplanations.value = next
+}
+
+// Build a fast Map<question_id_string, QuestionResult> for O(1) lookup.
+// Both sides are normalised to string so numeric vs string IDs never mismatch.
+const detailedResultMap = computed(() => {
+  const m = new Map<string, QuestionResult>()
+  detailedResults.value.forEach(r => m.set(String(r.question_id), r))
+  return m
+})
+
+const allQsWithResults = computed(() =>
+  sections.value.flatMap(sec =>
+    sec.questions.map(q => ({
+      q,
+      dr: detailedResultMap.value.get(String(q.question_id)) ?? null,
+    }))
+  )
+)
+
+const filteredResults = computed(() => {
+  const all = allQsWithResults.value
+  if (analysisFilter.value === 'correct')     return all.filter(({ dr }) => dr?.is_correct)
+  if (analysisFilter.value === 'wrong')       return all.filter(({ dr }) => dr && !dr.is_correct && !!dr.your_answer)
+  if (analysisFilter.value === 'unattempted') return all.filter(({ dr }) => !dr?.your_answer)
+  return all
+})
+
+const resultCounts = computed(() => {
+  const all       = allQsWithResults.value
+  const correct   = all.filter(({ dr }) => dr?.is_correct).length
+  const wrong     = all.filter(({ dr }) => dr && !dr.is_correct && !!dr.your_answer).length
+  const unattempted = all.filter(({ dr }) => !dr?.your_answer).length
+  return { correct, wrong, unattempted, total: all.length }
+})
+
+// Reads Django's CSRF cookie (default name: csrftoken) so it can be sent
+// back as the X-CSRFToken header — required by Django on any unsafe
+// method (POST/PUT/DELETE) whenever session auth is in play. Safe to
+// keep even now that SubmitAnswersView is csrf_exempt on the backend.
+function getCsrfToken(): string {
+  const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : ''
+}
 
 async function submitTest() {
   clearInterval(timerInterval)
-  confirmingSubmit.value = false
+  confirmingSubmit.value = true   // keep modal open until we know the result
+  submitError.value = ''
 
-  // Build payload: { "<question_id>": "A" | "B" | "C" | "D" }
+  // Build payload:
+  //   answers:          { "<qid>": "A"|"B"|"C"|"D" }  — only answered questions
+  //   all_question_ids: ["<qid>", ...]                 — every question in test
+  // The backend uses all_question_ids to return correct_answer + solution
+  // for EVERY question, not just answered ones, so the result screen can
+  // highlight the correct option and show explanations for unattempted Qs too.
   const payload: Record<string, string> = {}
+  const allIds: string[] = []
   sections.value.forEach(sec =>
     sec.questions.forEach(q => {
+      allIds.push(q.question_id)
       const ans = answers.value[q.question_id]
       if (ans) payload[q.question_id] = ans
     })
@@ -790,11 +1388,25 @@ async function submitTest() {
 
   try {
     const res = await fetch('/api/questions/submit/', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ answers: payload }),
+      method:      'POST',
+      headers:     {
+        'Content-Type': 'application/json',
+        'X-CSRFToken':  getCsrfToken(),
+      },
+      credentials: 'include',   // send session/CSRF cookies — a plain
+                                 // fetch() omits cookies by default, which
+                                 // is what was causing Django to reject
+                                 // this POST (403) before it ever reached
+                                 // SubmitAnswersView.
+      body: JSON.stringify({ answers: payload, all_question_ids: allIds }),
     })
-    if (!res.ok) throw new Error(`Submit failed: ${res.status}`)
+    if (!res.ok) {
+      // Surface the real reason instead of silently falling through to a
+      // zeroed-out result screen — this is what previously made a failed
+      // request look identical to "you answered nothing".
+      const errBody = await res.json().catch(() => ({}))
+      throw new Error(`Submit failed: ${res.status} ${errBody.error ?? res.statusText}`)
+    }
     const json = await res.json()
     // json = { score, max_score, total, correct, wrong, skipped, percentage, results:[...] }
 
@@ -805,24 +1417,48 @@ async function submitTest() {
       sec.questions.forEach(q => { q.correct_key = correctMap[q.question_id] ?? '' })
     )
 
+    // Store detailed per-question results for the analysis view
+    detailedResults.value = (json.results ?? []).map((r: any) => ({
+      question_id:    String(r.question_id),
+      question_text:  r.question_text ?? '',
+      subject_name:   r.subject_name ?? '',
+      your_answer:    r.your_answer ?? '',    // '' = unattempted
+      correct_answer: r.correct_answer ?? '',
+      is_correct:     !!r.is_correct,
+      explanation:    r.explanation ?? '',
+      hints:          r.hints ?? '',
+    }))
+
     result.value = {
-      // json.score is a raw correct-count over only the answered questions,
-      // not scaled to store.mockTest.marks — compute the displayed score
-      // locally instead, using the existing +4/-1 sectionScore() so it lines
-      // up with the "/ marks" denominator shown on the result page.
-      score:        sections.value.reduce((sum, sec) => sum + sectionScore(sec), 0),
-      percentile:   0,
-      accuracy:     json.percentage != null ? String(json.percentage.toFixed(1)) : '0',
-      rank:         0,
+      // Backend now returns score already computed with +4/-1 marking scheme
+      score:         json.score ?? 0,
+      percentile:    0,
+      accuracy:      json.percentage != null ? String(json.percentage.toFixed(1)) : '0',
+      rank:          0,
       totalStudents: 0,
     }
-  } catch {
-    // Fallback: just show 0 — correct_keys are hidden server-side in test mode
-    result.value = { score: 0, percentile: 0, accuracy: '0', rank: 0, totalStudents: 0 }
+  } catch (e: any) {
+    console.error('[submitTest] API error:', e?.message ?? e)
+    // Previously this silently rendered the result screen with 0 marks and
+    // every question marked "Unattempted" — indistinguishable from a
+    // genuinely empty attempt. Now it keeps the user on the test screen
+    // and surfaces the real error instead of faking a completed result.
+    submitError.value = e?.message ?? 'Could not submit your test. Please check your connection and try again.'
+    // Keep the confirm modal open (confirmingSubmit stays true) so the
+    // error banner above is visible and the user can retry via Submit.
+    return
   }
 
   phase.value = 'result'
 }
+
+// Time taken = total duration (180 min) minus time remaining
+const formattedTimeTaken = computed(() => {
+  const taken = 180 * 60 - timeLeft.value
+  const m = Math.floor(taken / 60)
+  const s = taken % 60
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} / 180:00`
+})
 
 function sectionScore(sec: Section) {
   let s = 0
@@ -1057,7 +1693,19 @@ function sectionAccuracy(sec: Section) {
 .q-divider { height: 1px; background: #f3f4f6; margin: 12px 0; }
 .q-text { font-size: 15px; color: #1e2536; line-height: 1.7; margin: 0 0 24px; }
 
+/* NEW: question-stem diagrams */
+.q-images { display: flex; flex-direction: column; gap: 12px; margin: -12px 0 24px; }
+.q-diagram-img { display: block; max-width: 420px; width: 100%; max-height: 220px; object-fit: contain; border: 1px solid #e5e7eb; border-radius: 8px; }
+
 .options-list { display: flex; flex-direction: column; gap: 0; }
+.numerical-answer-row { display: flex; flex-direction: column; gap: 10px; padding: 20px 0; }
+.numerical-answer-label { font-size: 14px; font-weight: 600; color: #374151; }
+.numerical-answer-input {
+  width: 260px; max-width: 100%; padding: 10px 14px; font-size: 15px;
+  border: 1.5px solid #d1d5db; border-radius: 8px; outline: none;
+  transition: border-color 0.15s;
+}
+.numerical-answer-input:focus { border-color: #7c3aed; }
 .option-row {
   display: flex; align-items: center; gap: 16px;
   padding: 14px 16px;
@@ -1071,6 +1719,11 @@ function sectionAccuracy(sec: Section) {
 .opt-label { width: 24px; height: 24px; border-radius: 50%; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #6b7280; flex-shrink: 0; }
 .opt-selected .opt-label { background: #7c3aed; color: #fff; }
 .opt-text { flex: 1; font-size: 14px; color: #1e2536; }
+/* Graph/formula-style option images — wraps one or more fragments */
+.opt-images-wrap { flex: 1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.opt-diagram-img { max-width: 220px; max-height: 130px; object-fit: contain; border-radius: 6px; }
+/* PDF preview: option images wrap */
+.pdf-opt-images-wrap { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .opt-radio-wrap { margin-left: auto; }
 .opt-radio { display: block; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #d1d5db; }
 .opt-radio.on { border-color: #7c3aed; background: radial-gradient(circle, #7c3aed 0 40%, transparent 41%); }
@@ -1199,6 +1852,7 @@ function sectionAccuracy(sec: Section) {
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .btn-modal-cancel { background: #fff; border: 1.5px solid #e5e7eb; color: #374151; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 8px; cursor: pointer; }
 .btn-modal-submit { background: #7c3aed; border: none; color: #fff; font-size: 13px; font-weight: 700; padding: 9px 20px; border-radius: 8px; cursor: pointer; }
+.modal-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; font-size: 12.5px; font-weight: 600; padding: 10px 12px; border-radius: 8px; margin: 4px 0 0; }
 
 /* ── Result page ───────────────────────────────────────────── */
 .result-page { max-width: 680px; margin: 40px auto; padding: 0 20px; display: flex; flex-direction: column; align-items: center; }
@@ -1227,6 +1881,262 @@ function sectionAccuracy(sec: Section) {
 .c-purple { color: #7c3aed; }
 .c-orange { color: #f59e0b; }
 .c-blue   { color: #2563eb; }
+.c-red    { color: #ef4444; }
+
+/* ══════════════════════════════════════════════════════════════
+   DETAILED ANALYSIS SCREEN
+══════════════════════════════════════════════════════════════ */
+.analysis-shell {
+  min-height: 100vh;
+  background: #f5f5f7;
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+}
+
+/* ── Left sidebar ── */
+.analysis-left {
+  width: 280px;
+  flex-shrink: 0;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.al-user-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.al-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #7c3aed; color: #fff;
+  font-size: 18px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.al-user-name { font-size: 14px; font-weight: 700; color: #1e2536; }
+.al-user-email { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+.al-meta-list {
+  background: #fff; border-radius: 12px; padding: 16px;
+  display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.al-meta-row { display: flex; gap: 10px; align-items: flex-start; }
+.al-meta-icon { font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+.al-meta-label { font-size: 10px; color: #9ca3af; font-weight: 600; letter-spacing: 0.03em; }
+.al-meta-val { font-size: 13px; font-weight: 700; color: #1e2536; margin-top: 2px; }
+.al-completed { color: #10b981 !important; }
+
+.al-great-box {
+  background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+  padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px;
+}
+.al-great-icon { font-size: 16px; flex-shrink: 0; }
+.al-great-title { font-size: 13px; font-weight: 700; color: #15803d; }
+.al-great-sub { font-size: 11px; color: #4b5563; margin-top: 2px; }
+
+.btn-al-dashboard {
+  width: 100%; padding: 11px; border-radius: 10px;
+  background: #f3f0ff; border: 1.5px solid #c4b5fd;
+  color: #7c3aed; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.btn-al-dashboard:hover { background: #ede9fe; }
+.btn-al-reattempt {
+  width: 100%; padding: 11px; border-radius: 10px;
+  background: #f0fdf4; border: 1.5px solid #86efac;
+  color: #16a34a; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.btn-al-reattempt:hover { background: #dcfce7; }
+
+/* ── Center ── */
+.analysis-center {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.analysis-filter-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.af-tab {
+  padding: 7px 16px; border-radius: 20px;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  font-size: 12px; font-weight: 600; color: #6b7280; cursor: pointer;
+  transition: all 0.15s;
+}
+.af-tab.active, .af-tab:hover {
+  background: #7c3aed; border-color: #7c3aed; color: #fff;
+}
+
+.analysis-q-list { display: flex; flex-direction: column; gap: 16px; }
+
+.aq-card {
+  background: #fff; border-radius: 14px;
+  border: 1.5px solid #e5e7eb;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.aq-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
+.aq-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #f3f4f6; color: #374151;
+  font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.aq-status-badge {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.05em;
+}
+.badge-correct     { background: #d1fae5; color: #065f46; }
+.badge-wrong       { background: #fee2e2; color: #991b1b; }
+.badge-unattempted { background: #f3f4f6; color: #6b7280; }
+
+.aq-marks { margin-left: auto; font-size: 12px; font-weight: 700; }
+.marks-pos { color: #16a34a; }
+.marks-neg { color: #dc2626; }
+
+.aq-text {
+  font-size: 14px; color: #1e2536; line-height: 1.65;
+  margin: 0 0 14px;
+}
+.aq-images { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.aq-diagram-img { max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 6px; border: 1px solid #e5e7eb; }
+
+.aq-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.aq-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 10px;
+  border: 1.5px solid #e5e7eb; background: #fafafa;
+  font-size: 13px; color: #374151;
+}
+.aq-opt-correct { background: #f0fdf4 !important; border-color: #22c55e !important; }
+.aq-opt-wrong   { background: #fff5f5 !important; border-color: #ef4444 !important; }
+
+.aq-opt-bubble {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #f3f4f6; color: #374151;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.bubble-correct { background: #22c55e !important; color: #fff !important; }
+.bubble-wrong   { background: #ef4444 !important; color: #fff !important; }
+
+.aq-opt-text { flex: 1; }
+.aq-opt-img  { max-height: 80px; object-fit: contain; }
+.aq-opt-icon { margin-left: auto; font-size: 14px; font-weight: 800; flex-shrink: 0; }
+.icon-correct { color: #22c55e; }
+.icon-wrong   { color: #ef4444; }
+
+.aq-numerical {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; background: #f9fafb; border-radius: 8px;
+  font-size: 13px; margin-bottom: 14px;
+}
+.aq-num-label { color: #6b7280; font-weight: 600; }
+.aq-num-val { font-weight: 700; }
+.aq-num-sep { color: #d1d5db; }
+
+.aq-solution-wrap {
+  background: #f9fafb; border-radius: 10px;
+  padding: 14px; border-left: 3px solid #7c3aed;
+}
+.aq-solution-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.aq-solution-label {
+  font-size: 10px; font-weight: 800; color: #7c3aed;
+  letter-spacing: 0.07em;
+}
+.aq-solution-text {
+  font-size: 13px; color: #4b5563; line-height: 1.6; margin: 0;
+}
+.btn-toggle-explanation {
+  padding: 4px 10px; border-radius: 6px;
+  background: none; border: 1px solid #c4b5fd; color: #7c3aed;
+  font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.btn-toggle-explanation:hover { background: #f3f0ff; }
+.aq-hints { margin-top: 12px; }
+.aq-hints-label { font-size: 11px; font-weight: 700; color: #d97706; margin-bottom: 4px; }
+.aq-hints-text { font-size: 13px; color: #4b5563; margin: 0; }
+
+.aq-empty { text-align: center; padding: 40px; color: #9ca3af; font-size: 14px; }
+
+/* ── Right sidebar ── */
+.analysis-right {
+  width: 280px;
+  flex-shrink: 0;
+  padding: 24px 16px;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.ar-perf-card {
+  background: #fff; border-radius: 14px; padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.ar-perf-title { font-size: 15px; font-weight: 800; color: #1e2536; }
+
+.ar-donut-wrap { display: flex; justify-content: center; }
+.ar-donut-svg { width: 120px; height: 120px; }
+
+.ar-marks-line { text-align: center; font-size: 13px; font-weight: 700; color: #4b5563; }
+
+.ar-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.ar-stat-box {
+  border-radius: 10px; padding: 12px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border: 1.5px solid #e5e7eb;
+}
+.ar-stat-correct { border-color: #bbf7d0; background: #f0fdf4; }
+.ar-stat-wrong   { border-color: #fecaca; background: #fff5f5; }
+.ar-stat-skip    { border-color: #fed7aa; background: #fff7ed; }
+.ar-stat-attempted { border-color: #ddd6fe; background: #f5f3ff; }
+
+.ar-stat-icon { font-size: 14px; }
+.ar-stat-num { font-size: 18px; font-weight: 800; color: #1e2536; }
+.ar-stat-lbl { font-size: 10px; color: #6b7280; font-weight: 600; }
+
+.ar-detail-rows { display: flex; flex-direction: column; gap: 8px; }
+.ar-detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: #4b5563;
+  padding-bottom: 8px; border-bottom: 1px solid #f3f4f6;
+}
+.ar-detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+.ar-detail-row span:last-child { font-weight: 700; color: #1e2536; }
+
+.btn-download-report {
+  width: 100%; padding: 11px; border-radius: 10px;
+  background: #7c3aed; border: none; color: #fff;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.btn-download-report:hover { background: #6d28d9; }
 
 /* ── Download PDF preview modal ───────────────────────────────── */
 .pdf-modal {
@@ -1289,6 +2199,10 @@ function sectionAccuracy(sec: Section) {
 .pdf-question-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
 .pdf-question-text { font-size: 13.5px; color: #1e2536; line-height: 1.65; margin: 0; }
 .pdf-marks { font-size: 11px; color: #9ca3af; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+/* NEW: PDF-preview diagrams */
+.pdf-q-images { display: flex; flex-direction: column; gap: 8px; margin: 0 0 10px 4px; }
+.pdf-q-diagram-img { max-width: 100%; max-height: 220px; object-fit: contain; border: 1px solid #e5e7eb; border-radius: 6px; }
+.pdf-opt-diagram-img { max-width: 160px; max-height: 90px; object-fit: contain; border-radius: 4px; }
 .pdf-options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; padding-left: 4px; }
 .pdf-option { display: flex; align-items: baseline; gap: 8px; font-size: 13px; color: #374151; }
 .pdf-opt-key {

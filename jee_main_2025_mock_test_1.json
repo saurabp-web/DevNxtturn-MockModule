@@ -1,0 +1,1474 @@
+{
+  "exam_info": {
+    "title": "JEE Main 2025",
+    "test_name": "Mock Practice Test - 1",
+    "time_allowed": "3 Hours",
+    "maximum_marks": 300,
+    "parts": [
+      "Part A: Mathematics",
+      "Part B: Physics",
+      "Part C: Chemistry"
+    ]
+  },
+  "source_file": "1787225992605_selfstudys_com_file.pdf",
+  "images_folder": "images/",
+  "note": "Only questions with diagrams/graphs have question_image, option_images, or solution_image set; all others are null.",
+  "total_questions": 90,
+  "questions": [
+    {
+      "question_number": 1,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Which of the following is not empty set",
+      "options": {
+        "A": "A = {x : 1 < x < 2 and x ∈ N}",
+        "B": "B = {x : x² – 2 = 0 and x is rational}",
+        "C": "C = {x : x is even prime number > 2}",
+        "D": "D = {x : x² = 0 and x is integer}"
+      },
+      "answer": "D",
+      "solution": "A = φ because there are no natural numbers between 1 and 2. B = φ because x² = 2 ⇒ x = ±√2, not a rational number. C = φ because there is only one even prime, 2.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 2,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "If the set of factors of a whole number 'n' including 'n' itself but not '1' is denoted by F(n). If F(16) ∩ F(40) = F(x) then 'x' is",
+      "options": {
+        "A": "4",
+        "B": "8",
+        "C": "6",
+        "D": "10"
+      },
+      "answer": "B",
+      "solution": "F(16) = {2,4,8,16}, F(40) = {2,4,5,8,10}. F(16) ∩ F(40) = {2,4,8} = F(8). So F(x) = F(8) ⇒ x = 8.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 3,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Which of the following is finite set",
+      "options": {
+        "A": "A = {x : x is set of points on a line}",
+        "B": "B = {x : x ∈ N and x is prime}",
+        "C": "C = {x : x ∈ N and x is odd}",
+        "D": "D = {x : x ∈ N and (x-1)(x-2) = 0}"
+      },
+      "answer": "D",
+      "solution": "x - 1 = 0, x - 2 = 0 ⇒ x = 1, 2, which is a finite set.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 4,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Which of the following pairs of sets are equal",
+      "options": {
+        "A": "A = {x : x is letter of word “ALLOY”}, B = {x : x is letter of word “LOYAL”}",
+        "B": "A = {-2,-1,0,1,2}, B = {1,2}",
+        "C": "A = {0}, B = {x : x > 5 and x < 15}",
+        "D": "A = {x : x-5 = 0}, B = {x : x² = 25}"
+      },
+      "answer": "A",
+      "solution": "A = {a,l,o,y}, B = {a,l,o,y}, hence equal sets.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 5,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Let A = {1, {2, 3}} then the number of subsets of A are",
+      "options": {
+        "A": "2",
+        "B": "4",
+        "C": "8",
+        "D": "0"
+      },
+      "answer": "B",
+      "solution": "n(A) = 2, number of subsets = 2^n = 2² = 4.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 6,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "How many elements has P(A), if A = φ",
+      "options": {
+        "A": "1",
+        "B": "2",
+        "C": "3",
+        "D": "0"
+      },
+      "answer": "A",
+      "solution": "n(A) = 0, n[P(A)] = 2^n = 2^0 = 1.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 7,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "In a group of 69 people, 37 like coffee, 52 like tea and each person likes at least one of the two drinks. The number of persons liking both coffee and tea is",
+      "options": {
+        "A": "16",
+        "B": "13",
+        "C": "19",
+        "D": "20"
+      },
+      "answer": "D",
+      "solution": "n(A∪B) = n(A) + n(B) - n(A∩B). 69 = 37 + 52 - n(A∩B) ⇒ n(A∩B) = 89 - 69 = 20.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 8,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "|x – 3| + 2|x + 1| = 4, then x =",
+      "options": {
+        "A": "–1",
+        "B": "1",
+        "C": "0",
+        "D": "None"
+      },
+      "answer": "A",
+      "solution": "Plot LHS graph (V-shaped, piecewise linear) and RHS graph y = 4 (horizontal line). The point of intersection of the two graphs gives the solution: x = -1.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": "images/q8_solution.png"
+    },
+    {
+      "question_number": 9,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Number of real x satisfying the equation |x – 1| = |x – 2| + |x – 5| is",
+      "options": {
+        "A": "1",
+        "B": "2",
+        "C": "3",
+        "D": "more than 3"
+      },
+      "answer": "B",
+      "solution": "Plotting graphs of LHS and RHS, the number of points of intersection = 2. Hence number of solutions = 2.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": "images/q9_solution.png"
+    },
+    {
+      "question_number": 10,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "If x satisfies |x – 1| + |x – 2| + |x – 3| ≥ 6, then",
+      "options": {
+        "A": "0 ≤ x ≤ 4",
+        "B": "x ≤ –2 or x ≥ 4",
+        "C": "x ≤ 0 or x ≥ 4",
+        "D": "none of these"
+      },
+      "answer": "C",
+      "solution": "Plotting LHS (piecewise linear, minimum at x=2 with value 2) and RHS y = 6, the graphs intersect at (0,6) and (4,6). The final region is where LHS ≥ RHS, i.e., x ≤ 0 or x ≥ 4.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": "images/q10_solution.png"
+    },
+    {
+      "question_number": 11,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "For the equation log₁₀₀|x + y| = 1/2 and log₁₀ y – log₁₀ |x| = log₁₀₀ 4, (x, y) is",
+      "options": {
+        "A": "(10, 20/3)",
+        "B": "(10, 20)",
+        "C": "(–10, 20)",
+        "D": "(-10/3, –20/3)"
+      },
+      "answer": "C",
+      "solution": "log₁₀₀|x+y| = 1/2 and log₁₀ y − log₁₀|x| = log₁₀ 2 ⇒ |x+y| = 10 and y/|x| = 2 ⇒ x+y = ±10 and y = 2|x|. So x + 2|x| = ±10. When x > 0: x + 2x = ±10 ⇒ x = 10/3 ⇒ y = 20/3. When x < 0: x − 2x = ±10 ⇒ x = −10 ⇒ y = 20. Solutions are (−10, 20) and (10/3, 20/3); the listed answer is (−10, 20).",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 12,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "The value of the expression log₁₀(tan 6°) + log₁₀(tan 12°) + log₁₀(tan 18°) + ... + log₁₀(tan 84°) is",
+      "options": {
+        "A": "a whole number",
+        "B": "an irrational number",
+        "C": "a negative integer",
+        "D": "a rational number which is not an integer"
+      },
+      "answer": "A",
+      "solution": "E = log₁₀(tan6°·tan84°)(tan12°·tan78°)...(tan42°·tan48°) = log₁₀[(tan6°·cot6°)(tan12°·cot12°)...(tan42°·cot42°)] = log₁₀ 1 = 0, which is a whole number.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 13,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Let ABC be a triangle right angled at C. The value of [log_(b+c) a + log_(c-b) a] / [log_(b+c) a . log_(c-b) a] (b+c≠1, c-b≠1) equals",
+      "options": {
+        "A": "1",
+        "B": "2",
+        "C": "3",
+        "D": "½"
+      },
+      "answer": "B",
+      "solution": "Numerator/Denominator reduces to log_a(c²−b²) = log_a(a²) = 2, using c² = a² + b² (Pythagoras, right angle at C).",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 14,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "If log₁₀2 = 0.3010 & log₁₀3 = 0.4771, find the value of log₁₀(2.25).",
+      "options": {
+        "A": "0.3522",
+        "B": "0.03522",
+        "C": "1.3522",
+        "D": "None"
+      },
+      "answer": "A",
+      "solution": "log₁₀2.25 = log₁₀(9/4) = 2log₁₀(3/2) = 2(log3 − log2) = 2(0.4771 − 0.3010) = 2(0.1761) = 0.3522.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 15,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Let A = {x : x is a prime number and x < 30}. The number of different rational numbers whose numerator and denominator belong to A is",
+      "options": {
+        "A": "90",
+        "B": "180",
+        "C": "91",
+        "D": "None"
+      },
+      "answer": "C",
+      "solution": "A = {2,3,5,7,11,13,17,19,23,29}, 10 elements. Rational numbers formed by taking any two in any order: ¹⁰P₂ + 1 (for the rational number 1) = 90 + 1 = 91.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 16,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "If xy² = 4 and log₃(log₂ x) + log_{1/3}(log_{1/2} y) = 1, then x equals",
+      "options": {
+        "A": "4",
+        "B": "8",
+        "C": "16",
+        "D": "64"
+      },
+      "answer": "D",
+      "solution": "log₃(log₂ x) − log₃(log_{1/2} y) = 1. Substituting x = 4/y² and simplifying leads to y⁻³ = 4/y², giving y = 1/4 and x = 64.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 17,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "If x = −5 + 2√−4, then x⁴ + 9x³ + 35x² − x + 4 = ?",
+      "options": {
+        "A": "160",
+        "B": "– 160",
+        "C": "41",
+        "D": "0"
+      },
+      "answer": "B",
+      "solution": "x satisfies x² + 10x + 41 = 0. Expressing x⁴+9x³+35x²−x+4 in terms of (x²+10x+41) via polynomial division reduces the expression to −160.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 18,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "The equation (√(1 + log_x √27)) log₃ x + 1 = 0 has",
+      "options": {
+        "A": "one integral solution",
+        "B": "two irrational solution",
+        "C": "two real solution",
+        "D": "one prime solution"
+      },
+      "answer": "C",
+      "solution": "Let log_x 3 = t. The equation reduces to 2t² − 3t − 2 = 0, giving t = −1/2 or t = 2. For t = 2: log_x 3 = 2 ⇒ x = √3. For t = −1/2: log_x 3 = −1/2 ⇒ x = 1/9. Both are real solutions, hence two real solutions.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 19,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "If n(A) = 20, n(B) = 30, n(A∪B) = 47 = a, n(A∩B) = b, then a and b are",
+      "options": {
+        "A": "co prime",
+        "B": "twin prime",
+        "C": "a is multiple of b",
+        "D": "hcf(a, b) = 10"
+      },
+      "answer": "A",
+      "solution": "n(A∩B) = n(A) + n(B) − n(A∪B) = 20 + 30 − 47 = 3 = b. a = 47, b = 3. Since gcd(47,3) = 1, a and b are co-prime.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 20,
+      "subject": "Mathematics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "If 4^A + 9^B = 5^C where A = log₁₆ 4, B = log₃ 9, C = log_x 83. If log₃ log₇ y = 0, then x and y are",
+      "options": {
+        "A": "twin prime",
+        "B": "complex numbers",
+        "C": "irrational numbers",
+        "D": "hcf(x, y) = 2"
+      },
+      "answer": "A",
+      "solution": "A = 1/2, B = 2. 4^(1/2) + 9² = 5^C ⇒ 2 + 81 = 5^C ⇒ 83 = 5^(log_x 83) ⇒ log_x 5 = 1 ⇒ x = 5. log₃(log₇ y) = 0 ⇒ log₇ y = 1 ⇒ y = 7. x = 5, y = 7 are twin primes.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 21,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "The value of a³ + b³ + c³ – 3abc if a + b + c = 5 and a² + b² + c² = 29",
+      "options": null,
+      "answer": "155",
+      "solution": "(a+b+c)² = a²+b²+c² + 2(ab+bc+ca) ⇒ 25 = 29 + 2(ab+bc+ca) ⇒ ab+bc+ca = −2. a³+b³+c³−3abc = (a+b+c)[(a²+b²+c²)−(ab+bc+ca)] = 5(29+2) = 5(31) = 155.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 22,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "1/log_√(bc) abc + 1/log_√(ca) abc + 1/log_√(ab) abc has the value equal to (given a, b, c > 0)",
+      "options": null,
+      "answer": "1",
+      "solution": "= log_abc √bc + log_abc √ac + log_abc √ab = log_abc(√ab × √bc × √ca) = log_abc(abc) = 1.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 23,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "The value of the expression 2/log₄(2000)⁶ + 3/log₅(2000)⁶ is equal to 1/k then k =",
+      "options": null,
+      "answer": "6",
+      "solution": "= (1/6)[log₂₀₀₀ 4² + log₂₀₀₀ 5³] = (1/6) log₂₀₀₀(4²×5³) = (1/6) log₂₀₀₀ 2000 = 1/6. So k = 6.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 24,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Let 'm' be the number of digits in 3⁴⁰ and 'p' be the number of zeroes in 3⁻⁴⁰ after decimal before starting a significant digit then (m + p) is (log3 = 0.4771)",
+      "options": null,
+      "answer": "39",
+      "solution": "log₁₀ 3⁴⁰ = 40 × 0.4771 = 19.084 ⇒ number of digits m = 20. log₁₀ 3⁻⁴⁰ = −19.084 ⇒ 19 zeroes after decimal, p = 19. m + p = 20 + 19 = 39.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 25,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "If x satisfies the inequality log_(x+3)(x² – x) < 1, then number of integral values of x",
+      "options": null,
+      "answer": "0",
+      "solution": "Domain: x² − x > 0 and x + 3 > 0 ⇒ x ∈ (−3,0)∪(1,∞). Solving case-wise (x+3>1 and 0<x+3<1) gives x ∈ (−3,−2)∪(−1,0)∪(1,3), which contains no integer values.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 26,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Of the members of three athletic teams in a school 21 are in the cricket team, 26 are in the hockey team and 29 are in the football team. Among them, 14 play hockey and cricket, 15 play hockey and football, and 12 play football and cricket. Eight play all three games. The total number of members in the three athletic teams is",
+      "options": null,
+      "answer": "43",
+      "solution": "n(C∪H∪F) = n(C)+n(H)+n(F)−n(H∩C)−n(H∩F)−n(F∩C)+n(C∩H∩F) = 21+26+29−14−15−12+8 = 43.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 27,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "In a town of 10,000 families it was found that 40% families buy news paper A, 20% families buy news paper B, and 10% families buy news paper C. Also 5% families buy A and B, 3% buy B and C, 4% buy A and C, and 2% buy all three news papers. Then the number of families which buy exactly one of A, B, C is",
+      "options": null,
+      "answer": "5200",
+      "solution": "Number buying exactly one = n(A)+n(B)+n(C) − 2n(A∩B) − 2n(C∩B) − 2n(A∩C) + 3n(A∩B∩C), calculated in absolute numbers (per 10,000 families) to give 5200.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 28,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Suppose A₁, A₂, ..., A₃₀ are thirty sets each with five elements and B₁, B₂,... Bₙ are n sets each with three elements such that ∪A_i = ∪B_j = S. If each element of S belongs to exactly ten of the A_i's and exactly 9 of the B_j's, then the value of n is",
+      "options": null,
+      "answer": "45",
+      "solution": "S = ∪A_i ⇒ n(S) = (1/10)(5×30) = 15. Also S = ∪B_j ⇒ n(S) = (1/9)(3×n) = n/3. So n/3 = 15 ⇒ n = 45.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 29,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "In a class of 55 students the numbers of students studying different subjects are 23 in mathematics, 24 in physics, 19 in chemistry, 12 in mathematics and physics, 9 in mathematics and chemistry, 7 in physics and chemistry and 4 in all three subjects. The number of students who have taken exactly one subject is",
+      "options": null,
+      "answer": "22",
+      "solution": "Using n(M∩P′∩C′) = n(M) − [n(M∩P)+n(M∩C)] + n(M∩P∩C) = 23−21+4 = 6; similarly for P: 9; for C: 7. Total exactly one subject = 6+9+7 = 22.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 30,
+      "subject": "Mathematics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "a > 0(a≠1), b > 0(b≠1) such that a^((log_a^b)^x) = b^((log_b^a)^x) then 2x =",
+      "options": null,
+      "answer": "1",
+      "solution": "Taking log_b both sides: (log_a^b)^x log_b^a = (log_b^a)^x ⇒ (log_a^b)^x = (log_b^a)^(x−1) ⇒ 1 − x = x ⇒ x = 1/2 ⇒ 2x = 1.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 31,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A wheel of radius 1 m rolls forward half a revolution on a horizontal ground. The magnitude of the displacement of the point of the wheel initially in contact with the ground is",
+      "options": {
+        "A": "2π",
+        "B": "√2 π",
+        "C": "√(π²+4)",
+        "D": "π"
+      },
+      "answer": "C",
+      "solution": "Horizontal distance covered in half revolution = πR. Vertical rise = 2R. Displacement = √[(πR)² + (2R)²] = √(π² + 4) for R = 1.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": "images/q31_diagram.png"
+    },
+    {
+      "question_number": 32,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A particle travelling along a straight line traverses one third of the total distance with a velocity V₀. The remaining part of the distance was covered with a velocity V₁ for half the time and velocity V₂ for the other half of the time. Find the mean velocity of the particle averaged over the whole motion:",
+      "options": {
+        "A": "3V₀(V₁+V₂) / (V₁+V₂+4V₀)",
+        "B": "V₀(V₁+V₂) / (V₁+V₂+12V₀)",
+        "C": "V₀ / (V₁+V₂+V₀)",
+        "D": "(V₁+V₂+V₃)/V₀"
+      },
+      "answer": "A",
+      "solution": "t₁ = d/(3V₀) for first third distance. For remaining 2d/3: t₂ = 4d/[3(V₁+V₂)]. Total time = d(V₁+V₂+4V₀)/[3V₀(V₁+V₂)]. Average velocity = 3V₀(V₁+V₂)/(V₁+V₂+4V₀).",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 33,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Velocity of a body moving along a straight line with uniform retardation reduces by 3/4th of its initial velocity in time t₀. The total time of motion of the body till its velocity becomes zero is",
+      "options": {
+        "A": "(4/3)t₀",
+        "B": "(3/2)t₀",
+        "C": "(5/3)t₀",
+        "D": "(8/3)t₀"
+      },
+      "answer": "A",
+      "solution": "u/4 = u − at₀ ⇒ a = 3u/(4t₀). Total time to reach zero velocity: t = u/a = (4/3)t₀.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 34,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A body starts from rest with uniform acceleration a, its velocity after n seconds is v. The displacement of the body in last 3s is (assume total time of journey from 0 to n seconds)",
+      "options": {
+        "A": "v(6n−9)/(2n)",
+        "B": "2v(6n−9)/n",
+        "C": "2v(2n+1)/n",
+        "D": "2v(n−1)/n"
+      },
+      "answer": "A",
+      "solution": "v = an ⇒ a = v/n. S_n = vn/2, S_(n-3) = (v/2n)(n-3)². Displacement in last 3s = S_n − S_(n-3) = (v/2)[n − (n-3)²/n] = [(6n−9)/n](v/2).",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 35,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Two trains, each of length 100m, moving in opposite directions along parallel lines, meet each other with speeds of 50 kmh⁻¹ and 40 kmh⁻¹. If their accelerations are 30 cms⁻² and 20 cms⁻², respectively, find the time they will take to pass each other.",
+      "options": {
+        "A": "10√40 − 40 s",
+        "B": "10√33 − 50 s",
+        "C": "10√22 − 50 s",
+        "D": "10√42 − 40 s"
+      },
+      "answer": "B",
+      "solution": "V_rel = 50+40 = 90 kmh⁻¹ = 25 ms⁻¹. a_rel = 30+20 = 50 cms⁻² = 0.5 ms⁻². Using s_rel = u_rel t + (1/2)a_rel t²: 200 = 25t + 0.25t². Solving, t = 10√33 − 50 s.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 36,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A ball is dropped from the top of a tower, it takes \"t\" seconds to cover lower half of the tower, then its total time of fall is",
+      "options": {
+        "A": "t/√2",
+        "B": "t/(√2−1)",
+        "C": "√2 t/(√2−1)",
+        "D": "t√2/(√2+1)"
+      },
+      "answer": "C",
+      "solution": "T = √(2h/g). t = √(2h/g) − √(h/g) = T(1 − 1/√2) = T(√2−1)/√2. Hence T = √2 t/(√2−1).",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 37,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A stone is dropped from the top of a tower of height h. After 1 second, another stone is dropped from the balcony 20 m below the top, both reach the bottom simultaneously. What is the value of h?",
+      "options": {
+        "A": "31.25 m",
+        "B": "100 m",
+        "C": "120 m",
+        "D": "130 m"
+      },
+      "answer": "A",
+      "solution": "h = (1/2)gt², (h−20) = (1/2)g(t−1)². Subtracting: 20 = gt − g/2 ⇒ gt = 25 ⇒ t = 2.5 s (g=10). h = (1/2)(10)(2.5)² = 31.25 m.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 38,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A balloon rises from rest on the ground with constant acceleration g/8. A stone is dropped from the balloon when the balloon has risen to a height of H. Find the time taken by the stone to reach the ground.",
+      "options": {
+        "A": "√(H/g)",
+        "B": "2√(H/g)",
+        "C": "2√(g/H)",
+        "D": "4√(g/H)"
+      },
+      "answer": "B",
+      "solution": "u = √(2×(g/8)×H) = √(gH)/2 (upward). −H = ut − (1/2)gt² ⇒ gt² − √(gH) t − 2H = 0. Solving: √(gt)[√(gt) − 2√H] = 0 ⇒ t = 2√(H/g).",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 39,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A train is moving at a constant speed 'V' when its driver observes another train in front of him on the same track and moving in same direction with constant speed u. If the distance between the trains is x, then what should be the minimum retardation of the train so as to avoid accident?",
+      "options": {
+        "A": "(v+u)²/x",
+        "B": "(v−u)²/x",
+        "C": "(v+u)²/(2x)",
+        "D": "(v−u)²/(2x)"
+      },
+      "answer": "D",
+      "solution": "Relative velocity V_r = v − u. Using V² − V_r² = −2ax with final relative velocity 0: 0 − (v−u)² = −2ax ⇒ a = (v−u)²/(2x).",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 40,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Two trains take 3 seconds to pass one another when going in opposite direction but only 2.5 seconds if the speed of one is increased by 50%. The time one would take to pass the other when they are going in same direction at original speeds is",
+      "options": {
+        "A": "12sec",
+        "B": "10sec",
+        "C": "18sec",
+        "D": "15sec"
+      },
+      "answer": "D",
+      "solution": "(l₁+l₂)/(v₁+v₂) = 3 and (l₁+l₂)/(v₁+1.5v₂) = 2.5. Solving gives v₁ = 1.5v₂ and l₁+l₂ = 7.5v₂. Time for same direction = (l₁+l₂)/(v₁−v₂) = 7.5v₂/(0.5v₂) = 15 sec.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 41,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A body moves so that it follows the relation dv/dt = −v² + 2v − 1 where v is speed in m/s and t is time in seconds. If at t = 0, v = 0 then choose the incorrect statement",
+      "options": {
+        "A": "terminal velocity is 1 m/s",
+        "B": "the magnitude of initial acceleration is 1 m/s²",
+        "C": "instantaneous speed is −1/(1+t)",
+        "D": "the speed is 1.5 m/s when acceleration is one fourth of its initial value"
+      },
+      "answer": "C",
+      "solution": "At terminal velocity a=0 ⇒ (v−1)²=0 ⇒ v=1 m/s (statement A correct). At t=0, a = −1 m/s², magnitude 1 (B correct). Solving dv/(v−1)² = −dt gives v = t/(t−1), so option C (which states −1/(1+t)) is incorrect. For D: initial acceleration −1, one-fourth is −1/4 = −(v−1)² ⇒ v = 1.5 m/s (D correct). Hence C is the incorrect statement.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 42,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "All the graphs below are intended to represent the same motion. One of them does it incorrectly. Pick it up. (Graphs A: Velocity-Time, B: Velocity-Position, C: Distance-Time, D: Position-Time)",
+      "options": {
+        "A": "Velocity vs Time graph (linear decreasing)",
+        "B": "Velocity vs Position graph (curve)",
+        "C": "Distance vs Time graph (curve)",
+        "D": "Position vs Time graph (parabolic arc)"
+      },
+      "answer": "C",
+      "solution": "Graphs A, B and D represent uniformly retarded motion, while graph C represents uniformly accelerated motion initially — inconsistent with the others, so C is incorrect.",
+      "question_image": null,
+      "option_images": {
+        "A": "images/q42_option_A.png",
+        "B": "images/q42_option_B.png",
+        "C": "images/q42_option_C.png",
+        "D": "images/q42_option_D.png"
+      },
+      "solution_image": null
+    },
+    {
+      "question_number": 43,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Two stones are thrown up simultaneously from the edge of a cliff 240 m high with initial speed of 10 m/s and 40 m/s, respectively. Which of the following graph best represents the time variation of relative position of the second stone with respect to the first? (Assume stones do not rebound after hitting the ground, neglect air resistance, g = 10 m/s²)",
+      "options": {
+        "A": "Triangular graph peaking at t=8, ending at t=12",
+        "B": "Graph rising to peak at t=8, curving down to 0 by t=12",
+        "C": "Straight line graph to t=12",
+        "D": "Graph peaking at t=8 with dotted lines, ending at t=12"
+      },
+      "answer": "B",
+      "solution": "1st stone reaches ground at t=8s (from −240 = 10t − 5t²). Up to 8s, relative velocity is constant (30 m/s), relative acceleration is zero. 2nd stone reaches ground at t=12s (from −240 = 40t − 5t²). After 8s, since the 1st stone has stopped, relative acceleration becomes nonzero (=g downward), so the relative position graph becomes a downward parabola from t=8 to t=12.",
+      "question_image": null,
+      "option_images": {
+        "A": "images/q43_option_A.png",
+        "B": "images/q43_option_B.png",
+        "C": "images/q43_option_C.png",
+        "D": "images/q43_option_D.png"
+      },
+      "solution_image": null
+    },
+    {
+      "question_number": 44,
+      "subject": "Physics",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A ball is dropped vertically from a height d above the ground. It hits the ground and bounces up vertically to a height d/2. Neglecting subsequent motion and air resistance, its velocity v varies with height h above the ground as",
+      "options": {
+        "A": "Semicircular arcs: quarter circle down then smaller quarter circle up, both starting/ending on h-axis",
+        "B": "Two quarter circles opening differently",
+        "C": "Straight line segments (V shape reversing)",
+        "D": "Quarter circle arcs with different orientation"
+      },
+      "answer": "A",
+      "solution": "Initially v=0 at h=d; as h decreases, v increases downward (v²=2g(d−h), non-linear). After bouncing, v reverses sign and reduces since it only rebounds to height d/2, again following a non-linear (semicircular-looking) curve.",
+      "question_image": null,
+      "option_images": {
+        "A": "images/q44_option_A.png",
+        "B": "images/q44_option_B.png",
+        "C": "images/q44_option_C.png",
+        "D": "images/q44_option_D.png"
+      },
+      "solution_image": null
+    },
+    {
+      "question_number": 45,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Let |A₁| = 3, |A₂| = 5 and |A₁ + A₂| = 5. The value of (2A₁+3A₂)·(3A₁−2A₂) is",
+      "options": null,
+      "answer": "-118.5",
+      "solution": "|A₁+A₂|² = |A₁|²+|A₂|²+2|A₁||A₂|cosθ ⇒ 25 = 9+25+30cosθ ⇒ cosθ = −9/30 = −3/10. (2A₁+3A₂)·(3A₁−2A₂) = 6|A₁|²+9A₁·A₂−4A₁·A₂−6|A₂|² = 6(9)+5(A₁·A₂)−6(25). A₁·A₂ = 3×5×(−3/10) = −4.5. = 54 + 5(−4.5) − 150 = 54 − 22.5 − 150 = −118.5.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 46,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "The position vector of a particle is given as r⃗ = (t² − 4t + 6)î + (t²)ĵ. The time after which the velocity vector and acceleration vector become perpendicular to each other is equal to (in seconds):",
+      "options": null,
+      "answer": "1",
+      "solution": "v⃗ = (2t−4)î + 2t ĵ; a⃗ = 2î + 2ĵ. For perpendicularity, v⃗·a⃗ = 0: 2(2t−4) + 2(2t) = 0 ⇒ 4t−8+4t=0 ⇒ t = 1 sec.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 47,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Two particles having position vectors r⃗₁ = (3î+5ĵ) meters and r⃗₂ = (−5î−3ĵ) meters are moving with velocities v⃗₁ = (4î+3ĵ) m/s and v⃗₂ = (αî+7ĵ) m/s. If they collide after 2s, the value of α is:",
+      "options": null,
+      "answer": "8",
+      "solution": "Collision condition: v⃗₁t + r⃗₁ = v⃗₂t + r⃗₂. Substituting t=2: (8+3, 6+5) = (2α−5, 14−3) ⇒ matching components gives α = 8.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 48,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "A particle is projected with an initial velocity of 200 m/s in a direction making an angle of 30° with the vertical. The horizontal distance covered by the particle in 3s is (in m)",
+      "options": null,
+      "answer": "300",
+      "solution": "x = u cosθ · t, where θ = 60° from horizontal (since 30° from vertical). x = 200 × cos60° × 3 = 200 × 0.5 × 3 = 300 m.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 49,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "From the top of a tower 39.2 m high, a ball is thrown horizontally. If the line joining the point of projection to the point where it hits the ground makes an angle of 45° with the horizontal, then the initial velocity of the ball is (in ms⁻¹, express as 9.8√2 → numeric value)",
+      "options": null,
+      "answer": "9.8√2 (≈13.86)",
+      "solution": "tanθ = H/R ⇒ θ=45° ⇒ H = R. H = V√(2H/g) ⇒ V = √(gH/2) = √(g×4g/2)... [using H=39.2, g=9.8] simplifies to V = g√2 = 9.8√2 ms⁻¹.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 50,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Time taken by the projectile to reach from A to B is t (projected at 60° from vertical, B along a line at 30° from horizontal), then the distance AB is equal to:",
+      "options": null,
+      "answer": "ut/√3",
+      "solution": "AC = u cos60° · t = ut/2. AB = AC/cos30° = (ut/2)/(√3/2) = ut/√3.",
+      "question_image": "images/q50_diagram.png",
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 51,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "A football is thrown with a velocity of 10 ms⁻¹ at an angle of 30° above the horizontal. What will be the time of flight, in seconds? (g = 10 ms⁻²)",
+      "options": null,
+      "answer": "1",
+      "solution": "T = 2u sinθ/g = 2×10×sin30°/10 = 1 s.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 52,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "The minimum speed (in ms⁻¹) with which a projectile must be thrown from origin at ground so that it is able to pass through a point P(30 m, 40 m) is γ, then the value of γ/10 is (g = 10 ms⁻²)",
+      "options": null,
+      "answer": "3",
+      "solution": "u_min = √[gy + g√(x²+y²)] = √[10×40 + 10×√(30²+40²)] = √[400+500] = √900 = 30 ms⁻¹. γ = 30 ⇒ γ/10 = 3.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 53,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Trajectory of particle launched obliquely from the ground is given as y = x − x²/8, where x and y are in metre. For this projectile motion, angle of projection is θ degrees, then θ/15 is (g = 10 ms⁻²)",
+      "options": null,
+      "answer": "3",
+      "solution": "y = x(1 − x/80). Comparing with y = x tanθ (1 − x/R): tanθ = 1 ⇒ θ = 45°. θ/15 = 45/15 = 3.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 54,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "When two particles A and B are at point O, A is moving with a constant velocity 50 ms⁻¹, while B is not moving. But B possesses a constant acceleration of 10 ms⁻². After how much time (in s) will they be at a separation of 125 m?",
+      "options": null,
+      "answer": "5",
+      "solution": "u_AB = 50 ms⁻¹, a_AB = −10 ms⁻². s_AB = u_AB t + (1/2)a_AB t² ⇒ 125 = 50t − 5t² ⇒ t²−10t+25=0 ⇒ (t−5)²=0 ⇒ t=5 s.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 55,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Car A has an acceleration of 2 ms⁻² due east and car B, 4 ms⁻² due north. What is the acceleration of car B with respect to car A (in ms⁻²)? (take √5 = 2.5)",
+      "options": null,
+      "answer": "5",
+      "solution": "a_BA = a_B − a_A = 4ĵ − 2î. |a_BA| = √(16+4) = 2√5 = 2×2.5 = 5 ms⁻².",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 56,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "A motorboat going downstream overcame a raft at point A. One hour later it turned back and met the raft again at a distance 6 km from point A. Find the river velocity (in kmph).",
+      "options": null,
+      "answer": "3",
+      "solution": "Let v₀ be stream velocity, v′ boat velocity w.r.t. water. Using l/v₀ = τ + [(v₀+v′)τ − l]/(v′−v₀), and given l = 6 km, τ = 1 hr, solving gives v₀ = l/(2τ) = 3 km/hr.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 57,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Snow is falling vertically at a constant speed of 8 ms⁻¹. At angle β (in degrees) from the vertical do the snow flakes appear to be falling as viewed by the driver of a car travelling on a straight, level road with a speed of 50 kmh⁻¹. Then the value of β/10 is (nearly)",
+      "options": null,
+      "answer": "6",
+      "solution": "θ = tan⁻¹(Vc/Vv) = tan⁻¹[(50×1000/3600)/8] = tan⁻¹(1.736) = 60°. β = 60 ⇒ β/10 = 6.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 58,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Particles A and B are moving as shown in the figure at t = 0 (A moving up at 4 ms⁻¹, B moving right at 3 ms⁻¹, separated by 3m vertical and 4m horizontal). Their relative velocity of separation at t = 1s is α/√β, then α − β is",
+      "options": null,
+      "answer": "5",
+      "solution": "The line AB makes 45° with horizontal (since 3m and 4m... effectively becomes 7m and 7m after 1s of motion). v_sep = 3cosθ + 4sinθ = 3(1/√2)+4(1/√2) = 7/√2 ms⁻¹. So α=7, β=2, α−β = 5.",
+      "question_image": "images/q58_diagram_question.png",
+      "option_images": null,
+      "solution_image": "images/q58_diagram_solution.png"
+    },
+    {
+      "question_number": 59,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "If angular displacement of a particle is given by θ = a − bt + ct², then find its angular velocity (rad/sec) at t = 2sec if b = 2, c = 1.",
+      "options": null,
+      "answer": "2",
+      "solution": "ω = dθ/dt = −b + 2ct = −2 + 2(1)(2) = 2 rad/s.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 60,
+      "subject": "Physics",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "A particle is moving with constant speed in a circular path. The ratio of average velocity to its instantaneous velocity when the particle describes an angle θ = π/2 is p√q/π, then p/q is",
+      "options": null,
+      "answer": "1",
+      "solution": "t = θR/v = πR/(2v). v_avg = (√2 R)/(πR/2v) = 2√2v/π. Ratio v_avg/v_ins = 2√2/π. Comparing with p√q/π: p=2, q=2 ⇒ p/q = 1.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 61,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "The number of atoms present in 16 g of oxygen gas is:",
+      "options": {
+        "A": "6.02 × 10^11.5",
+        "B": "3.01 × 10^23",
+        "C": "3.01 × 10^11.5",
+        "D": "6.02 × 10^23"
+      },
+      "answer": "D",
+      "solution": "Moles of O₂ = 16/32 = 0.5. Moles of atoms = 0.5 × 2 = 1. Number of atoms = 1 × N_A = 6.02×10²³.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 62,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "A signature, written in carbon pencil, weighs 1 mg. What is the number of carbon atoms present in the signature?",
+      "options": {
+        "A": "5.02 × 10^23",
+        "B": "5.02 × 10^20",
+        "C": "6.02 × 10^20",
+        "D": "0.502 × 10^20"
+      },
+      "answer": "D",
+      "solution": "12 g carbon contains 6.02×10²³ atoms. 1 mg (10⁻³ g) contains x = (10⁻³ × 6.02×10²³)/12 = 0.5018×10²⁰ atoms.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 63,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Cortisone is a molecular substance containing 21 atoms of carbon per molecule. The molecular weight of cortisone is 360.4. What is the percentage of carbon in cortisone?",
+      "options": {
+        "A": "59.9%",
+        "B": "75%",
+        "C": "69.92%",
+        "D": "None of these"
+      },
+      "answer": "C",
+      "solution": "%C = (12×21)/360.4 × 100 = 69.92%.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 64,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "The weight of sulphuric acid needed for dissolving 3 g magnesium carbonate is:",
+      "options": {
+        "A": "3.5 g",
+        "B": "7.0 g",
+        "C": "1.7 g",
+        "D": "17.0 g"
+      },
+      "answer": "A",
+      "solution": "H₂SO₄ + MgCO₃ → MgSO₄ + H₂O + CO₂. 1 mole MgCO₃ (84g) reacts with 1 mole H₂SO₄ (98g). For 3g MgCO₃: x = 3×98/84 = 3.5 g.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 65,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "5.85 g of NaCl dissolved in H₂O and solution is made up to 500 mL. The molarity is:",
+      "options": {
+        "A": "0.1",
+        "B": "0.2",
+        "C": "1.0",
+        "D": "0.117"
+      },
+      "answer": "B",
+      "solution": "M = (5.85/58.5) × (1000/500) = 0.2 M.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 66,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "The mass of 112 cm³ of CH₄ gas at STP is",
+      "options": {
+        "A": "0.16 g",
+        "B": "0.8 g",
+        "C": "0.08 g",
+        "D": "1.6 g"
+      },
+      "answer": "C",
+      "solution": "Moles of CH₄ = 112/22400 = 0.5×10⁻². Mass = 0.5×10⁻² × 16 = 0.08 g.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 67,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "0.1 mole of a carbohydrate with empirical formula CH₂O contains 1 g of hydrogen. What is its molecular formula?",
+      "options": {
+        "A": "C₅H₁₀O₅",
+        "B": "C₆H₁₂O₆",
+        "C": "C₄H₈O₄",
+        "D": "C₃H₆O₃"
+      },
+      "answer": "A",
+      "solution": "0.1 mole carbohydrate → 1g Hydrogen ⇒ 1 mole → 10g Hydrogen (10 H atoms). Molecular formula = C₅H₁₀O₅.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 68,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "If 8 litre of Oxygen was left unreacted, when 4 litre of H₂ reacted with y lit. of O₂ at STP, find y?",
+      "options": {
+        "A": "8 lit",
+        "B": "12 lit",
+        "C": "10 lit",
+        "D": "6 lit"
+      },
+      "answer": "C",
+      "solution": "2H₂ + O₂ → 2H₂O. 4 L H₂ reacts with 2 L O₂. y − 2 = 8 (leftover) ⇒ y = 10 L.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 69,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "For the reaction, A + 2B → C, 5 moles of A and 8 moles of B will produce:",
+      "options": {
+        "A": "5 moles of C",
+        "B": "4 moles of C",
+        "C": "8 moles of C",
+        "D": "13 moles of C"
+      },
+      "answer": "B",
+      "solution": "Limiting reagent is B (2 mole B needs 1 mole A, but only 5 mole A available while 8 mole B present, so B needed = 10 for full A — B is limiting). 8 mole B → 8/2 = 4 mole C.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 70,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Air contains 20% O₂ by volume. How much volume of air will be required for complete combustion of 100 cc of acetylene?",
+      "options": {
+        "A": "500 cc",
+        "B": "1064 cc",
+        "C": "212.8 cc",
+        "D": "1250 cc"
+      },
+      "answer": "D",
+      "solution": "C₂H₂ + (5/2)O₂ → 2CO₂ + H₂O. 100 cc C₂H₂ needs 250 cc O₂. Since air is 20% O₂, volume of air = 250 × (100/20) = 1250 cc.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 71,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "An organic compound contains 20.0% C, 6.66% H, 47.33% N and the rest was oxygen. Its molar mass is 60 g/mol. The molecular formula of the compound is",
+      "options": {
+        "A": "CH₄N₂O",
+        "B": "C₂H₄NO₂",
+        "C": "CH₃N₂O",
+        "D": "CH₄N₂O₂"
+      },
+      "answer": "A",
+      "solution": "Using empirical formula calculation from percentage composition, empirical formula = CH₄N₂O, which matches molar mass 60 g/mol, so molecular formula = CH₄N₂O.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 72,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "Dissolving 120 g of urea (mol.wt. 60) in 1000 g of water gave a solution of density 1.15 g/mL. The molarity of the solution is:",
+      "options": {
+        "A": "1.78 M",
+        "B": "2.00 M",
+        "C": "2.05 M",
+        "D": "2.22 M"
+      },
+      "answer": "C",
+      "solution": "Molality m = (120/60)×(1000/1000) = 2. Using m = M×1000/[(d×1000)−(M×GMW of solute)], solving gives M ≈ 2.05 M.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 73,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "The mass of nitrogen per gram hydrogen in the compound hydrazine is exactly one and half times the mass of nitrogen in the compound ammonia. The fact illustrates the",
+      "options": {
+        "A": "Law of conservation of mass",
+        "B": "Multiple valency of nitrogen",
+        "C": "Law of multiple proportions",
+        "D": "Law of definite proportions"
+      },
+      "answer": "C",
+      "solution": "This illustrates the Law of Multiple Proportions, since the same fixed mass of hydrogen combines with nitrogen in a simple whole-number ratio (3:2) across two different compounds.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 74,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "20% w/w aq. solution of NaOH having density 1.5 g/ml, find molarity (M)?",
+      "options": {
+        "A": "2.5",
+        "B": "7.5",
+        "C": "5",
+        "D": "25"
+      },
+      "answer": "B",
+      "solution": "M = (10 × %w/w × d)/(molar mass) = (10×20×1.5)/40 = 7.5 M.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 75,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "The number of atoms in 4.25 g of NH₃ is approximately",
+      "options": {
+        "A": "6 × 10^23",
+        "B": "2 × 10^23",
+        "C": "1.5 × 10^23",
+        "D": "1 × 10^23"
+      },
+      "answer": "A",
+      "solution": "17 g NH₃ contains 4×N_A atoms. 4.25 g contains x = (4.25×4×N_A)/17 = 6.37×10²³ ≈ 6×10²³ atoms.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 76,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "100 g of CaCO₃ is treated with 1 L of 1 M HCl. What would be the weight of CO₂ liberated after the completion of the reaction?",
+      "options": {
+        "A": "55 g",
+        "B": "11 g",
+        "C": "22 g",
+        "D": "33 g"
+      },
+      "answer": "C",
+      "solution": "CaCO₃ + 2HCl → CaCl₂ + H₂O + CO₂. HCl is limiting reagent: 1 mole HCl reacts with 0.5 mole CaCO₃ (using M₁V₁ equivalence), producing 0.5 mole CO₂ = 22 g.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 77,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "If 0.5 mole of BaCl₂ is mixed with 0.2 mole of Na₃PO₄, the maximum number of moles of Ba₃(PO₄)₂ that can be formed is:",
+      "options": {
+        "A": "0.7",
+        "B": "0.5",
+        "C": "0.30",
+        "D": "0.1"
+      },
+      "answer": "D",
+      "solution": "3BaCl₂ + 2Na₃PO₄ → Ba₃(PO₄)₂ + 6NaCl. Na₃PO₄ is the limiting reagent (0.2 mole < required for 0.5 mole BaCl₂). 2 mole Na₃PO₄ → 1 mole Ba₃(PO₄)₂, so 0.2 mole → 0.1 mole.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 78,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "The number of hydrogen atoms present in 25.6 g of sucrose (C₁₂H₂₂O₁₁) which has a molar mass of 342 g is",
+      "options": {
+        "A": "22 × 10^23",
+        "B": "9.91 × 10^23",
+        "C": "11 × 10^23",
+        "D": "44 × 10^23"
+      },
+      "answer": "B",
+      "solution": "342 g (1 mole) sucrose contains 22×N_A H atoms. 25.6 g contains x = (25.6×22×N_A)/342 = 9.91×10²³ atoms.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 79,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "For the balanced equation 2KClO₃(s) →(Δ) 2KCl(s) + 3O₂(g), volume of O₂ released at STP (1 mole gas = 22.4 lit) when 3/2 moles of KClO₃ is heated is?",
+      "options": {
+        "A": "50.4 lit",
+        "B": "33.6 lit",
+        "C": "22.4 lit",
+        "D": "44.8 lit"
+      },
+      "answer": "A",
+      "solution": "2 mole KClO₃ = 3 mole O₂. 1.5 mole KClO₃ = 2.25 mole O₂. Volume = 2.25 × 22.4 = 50.4 lit.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 80,
+      "subject": "Chemistry",
+      "section": "Section-I",
+      "question_type": "MCQ",
+      "question_text": "There are two isotopes of an element with average atomic mass z. Heavier one has atomic mass z+2 and lighter one has z−1, the abundance of lighter one is",
+      "options": {
+        "A": "66.6%",
+        "B": "69.7%",
+        "C": "6.67%",
+        "D": "33.3%"
+      },
+      "answer": "A",
+      "solution": "Let %abundance of heavier = a, lighter = (100−a). Average = [a(z+2)+(100−a)(z−1)]/100 = z. Solving gives a = 33.33% (heavier), so lighter abundance = 100−33.33 = 66.67% ≈ 66.6%.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 81,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "If one mole of H₂SO₄ reacts with excess of NaOH, how many moles of H₂O will be formed?",
+      "options": null,
+      "answer": "2",
+      "solution": "H₂SO₄ + 2NaOH → Na₂SO₄ + 2H₂O. 1 mole H₂SO₄ produces 2 moles H₂O.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 82,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "An element A (at.wt = 75) and B (at.wt = 25) combine to form a compound. The compound contains 75% of A by weight. Total number of atoms present in the simple (empirical) formula of the molecule ____.",
+      "options": null,
+      "answer": "2",
+      "solution": "%A=75, %B=25. Moles of A = 75/75=1, moles of B=25/25=1. Ratio A:B = 1:1, so empirical formula AB, total atoms = 2.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 83,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "1 g NaOH reacted with 25 ml of 0.75 M HCl solution; mass of NaOH left unreacted in mg is x. Then find 2x/100?",
+      "options": null,
+      "answer": "5",
+      "solution": "NaOH: 1000/40 = 25 mmol. HCl: 25×0.75 = 18.75 mmol (=75/4). HCl is the limiting reagent. NaOH left unreacted = 25 − 75/4 = 25/4 mmol; mass = (25/4)×40 = 250 mg = x. 2x/100 = 2×250/100 = 5.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 84,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "A gas is found to have formula (CO)ₓ. Its vapour density is 70, the value of \"x\" is",
+      "options": null,
+      "answer": "5",
+      "solution": "Mol. wt = 2×V.D = 2×70 = 140. For (CO)ₓ: x(12+16) = 140 ⇒ 28x = 140 ⇒ x = 5.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 85,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "4 gram atom of silver (Ag) contains P×10² grams of silver metal. The value of P to the nearest single digit integer ____.",
+      "options": null,
+      "answer": "4",
+      "solution": "1 gram atom of silver = 108 g (atomic mass). 4 gram atoms = 4×108 = 432 g = 4.32×10² g, so P ≈ 4.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 86,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "If 20% nitrogen is present in a compound, its minimum molecular weight is obtained as \"P\". Find the value of P/10?",
+      "options": null,
+      "answer": "7",
+      "solution": "20% = (14×1)/x × 100 ⇒ x = 1400/20 = 70 = P. P/10 = 7.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 87,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Mole fraction of I₂ in benzene is 0.2, find molality? (M. wt. of I₂ = 254 g/mole, C₆H₆ = 78 g/mole) (nearest integer)",
+      "options": null,
+      "answer": "3",
+      "solution": "m = (0.2×1000)/(0.8×78) = 3.2 ≈ 3.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 88,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "Total moles of atoms present in 128 g of SO₂ gas at STP is (are) ____.",
+      "options": null,
+      "answer": "6",
+      "solution": "64 g SO₂ (1 mole) contains 3 mole of atoms. 128 g (2 moles) contains 6 mole of atoms.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 89,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "0.0833 mole of Carbohydrate of Empirical formula CH₂O contains 1 g of Hydrogen. Total number of Hydrogen atoms present in molecular formula of the compound is 'x'. Then the value of x/4 is ____.",
+      "options": null,
+      "answer": "3",
+      "solution": "0.0833 mole carbohydrate → 1g hydrogen. 1 mole → 1/0.0833 ≈ 12 g hydrogen, i.e., 12 H atoms (x=12). x/4 = 3.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    },
+    {
+      "question_number": 90,
+      "subject": "Chemistry",
+      "section": "Section-II",
+      "question_type": "Numerical",
+      "question_text": "4.9% (w/v) H₂SO₄ solution. The Molarity M of the solution is x. Then find the value of 10x.",
+      "options": null,
+      "answer": "5",
+      "solution": "4.9 g H₂SO₄ in 100 mL solution. M = (4.9/98)×(1000/100) = 0.5 M = x. 10x = 5.",
+      "question_image": null,
+      "option_images": null,
+      "solution_image": null
+    }
+  ]
+}

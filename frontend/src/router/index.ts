@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { fetchAdminSessionUser, redirectToDjangoAdminLogin } from '@/services/adminAuth'
 import CommunityLayout from '@/layouts/CommunityLayout.vue'
 import MessagingLayout from '@/layouts/MessagingLayout.vue'
 import ProfileLayout from '@/layouts/ProfileLayout.vue'
 import ExploreLayout from '@/layouts/ExploreLayout.vue'
 import ExamLayout from '@/layouts/ExamLayout.vue'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 import CheckEmailView from '../views/auth/CheckEmailView.vue'
 import ForgotPasswordView from '../views/auth/ForgotPasswordView.vue'
@@ -14,6 +16,7 @@ declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean
     requiresGuest?: boolean
+    requiresAdmin?: boolean
   }
 }
 
@@ -270,6 +273,215 @@ const router = createRouter({
       },
     },
     // --- ROUTE GROUP 5: Uses the clean full-width Profile Layout (No Sidebars) --- [1]
+    // --- ROUTE GROUP: Admin Panel ---
+    // CHANGED: path moved from '/admin' to '/exam-admin' so it never
+    // collides with Django's built-in admin site, which lives at the
+    // normal '/admin/' path (see config/urls.py and vite.config.ts).
+    // Route names are unchanged, so any router.push({ name: 'admin-dashboard' })
+    // calls elsewhere in the app still work without edits.
+    {
+      path: '/exam-admin',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          component: () => import('@/views/admin/DashboardView.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'exams',
+          name: 'admin-exams',
+          component: () => import('@/views/admin/DashboardView.vue'), // placeholder
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'exams/create',
+          name: 'admin-exam-create',
+          component: () => import('@/views/admin/exams/CreateExamView.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'exams/draft',
+          name: 'admin-exams-draft',
+          component: () => import('@/views/admin/DashboardView.vue'), // placeholder
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'exams/published',
+          name: 'admin-exams-published',
+          component: () => import('@/views/admin/DashboardView.vue'), // placeholder
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'exams/archived',
+          name: 'admin-exams-archived',
+          component: () => import('@/views/admin/DashboardView.vue'), // placeholder
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'tests/mock',
+          name: 'admin-tests-mock',
+          component: () => import('@/views/admin/tests/Mocktestsview.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'tests/mock/create',
+          name: 'admin-mock-test-create',
+          component: () => import('@/views/admin/tests/CreateMockTestView.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'tests/practice',
+          name: 'admin-tests-practice',
+          component: () => import('@/views/admin/DashboardView.vue'), // placeholder
+          meta: { requiresAuth: true },
+        },
+        // --- Previous Year Tests flow (7-step admin process) ---
+        {
+          path: 'tests/previous',
+          name: 'admin-tests-previous',
+          component: () => import('@/views/admin/pyq-test/SelectPYTest.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'tests/previous/upload',
+          name: 'admin-tests-previous-upload',
+          component: () => import('@/views/admin/pyq-test/UploadExtractPDF.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'tests/previous/map-paper-details',
+          name: 'admin-tests-previous-map-paper-details',
+          component: () => import('@/views/admin/pyq-test/MapPaperDetails.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          // Step 3 of the PYQ import wizard. This route was missing —
+          // MapPaperDetails.vue's "Next" button and ReviewCreateTest.vue's
+          // "Back" button both already push to this name, so they were
+          // throwing "No match for {name: ...}" instead of navigating.
+          path: 'tests/previous/review-questions',
+          name: 'admin-tests-previous-review-questions',
+          component: () => import('@/views/admin/pyq-test/ReviewExtractedQuestions.vue'),
+          meta: { requiresAuth: true },
+        },
+        
+        {
+          path: 'tests/previous/review-create',
+          name: 'admin-tests-previous-review-create',
+          component: () => import('@/views/admin/pyq-test/ReviewCreateTest.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'tests/previous/extract-questions',
+          name: 'admin-tests-previous-extract-questions',
+          component: () => import('@/views/admin/pyq-test/ExtractQuestions.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'tests/previous/configure-publish',
+          name: 'admin-tests-previous-configure-publish',
+          component: () => import('@/views/admin/pyq-test/ConfigureTestPublish.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'tests/previous/published',
+          name: 'admin-tests-previous-published',
+          component: () => import('@/views/admin/pyq-test/TestPublished.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'settings/visibility',
+          name: 'admin-settings-visibility',
+          component: () => import('@/views/admin/DashboardView.vue'), // placeholder
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'settings/seo',
+          name: 'admin-settings-seo',
+          component: () => import('@/views/admin/DashboardView.vue'), // placeholder
+          meta: { requiresAuth: true },
+        },
+        // --- Syllabus → Subjects ---
+        {
+          path: 'syllabus/subjects',
+          name: 'admin-subjects',
+          component: () => import('@/views/admin/subject/Subjectslistview.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'syllabus/subjects/create',
+          name: 'admin-subjects-create',
+          component: () => import('@/views/admin/subject/Addsubjectview.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'syllabus/subjects/:id/edit',
+          name: 'admin-subjects-edit',
+          component: () => import('@/views/admin/subject/Addsubjectview.vue'),
+          props: true,
+          meta: { requiresAuth: true },
+        },
+        // --- Syllabus → Chapters / Topics (placeholders until built) ---
+        {
+          path: 'syllabus/chapters',
+          name: 'admin-chapters',
+          component: () => import('@/views/admin/DashboardView.vue'), // placeholder
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'syllabus/topics',
+          name: 'admin-topics',
+          component: () => import('@/views/admin/DashboardView.vue'), // placeholder
+          meta: { requiresAuth: true },
+        },
+      ],
+    },
+    // --- ROUTE GROUP: Question Bank (nested under Exam Admin, same sidebar/layout) ---
+    {
+      path: '/exam-admin/questions',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        {
+          path: '',
+          name: 'question-bank',
+          component: () => import('@/views/admin/question/QuestionBank.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'add',
+          name: 'question-add',
+          component: () => import('@/views/admin/question/AddQuestion.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'review',
+          name: 'question-review',
+          component: () => import('@/views/admin/question/QuestionReview.vue'),
+          meta: { requiresAuth: true },
+        },
+        // --- Import Questions flow (Question Bank) ---
+        // CHANGED: this used to mount ImportQuestionsUpload.vue directly
+        // (dead emit, no listener), then later called the mock-exam
+        // bulk-upload endpoints via ImportQuestionsWizard.vue with an
+        // examId pulled from ?examId= in the query string — but nothing
+        // ever set that query param when linking here, so it was always
+        // undefined. QuestionBankImportWizard.vue now has its own Step 0
+        // ("Select Exam") that asks for the exam directly, so this route
+        // no longer needs to receive examId at all.
+       {
+          path: 'questions/import',
+          name: 'question-import',
+          // All wizard files must be in this exact folder:
+          // src/views/admin/import-questions/
+          component: () => import('@/views/admin/import-questions/QuestionBankImportWizard.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
+    },
     {
       path: '/settings',
       component: ProfileLayout,
@@ -286,6 +498,18 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
+  // Admin routes are gatekept by Django's own session (via /admin/login/),
+  // not the app-wide token auth used everywhere else — checked separately.
+  if (to.meta.requiresAdmin) {
+    const adminUser = await fetchAdminSessionUser()
+    if (!adminUser || !adminUser.is_staff) {
+      redirectToDjangoAdminLogin(to.fullPath)
+      return // full page redirect, no need to call next()
+    }
+    next()
+    return
+  }
+
   const authStore = useAuthStore()
   await authStore.initializeAuth()
   const isAuthenticated = authStore.isAuthenticated
